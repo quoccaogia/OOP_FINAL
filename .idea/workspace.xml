@@ -4,7 +4,35 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="02a28356-298d-41df-b7e9-842f8e55ad68" name="Changes" comment="" />
+    <list default="true" id="02a28356-298d-41df-b7e9-842f8e55ad68" name="Changes" comment="">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Flower Shop Management System/erd_flower_shop.md" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Flower Shop Management System/mermaid-diagram.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/vn/edu/crud/Main.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/vn/edu/crud/dao/CustomerDAO.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/vn/edu/crud/dao/FlowerDAO.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/vn/edu/crud/dao/OrderDAO.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/vn/edu/crud/menu/CareScheduleMenu.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/vn/edu/crud/menu/CustomerMenu.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/vn/edu/crud/menu/EmployeeMenu.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/vn/edu/crud/menu/FlowerMenu.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/vn/edu/crud/menu/OrderMenu.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/vn/edu/crud/menu/PaymentMenu.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/vn/edu/crud/menu/SupplierMenu.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/vn/edu/crud/model/CareSchedule.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/vn/edu/crud/model/Customer.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/vn/edu/crud/model/Employee.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/vn/edu/crud/model/Flower.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/vn/edu/crud/model/FlowerSales.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/vn/edu/crud/model/Order.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/vn/edu/crud/model/OrderDetail.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/vn/edu/crud/model/OrderDetailView.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/vn/edu/crud/model/Payment.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/vn/edu/crud/model/Supplier.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/vn/edu/crud/test/TestConnection.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/vn/edu/crud/test/TestFlowerQueries.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/vn/edu/crud/util/DBConnection.class" beforeDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -17,10 +45,13 @@
       </list>
     </option>
   </component>
-  <component name="ProjectColorInfo"><![CDATA[{
-  "associatedIndex": 0,
-  "fromUser": false
-}]]></component>
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+  </component>
+  <component name="ProjectColorInfo">{
+  &quot;associatedIndex&quot;: 0,
+  &quot;fromUser&quot;: false
+}</component>
   <component name="ProjectId" id="3KX3v8uf5nlWJfLwhjdeLgmBJ0z" />
   <component name="ProjectViewState">
     <option name="hideEmptyMiddlePackages" value="true" />
@@ -34,13 +65,32 @@
     "Application.TestFlowerQueries.executor": "Run",
     "ModuleVcsDetector.initialDetectionPerformed": "true",
     "RunOnceActivity.ShowReadmeOnStart": "true",
+    "RunOnceActivity.git.unshallow": "true",
     "RunOnceActivity.typescript.service.memoryLimit.init": "true",
     "codeWithMe.voiceChat.enabledByDefault": "false",
+    "git-widget-placeholder": "demo01",
     "kotlin-language-version-configured": "true",
+    "last_opened_file_path": "D:/OOP/FlowerShopV2",
     "nodejs_package_manager_path": "npm",
-    "onboarding.tips.debug.path": "D:/OOP/FlowerShopV2/src/main/java/vn/edu/crud/Main.java"
+    "onboarding.tips.debug.path": "D:/OOP/FlowerShopV2/src/main/java/vn/edu/crud/Main.java",
+    "project.structure.last.edited": "Modules",
+    "project.structure.proportion": "0.0",
+    "project.structure.side.proportion": "0.0"
   }
 }]]></component>
+  <component name="RunManager">
+    <configuration default="true" type="JetRunConfigurationType">
+      <module name="FlowerShopV2" />
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <configuration default="true" type="KotlinStandaloneScriptRunConfigurationType">
+      <module name="FlowerShopV2" />
+      <option name="filePath" />
+      <method v="2" />
+    </configuration>
+  </component>
   <component name="SharedIndexes">
     <attachedChunks>
       <set>
