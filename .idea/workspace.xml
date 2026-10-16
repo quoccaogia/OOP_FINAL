@@ -5,45 +5,12 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="02a28356-298d-41df-b7e9-842f8e55ad68" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/src/main/java/vn/edu/crud/dao/CareScheduleDAO.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/vn/edu/crud/dao/EmployeeDAO.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/vn/edu/crud/dao/FlowerBatchDAO.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/vn/edu/crud/dao/PaymentDAO.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/vn/edu/crud/dao/PurchaseOrderDAO.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/vn/edu/crud/dao/SupplierDAO.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/vn/edu/crud/menu/FlowerBatchMenu.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/vn/edu/crud/menu/PurchaseOrderMenu.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/vn/edu/crud/model/FlowerBatch.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/vn/edu/crud/model/PurchaseOrder.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/vn/edu/crud/util/DBBase.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/vn/edu/crud/Main.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/vn/edu/crud/Main.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/vn/edu/crud/dao/CustomerDAO.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/vn/edu/crud/dao/CustomerDAO.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/vn/edu/crud/dao/FlowerDAO.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/vn/edu/crud/dao/FlowerDAO.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/vn/edu/crud/dao/OrderDAO.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/vn/edu/crud/dao/OrderDAO.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/vn/edu/crud/menu/CareScheduleMenu.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/vn/edu/crud/menu/CareScheduleMenu.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/vn/edu/crud/menu/CustomerMenu.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/vn/edu/crud/menu/CustomerMenu.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/vn/edu/crud/menu/EmployeeMenu.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/vn/edu/crud/menu/EmployeeMenu.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/vn/edu/crud/menu/FlowerMenu.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/vn/edu/crud/menu/FlowerMenu.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/vn/edu/crud/menu/OrderMenu.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/vn/edu/crud/menu/OrderMenu.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/vn/edu/crud/menu/PaymentMenu.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/vn/edu/crud/menu/PaymentMenu.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/vn/edu/crud/menu/SupplierMenu.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/vn/edu/crud/menu/SupplierMenu.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/vn/edu/crud/model/FlowerSales.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/vn/edu/crud/model/OrderDetailView.java" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/vn/edu/crud/test/TestFlowerQueries.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/vn/edu/crud/Main.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/vn/edu/crud/Main.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/vn/edu/crud/dao/FlowerDAO.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/vn/edu/crud/dao/FlowerDAO.class" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/target/classes/vn/edu/crud/dao/OrderDAO.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/vn/edu/crud/dao/OrderDAO.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/vn/edu/crud/menu/CareScheduleMenu.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/vn/edu/crud/menu/CareScheduleMenu.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/vn/edu/crud/menu/CustomerMenu.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/vn/edu/crud/menu/CustomerMenu.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/vn/edu/crud/menu/EmployeeMenu.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/vn/edu/crud/menu/EmployeeMenu.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/vn/edu/crud/menu/FlowerMenu.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/vn/edu/crud/menu/FlowerMenu.class" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/target/classes/vn/edu/crud/menu/OrderMenu.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/vn/edu/crud/menu/OrderMenu.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/vn/edu/crud/menu/PaymentMenu.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/vn/edu/crud/menu/PaymentMenu.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/vn/edu/crud/menu/SupplierMenu.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/vn/edu/crud/menu/SupplierMenu.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/vn/edu/crud/model/FlowerSales.class" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/vn/edu/crud/model/OrderDetailView.class" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/vn/edu/crud/test/TestFlowerQueries.class" beforeDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -59,6 +26,9 @@
   </component>
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+  </component>
+  <component name="HighlightingSettingsPerFile">
+    <setting file="jar://C:/Program Files/Java/jdk-26.0.2.1/lib/src.zip!/java.base/java/io/PrintStream.java" root0="FORCE_HIGHLIGHTING" />
   </component>
   <component name="ProjectColorInfo">{
   &quot;associatedIndex&quot;: 0,
@@ -83,7 +53,7 @@
     "RunOnceActivity.git.unshallow": "true",
     "RunOnceActivity.typescript.service.memoryLimit.init": "true",
     "codeWithMe.voiceChat.enabledByDefault": "false",
-    "git-widget-placeholder": "doc",
+    "git-widget-placeholder": "master",
     "kotlin-language-version-configured": "true",
     "last_opened_file_path": "D:/OOP/FlowerShopV2",
     "nodejs_package_manager_path": "npm",

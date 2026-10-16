@@ -1,5 +1,6 @@
 package vn.edu.crud.menu;
 
+import java.util.ArrayList;
 import vn.edu.crud.dao.CustomerDAO;
 import vn.edu.crud.dao.OrderDAO;
 import vn.edu.crud.dao.PaymentDAO;
@@ -7,6 +8,9 @@ import vn.edu.crud.model.Customer;
 import vn.edu.crud.model.Order;
 import vn.edu.crud.model.Payment;
 import vn.edu.crud.util.DBBase;
+
+import vn.edu.crud.dao.FlowerDAO;
+import vn.edu.crud.model.Flower;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -20,6 +24,7 @@ public class OrderMenu {
     private final OrderDAO dao = new OrderDAO();
     private final PaymentDAO paymentDAO = new PaymentDAO();
     private final CustomerDAO customerDAO = new CustomerDAO();
+    private final FlowerDAO flowerDAO = new FlowerDAO();
 
     private static final DateTimeFormatter FMT =
             DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
@@ -81,10 +86,13 @@ public class OrderMenu {
                         System.out.print("Nhập mã khách: ");
                         inDsDon(dao.donCuaKhach(sc.nextLine().trim()));   // ← ĐÃ SỬA
                         break;
-                    case 17:
-                        System.out.print("Nhập mã đơn: ");
-                        inDonHangDayDu(sc.nextLine().trim());
+                    case 17: {
+                        Order donChon = chonDonTuDanhSach();
+                        if (donChon != null) {
+                            inDonHangDayDu(donChon.getOrderId());
+                        }
                         break;
+                    }
                     case 18: inBang(dao.donCoNhieuLoaiHoa(3)); break;
                     case 19: inBang(dao.thongKeDonTheoTrangThai()); break;
                     case 0:  System.out.println("Quay lại menu chính."); break;
@@ -214,71 +222,191 @@ public class OrderMenu {
         try {
             System.out.println("\n--- THÊM HOA VÀO ĐƠN ---");
 
-            System.out.print("Mã đơn hàng: ");
-            String orderId = sc.nextLine().trim();
-
-            if (orderId.isEmpty()) {
-                System.out.println("❌ Mã đơn không được để trống!");
-                return;
-            }
-            if (!dao.donTonTai(orderId)) {
-                System.out.println("❌ Đơn '" + orderId + "' không tồn tại!");
+            // ============ BƯỚC A: CHỌN ĐƠN ============
+            List<Order> dsDon = dao.findAll();
+            if (dsDon.isEmpty()) {
+                System.out.println("⚠️ Chưa có đơn hàng nào!");
                 return;
             }
 
-            System.out.print("Mã hoa: ");
-            String flowerId = sc.nextLine().trim();
-            if (flowerId.isEmpty()) {
-                System.out.println("❌ Mã hoa không được để trống!");
-                return;
-            }
+            System.out.println("\n╔═══════════════════════════════════════════════════════════════════════╗");
+            System.out.println("║                     DANH SÁCH ĐƠN HÀNG HIỆN CÓ                        ║");
+            System.out.println("╠════╦══════════╦════════════════════════════╦════════════════╦═════════╣");
+            System.out.printf("║ %-2s ║ %-8s ║ %-26s ║ %-14s ║ %-7s ║%n",
+                    "STT", "Mã đơn", "Khách hàng", "Trạng thái", "Số hoa");
+            System.out.println("╠════╬══════════╬════════════════════════════╬════════════════╬═════════╣");
 
-            System.out.print("Số lượng: ");
-            int quantity;
+            int sttDon = 1;
+            for (Order o : dsDon) {
+                System.out.printf("║ %-2d ║ %-8s ║ %-26s ║ %-14s ║ %-7d ║%n",
+                        sttDon++,
+                        o.getOrderId(),
+                        catChuoi(layTenKhach(o.getCustomerId()), 26),
+                        catChuoi(o.getOrderStatus(), 14),
+                        demSoLoaiHoaTrongDon(o.getOrderId()));
+            }
+            System.out.println("╚════╩══════════╩════════════════════════════╩════════════════╩═════════╝");
+            System.out.println("  0. Hủy thao tác");
+
+            System.out.print("\nNhập STT đơn muốn thêm hoa (0 để hủy): ");
+            int chonDon;
             try {
-                quantity = Integer.parseInt(sc.nextLine().trim());
-                if (quantity <= 0) {
-                    System.out.println("❌ Số lượng phải > 0!");
-                    return;
-                }
+                chonDon = Integer.parseInt(sc.nextLine().trim());
             } catch (NumberFormatException e) {
-                System.out.println("❌ Số lượng phải là SỐ nguyên!");
+                System.out.println("❌ Phải nhập số!");
+                return;
+            }
+            if (chonDon == 0) { System.out.println("→ Đã hủy."); return; }
+            if (chonDon < 1 || chonDon > dsDon.size()) {
+                System.out.println("❌ STT không hợp lệ!");
                 return;
             }
 
-            System.out.print("Đơn giá tại thời điểm bán: ");
-            BigDecimal price;
-            try {
-                price = new BigDecimal(sc.nextLine().trim());
-                if (price.compareTo(BigDecimal.ZERO) < 0) {
-                    System.out.println("❌ Đơn giá không được âm!");
-                    return;
+            Order donChon = dsDon.get(chonDon - 1);
+            String orderId = donChon.getOrderId();
+            System.out.println("→ Bạn chọn đơn: " + orderId
+                    + " (khách: " + layTenKhach(donChon.getCustomerId()) + ")");
+
+            // =====================================================
+            // BƯỚC B: VÒNG LẶP THÊM NHIỀU HOA
+            // =====================================================
+            int soLanThem = 0;
+
+            while (true) {
+                System.out.println("\n┌──────────────────────────────────────────────────┐");
+                System.out.println("│   THÊM HOA VÀO ĐƠN " + orderId + " (lần " + (soLanThem + 1) + ")");
+                System.out.println("└──────────────────────────────────────────────────┘");
+
+                // ==== LẤY HOA CÒN HÀNG ====
+                List<Flower> dsHoa = new ArrayList<>();
+                for (Flower f : flowerDAO.findAll()) {
+                    if (f.getStockQuantity() > 0) dsHoa.add(f);
                 }
-            } catch (NumberFormatException e) {
-                System.out.println("❌ Đơn giá không hợp lệ!");
-                return;
+                dsHoa.sort((a, b) -> a.getFlowerId().compareTo(b.getFlowerId()));
+
+                if (dsHoa.isEmpty()) {
+                    System.out.println("⚠️ Không còn hoa nào trong kho!");
+                    break;
+                }
+
+                // ==== IN BẢNG HOA ====
+                System.out.println("╔════╦═════════╦════════════════════════════╦══════════════╦═════════╗");
+                System.out.printf("║ %-2s ║ %-7s ║ %-26s ║ %-12s ║ %-7s ║%n",
+                        "STT", "Mã hoa", "Tên hoa", "Đơn giá", "Tồn");
+                System.out.println("╠════╬═════════╬════════════════════════════╬══════════════╬═════════╣");
+
+                int sttHoa = 1;
+                for (Flower f : dsHoa) {
+                    System.out.printf("║ %-2d ║ %-7s ║ %-26s ║ %-12s ║ %-7d ║%n",
+                            sttHoa++,
+                            f.getFlowerId(),
+                            catChuoi(f.getName(), 26),
+                            f.getUnitPrice() + "đ",
+                            f.getStockQuantity());
+                }
+                System.out.println("╚════╩═════════╩════════════════════════════╩══════════════╩═════════╝");
+                System.out.println("  0. Thoát chế độ thêm hoa");
+
+                // ==== CHỌN HOA ====
+                System.out.print("\nNhập STT hoa muốn thêm (0 để thoát): ");
+                int chonHoa;
+                try {
+                    chonHoa = Integer.parseInt(sc.nextLine().trim());
+                } catch (NumberFormatException e) {
+                    System.out.println("❌ Phải nhập số!");
+                    continue;
+                }
+
+                // Bấm 0 → thoát vòng lặp
+                if (chonHoa == 0) {
+                    System.out.println("→ Đã thoát chế độ thêm hoa.");
+                    break;
+                }
+
+                if (chonHoa < 1 || chonHoa > dsHoa.size()) {
+                    System.out.println("❌ STT không hợp lệ!");
+                    continue;
+                }
+
+                Flower hoaChon = dsHoa.get(chonHoa - 1);
+                System.out.println("→ Bạn chọn: " + hoaChon.getName()
+                        + " (tồn: " + hoaChon.getStockQuantity() + ")");
+
+                // ==== NHẬP SỐ LƯỢNG ====
+                int quantity = -1;
+                boolean huyHoa = false;
+
+                while (true) {
+                    System.out.print("Số lượng (tối đa " + hoaChon.getStockQuantity() + ", 0 để hủy): ");
+                    try {
+                        int sl = Integer.parseInt(sc.nextLine().trim());
+                        if (sl == 0) { huyHoa = true; break; }
+                        if (sl < 0) { System.out.println("❌ Phải >= 0!"); continue; }
+                        if (sl > hoaChon.getStockQuantity()) {
+                            System.out.println("❌ Vượt tồn kho! Chỉ còn " + hoaChon.getStockQuantity() + ".");
+                            continue;
+                        }
+                        quantity = sl;
+                        break;
+                    } catch (NumberFormatException e) {
+                        System.out.println("❌ Phải nhập số nguyên!");
+                    }
+                }
+
+                if (huyHoa) {
+                    System.out.println("→ Đã hủy chọn hoa này, quay lại danh sách.");
+                    continue;
+                }
+
+                // ==== ĐƠN GIÁ ====
+                BigDecimal price = hoaChon.getUnitPrice();
+                System.out.print("Đơn giá (Enter = " + price + "đ): ");
+                String sGia = sc.nextLine().trim();
+                if (!sGia.isEmpty()) {
+                    try {
+                        BigDecimal giaNhap = new BigDecimal(sGia);
+                        if (giaNhap.compareTo(BigDecimal.ZERO) >= 0) price = giaNhap;
+                        else System.out.println("⚠️ Giá âm, dùng giá mặc định.");
+                    } catch (NumberFormatException e) {
+                        System.out.println("⚠️ Giá không hợp lệ, dùng giá mặc định.");
+                    }
+                }
+
+                // ==== THÊM VÀO ĐƠN ====
+                String flowerId = hoaChon.getFlowerId();
+                boolean ok;
+
+                if (dao.hoaDaCoTrongDon(orderId, flowerId)) {
+                    System.out.println("⚠️ Hoa đã có trong đơn, cộng thêm số lượng...");
+                    ok = dao.congThemSoLuong(orderId, flowerId, quantity);
+                } else {
+                    ok = dao.themChiTiet(orderId, flowerId, quantity, price);
+                }
+
+                if (ok) {
+                    soLanThem++;
+                    System.out.println("✅ Đã thêm " + hoaChon.getName()
+                            + " x" + quantity + " vào đơn!");
+                } else {
+                    System.out.println("❌ Thêm thất bại!");
+                }
+
+                // ==== HỎI CÓ THÊM TIẾP KHÔNG ====
+                System.out.print("\nThêm hoa khác vào đơn? (c/K, Enter = c): ");
+                String tiepTuc = sc.nextLine().trim();
+                if (tiepTuc.equalsIgnoreCase("k")) {
+                    System.out.println("→ Đã thoát chế độ thêm hoa.");
+                    break;
+                }
             }
 
-            if (dao.hoaDaCoTrongDon(orderId, flowerId)) {
-                System.out.println("⚠️ Hoa đã có trong đơn, cộng thêm số lượng...");
-                if (dao.congThemSoLuong(orderId, flowerId, quantity)) {
-                    System.out.println("✅ Đã cập nhật số lượng!");
-                } else {
-                    System.out.println("❌ Cập nhật thất bại!");
-                }
-            } else {
-                if (dao.themChiTiet(orderId, flowerId, quantity, price)) {
-                    System.out.println("✅ Thêm hoa vào đơn thành công!");
-                } else {
-                    System.out.println("❌ Thêm thất bại! Kiểm tra mã hoa có tồn tại không.");
-                }
-            }
+            System.out.println("\n✅ Đã thêm " + soLanThem + " loại hoa vào đơn " + orderId);
+
         } catch (Exception e) {
-            System.out.println("❌ Lỗi khi thêm hoa: " + e.getMessage());
+            System.out.println("❌ Lỗi: " + e.getMessage());
             e.printStackTrace();
         }
     }
-
     // =====================================================
     // 3. THANH TOÁN ĐƠN HÀNG
     // =====================================================
@@ -697,5 +825,82 @@ public class OrderMenu {
             // bỏ qua
         }
         return "Chưa xác định";
+    }
+
+    private String layTenKhach(String customerId) {
+        try {
+            Customer c = customerDAO.findById(customerId);
+            if (c != null && c.getName() != null) return c.getName();
+        } catch (Exception ignored) {}
+        return customerId;
+    }
+
+    private int demSoLoaiHoaTrongDon(String orderId) {
+        try {
+            List<Object[]> ct = dao.chiTietDonHang(orderId);
+            return ct == null ? 0 : ct.size();
+        } catch (Exception e) { return 0; }
+    }
+
+    private String catChuoi(String s, int maxLen) {
+        if (s == null) return "";
+        if (s.length() <= maxLen) return s;
+        return s.substring(0, maxLen - 1) + "…";
+    }
+
+
+    private Order chonDonTuDanhSach() {
+        List<Order> dsDon = dao.findAll();
+        if (dsDon.isEmpty()) {
+            System.out.println("⚠️ Chưa có đơn hàng nào trong hệ thống!");
+            return null;
+        }
+
+        System.out.println("\n╔═════════════════════════════════════════════════════════════════════════════╗");
+        System.out.println("║                          DANH SÁCH ĐƠN HÀNG HIỆN CÓ                          ║");
+        System.out.println("╠════╦══════════╦════════════════════════════╦═══════════════════╦══════════╣");
+        System.out.printf("║ %-2s ║ %-8s ║ %-26s ║ %-17s ║ %-8s ║%n",
+                "STT", "Mã đơn", "Khách hàng", "SĐT", "Trạng thái");
+        System.out.println("╠════╬══════════╬════════════════════════════╬═══════════════════╬══════════╣");
+
+        int stt = 1;
+        for (Order o : dsDon) {
+            String tenKH = layTenKhach(o.getCustomerId());
+            String sdtKH = laySdtKhach(o.getCustomerId());
+            System.out.printf("║ %-2d ║ %-8s ║ %-26s ║ %-17s ║ %-8s ║%n",
+                    stt++,
+                    o.getOrderId(),
+                    catChuoi(tenKH, 26),
+                    catChuoi(sdtKH, 17),
+                    catChuoi(o.getOrderStatus(), 8));
+        }
+        System.out.println("╚════╩══════════╩════════════════════════════╩═══════════════════╩══════════╝");
+        System.out.println("  0. Hủy thao tác");
+
+        System.out.print("\nNhập STT đơn muốn xem (0 để hủy): ");
+        int chon;
+        try {
+            chon = Integer.parseInt(sc.nextLine().trim());
+        } catch (NumberFormatException e) {
+            System.out.println("❌ Phải nhập số!");
+            return null;
+        }
+
+        if (chon == 0) { System.out.println("→ Đã hủy."); return null; }
+        if (chon < 1 || chon > dsDon.size()) {
+            System.out.println("❌ STT không hợp lệ!");
+            return null;
+        }
+
+        return dsDon.get(chon - 1);
+    }
+
+    // Lấy SĐT khách
+    private String laySdtKhach(String customerId) {
+        try {
+            Customer c = customerDAO.findById(customerId);
+            if (c != null && c.getPhone() != null) return c.getPhone();
+        } catch (Exception ignored) {}
+        return "";
     }
 }

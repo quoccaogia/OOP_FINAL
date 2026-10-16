@@ -15,6 +15,8 @@ public class OrderDAO {
     // NHÓM THAO TÁC
     // =====================================================
 
+
+
     public String sinhMaDonMoi() {
         String sql = "SELECT order_id FROM `Order` ORDER BY order_id DESC LIMIT 1";
         List<Object[]> rows = DBBase.query(sql);
@@ -22,6 +24,18 @@ public class OrderDAO {
         String maCu = rows.get(0)[0].toString();
         int so = Integer.parseInt(maCu.substring(3));
         return String.format("ORD%03d", so + 1);
+    }
+
+    public List<Order> findAll() {
+        List<Order> list = new ArrayList<>();
+        String sql = "SELECT * FROM `Order` ORDER BY order_id DESC";
+
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql);
+             ResultSet rs = ps.executeQuery()) {
+            while (rs.next()) list.add(docMotDon(rs));
+        } catch (SQLException e) { e.printStackTrace(); }
+        return list;
     }
 
     public boolean taoDonHang(Order o) {
