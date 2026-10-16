@@ -1,0 +1,137 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="AutoImportSettings">
+    <option name="autoReloadType" value="SELECTIVE" />
+  </component>
+  <component name="ChangeListManager">
+    <list default="true" id="02a28356-298d-41df-b7e9-842f8e55ad68" name="Changes" comment="">
+      <change afterPath="$PROJECT_DIR$/src/main/java/vn/edu/crud/dao/CareScheduleDAO.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/vn/edu/crud/dao/EmployeeDAO.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/vn/edu/crud/dao/FlowerBatchDAO.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/vn/edu/crud/dao/PaymentDAO.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/vn/edu/crud/dao/PurchaseOrderDAO.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/vn/edu/crud/dao/SupplierDAO.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/vn/edu/crud/menu/FlowerBatchMenu.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/vn/edu/crud/menu/PurchaseOrderMenu.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/vn/edu/crud/model/FlowerBatch.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/vn/edu/crud/model/PurchaseOrder.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/vn/edu/crud/util/DBBase.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/vn/edu/crud/Main.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/vn/edu/crud/Main.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/vn/edu/crud/dao/CustomerDAO.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/vn/edu/crud/dao/CustomerDAO.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/vn/edu/crud/dao/FlowerDAO.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/vn/edu/crud/dao/FlowerDAO.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/vn/edu/crud/dao/OrderDAO.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/vn/edu/crud/dao/OrderDAO.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/vn/edu/crud/menu/CareScheduleMenu.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/vn/edu/crud/menu/CareScheduleMenu.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/vn/edu/crud/menu/CustomerMenu.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/vn/edu/crud/menu/CustomerMenu.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/vn/edu/crud/menu/EmployeeMenu.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/vn/edu/crud/menu/EmployeeMenu.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/vn/edu/crud/menu/FlowerMenu.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/vn/edu/crud/menu/FlowerMenu.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/vn/edu/crud/menu/OrderMenu.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/vn/edu/crud/menu/OrderMenu.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/vn/edu/crud/menu/PaymentMenu.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/vn/edu/crud/menu/PaymentMenu.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/vn/edu/crud/menu/SupplierMenu.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/vn/edu/crud/menu/SupplierMenu.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/vn/edu/crud/model/FlowerSales.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/vn/edu/crud/model/OrderDetailView.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/vn/edu/crud/test/TestFlowerQueries.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/vn/edu/crud/Main.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/vn/edu/crud/Main.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/vn/edu/crud/dao/FlowerDAO.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/vn/edu/crud/dao/FlowerDAO.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/vn/edu/crud/dao/OrderDAO.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/vn/edu/crud/dao/OrderDAO.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/vn/edu/crud/menu/CareScheduleMenu.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/vn/edu/crud/menu/CareScheduleMenu.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/vn/edu/crud/menu/CustomerMenu.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/vn/edu/crud/menu/CustomerMenu.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/vn/edu/crud/menu/EmployeeMenu.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/vn/edu/crud/menu/EmployeeMenu.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/vn/edu/crud/menu/FlowerMenu.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/vn/edu/crud/menu/FlowerMenu.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/vn/edu/crud/menu/OrderMenu.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/vn/edu/crud/menu/OrderMenu.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/vn/edu/crud/menu/PaymentMenu.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/vn/edu/crud/menu/PaymentMenu.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/vn/edu/crud/menu/SupplierMenu.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/vn/edu/crud/menu/SupplierMenu.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/vn/edu/crud/model/FlowerSales.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/vn/edu/crud/model/OrderDetailView.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/vn/edu/crud/test/TestFlowerQueries.class" beforeDir="false" />
+    </list>
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="FileTemplateManagerImpl">
+    <option name="RECENT_TEMPLATES">
+      <list>
+        <option value="Class" />
+      </list>
+    </option>
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+  </component>
+  <component name="ProjectColorInfo">{
+  &quot;associatedIndex&quot;: 0,
+  &quot;fromUser&quot;: false
+}</component>
+  <component name="ProjectId" id="3KX3v8uf5nlWJfLwhjdeLgmBJ0z" />
+  <component name="ProjectLevelVcsManager">
+    <ConfirmationsSetting value="2" id="Add" />
+  </component>
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "Application.DBConnection.executor": "Run",
+    "Application.Main.executor": "Run",
+    "Application.TestConnection.executor": "Run",
+    "Application.TestFlowerQueries.executor": "Run",
+    "ModuleVcsDetector.initialDetectionPerformed": "true",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "RunOnceActivity.git.unshallow": "true",
+    "RunOnceActivity.typescript.service.memoryLimit.init": "true",
+    "codeWithMe.voiceChat.enabledByDefault": "false",
+    "git-widget-placeholder": "doc",
+    "kotlin-language-version-configured": "true",
+    "last_opened_file_path": "D:/OOP/FlowerShopV2",
+    "nodejs_package_manager_path": "npm",
+    "onboarding.tips.debug.path": "D:/OOP/FlowerShopV2/src/main/java/vn/edu/crud/Main.java",
+    "project.structure.last.edited": "Modules",
+    "project.structure.proportion": "0.0",
+    "project.structure.side.proportion": "0.0"
+  }
+}]]></component>
+  <component name="RunManager">
+    <configuration name="Main" type="Application" factoryName="Application" temporary="true" nameIsGenerated="true">
+      <option name="MAIN_CLASS_NAME" value="vn.edu.crud.Main" />
+      <module name="FlowerShopV2" />
+      <extension name="coverage">
+        <pattern>
+          <option name="PATTERN" value="vn.edu.crud.*" />
+          <option name="ENABLED" value="true" />
+        </pattern>
+      </extension>
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <recent_temporary>
+      <list>
+        <item itemvalue="Application.Main" />
+      </list>
+    </recent_temporary>
+  </component>
+  <component name="SharedIndexes">
+    <attachedChunks>
+      <set>
+        <option value="bundled-jdk-30f59d01ecdd-34e2839f716b-intellij.indexing.shared.core-IU-262.9437.185" />
+        <option value="bundled-js-predefined-d6986cc7102b-4abd2a77f808-JavaScript-IU-262.9437.185" />
+      </set>
+    </attachedChunks>
+  </component>
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="02a28356-298d-41df-b7e9-842f8e55ad68" name="Changes" comment="" />
+      <created>1791690317146</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1791690317146</updated>
+    </task>
+    <servers />
+  </component>
+  <component name="TypeScriptGeneratedFilesManager">
+    <option name="version" value="3" />
+  </component>
+</project>
