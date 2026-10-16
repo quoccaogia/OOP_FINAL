@@ -5,55 +5,43 @@ import vn.edu.crud.menu.*;
 import java.util.Scanner;
 
 public class Main {
-
-    private static final Scanner sc = new Scanner(System.in);
-
     public static void main(String[] args) {
-        while (true) {
-            printMainMenu();
-            int choice = readInt("Chọn: ");
+        Scanner sc = new Scanner(System.in);
+        int chon;
 
-            switch (choice) {
-                case 1 -> new FlowerMenu(sc).run();       // vào menu hoa
-                case 2 -> new CustomerMenu(sc).run();     // vào menu khách
-                case 3 -> new OrderMenu(sc).run();        // vào menu đơn
-                case 4 -> new SupplierMenu(sc).run();     // vào menu NCC
-                case 5 -> new EmployeeMenu(sc).run();     // vào menu NV
-                case 6 -> new PaymentMenu(sc).run();      // vào menu thanh toán
-                case 7 -> new CareScheduleMenu(sc).run(); // vào menu chăm sóc
-                case 0 -> {
-                    System.out.println("👋 Tạm biệt!");
-                    return;
-                }
-                default -> System.out.println("❌ Lựa chọn không hợp lệ!");
+        do {
+            System.out.println("\n╔══════════════════════════════════════════════╗");
+            System.out.println("║   HỆ THỐNG QUẢN LÝ CỬA HÀNG BÁN HOA         ║");
+            System.out.println("╠══════════════════════════════════════════════╣");
+            System.out.println("║  1. Quản lý Khách hàng                       ║");
+            System.out.println("║  2. Quản lý Nhà cung cấp                     ║");
+            System.out.println("║  3. Quản lý Nhân viên                        ║");
+            System.out.println("║  4. Quản lý Hoa                              ║");
+            System.out.println("║  5. Quản lý Đơn hàng                         ║");
+            System.out.println("║  6. Quản lý Thanh toán                       ║");
+            System.out.println("║  7. Quản lý Lịch chăm sóc                    ║");
+            System.out.println("║  8. Quản lý Phiếu nhập hàng                  ║");
+            System.out.println("║  9. Quản lý Lô hoa                           ║");
+            System.out.println("║  0. Thoát                                    ║");
+            System.out.println("╚══════════════════════════════════════════════╝");
+            System.out.print("Chọn chức năng: ");
+
+            try { chon = Integer.parseInt(sc.nextLine()); }
+            catch (NumberFormatException e) { chon = -1; }
+
+            switch (chon) {
+                case 1: new CustomerMenu().hienThi(); break;
+                case 2: new SupplierMenu().hienThi(); break;
+                case 3: new EmployeeMenu().hienThi(); break;
+                case 4: new FlowerMenu().hienThi(); break;
+                case 5: new OrderMenu().hienThi(); break;
+                case 6: new PaymentMenu().hienThi(); break;
+                case 7: new CareScheduleMenu().hienThi(); break;
+                case 8: new PurchaseOrderMenu().hienThi(); break;
+                case 9: new FlowerBatchMenu().hienThi(); break;
+                case 0: System.out.println("Tạm biệt!"); break;
+                default: System.out.println("Chức năng không hợp lệ!");
             }
-        }
-    }
-
-    private static void printMainMenu() {
-        System.out.println("\n╔══════════════════════════════════════╗");
-        System.out.println("║   QUẢN LÝ CỬA HÀNG HOA               ║");
-        System.out.println("╠══════════════════════════════════════╣");
-        System.out.println("║  1. Quản lý HOA                      ║");
-        System.out.println("║  2. Quản lý KHÁCH HÀNG               ║");
-        System.out.println("║  3. Quản lý ĐƠN HÀNG                 ║");
-        System.out.println("║  4. Quản lý NHÀ CUNG CẤP             ║");
-        System.out.println("║  5. Quản lý NHÂN VIÊN                ║");
-        System.out.println("║  6. Quản lý THANH TOÁN               ║");
-        System.out.println("║  7. Quản lý CHĂM SÓC HOA             ║");
-        System.out.println("║  0. Thoát                            ║");
-        System.out.println("╚══════════════════════════════════════╝");
-    }
-
-    // Helper dùng chung — có thể đưa vào InputUtil
-    static int readInt(String prompt) {
-        System.out.print(prompt);
-        while (!sc.hasNextInt()) {
-            System.out.print("⚠️  Nhập số: ");
-            sc.next();
-        }
-        int n = sc.nextInt();
-        sc.nextLine();
-        return n;
+        } while (chon != 0);
     }
 }
