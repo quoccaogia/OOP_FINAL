@@ -6,11 +6,10 @@
   <component name="ChangeListManager">
     <list default="true" id="02a28356-298d-41df-b7e9-842f8e55ad68" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/vn/edu/crud/dao/OrderDAO.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/vn/edu/crud/dao/OrderDAO.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/vn/edu/crud/menu/OrderMenu.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/vn/edu/crud/menu/OrderMenu.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/vn/edu/crud/test/TestFlowerQueries.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/vn/edu/crud/dao/OrderDAO.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/vn/edu/crud/dao/OrderDAO.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/vn/edu/crud/menu/OrderMenu.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/vn/edu/crud/menu/OrderMenu.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/vn/edu/crud/Main.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/vn/edu/crud/Main.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/vn/edu/crud/dao/CustomerDAO.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/vn/edu/crud/dao/CustomerDAO.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/vn/edu/crud/menu/CustomerMenu.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/vn/edu/crud/menu/CustomerMenu.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/vn/edu/crud/Main.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/vn/edu/crud/Main.class" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -42,27 +41,27 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent"><![CDATA[{
-  "keyToString": {
-    "Application.DBConnection.executor": "Run",
-    "Application.Main.executor": "Run",
-    "Application.TestConnection.executor": "Run",
-    "Application.TestFlowerQueries.executor": "Run",
-    "ModuleVcsDetector.initialDetectionPerformed": "true",
-    "RunOnceActivity.ShowReadmeOnStart": "true",
-    "RunOnceActivity.git.unshallow": "true",
-    "RunOnceActivity.typescript.service.memoryLimit.init": "true",
-    "codeWithMe.voiceChat.enabledByDefault": "false",
-    "git-widget-placeholder": "master",
-    "kotlin-language-version-configured": "true",
-    "last_opened_file_path": "D:/OOP/FlowerShopV2",
-    "nodejs_package_manager_path": "npm",
-    "onboarding.tips.debug.path": "D:/OOP/FlowerShopV2/src/main/java/vn/edu/crud/Main.java",
-    "project.structure.last.edited": "Modules",
-    "project.structure.proportion": "0.0",
-    "project.structure.side.proportion": "0.0"
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;Application.DBConnection.executor&quot;: &quot;Run&quot;,
+    &quot;Application.Main.executor&quot;: &quot;Run&quot;,
+    &quot;Application.TestConnection.executor&quot;: &quot;Run&quot;,
+    &quot;Application.TestFlowerQueries.executor&quot;: &quot;Run&quot;,
+    &quot;ModuleVcsDetector.initialDetectionPerformed&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.typescript.service.memoryLimit.init&quot;: &quot;true&quot;,
+    &quot;codeWithMe.voiceChat.enabledByDefault&quot;: &quot;false&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;master&quot;,
+    &quot;kotlin-language-version-configured&quot;: &quot;true&quot;,
+    &quot;last_opened_file_path&quot;: &quot;D:/OOP/FlowerShopV2&quot;,
+    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
+    &quot;onboarding.tips.debug.path&quot;: &quot;D:/OOP/FlowerShopV2/src/main/java/vn/edu/crud/Main.java&quot;,
+    &quot;project.structure.last.edited&quot;: &quot;Modules&quot;,
+    &quot;project.structure.proportion&quot;: &quot;0.0&quot;,
+    &quot;project.structure.side.proportion&quot;: &quot;0.0&quot;
   }
-}]]></component>
+}</component>
   <component name="RunManager">
     <configuration name="Main" type="Application" factoryName="Application" temporary="true" nameIsGenerated="true">
       <option name="MAIN_CLASS_NAME" value="vn.edu.crud.Main" />

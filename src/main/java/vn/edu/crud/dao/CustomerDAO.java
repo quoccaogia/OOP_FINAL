@@ -10,14 +10,9 @@ import java.util.List;
 
 public class CustomerDAO {
 
-    // =====================================================
-    // NHÓM CRUD
-    // =====================================================
-
     public List<Customer> findAll() {
         List<Customer> list = new ArrayList<>();
         String sql = "SELECT * FROM Customer";
-
         try (Connection conn = DBConnection.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql);
              ResultSet rs = ps.executeQuery()) {
@@ -26,9 +21,9 @@ public class CustomerDAO {
         return list;
     }
 
+    // Hàm này cực kỳ quan trọng để OrderMenu lấy địa chỉ khách hàng
     public Customer findById(String id) {
         String sql = "SELECT * FROM Customer WHERE customer_id = ?";
-
         try (Connection conn = DBConnection.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setString(1, id);
@@ -39,39 +34,67 @@ public class CustomerDAO {
         return null;
     }
 
+    // Tìm theo SĐT (Dùng cho nghiệp vụ tiếp đón)
+    public List<Customer> timTheoSdt(String sdt) {
+        List<Customer> list = new ArrayList<>();
+        String sql = "SELECT * FROM Customer WHERE phone LIKE ?";
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, "%" + sdt + "%");
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) list.add(mapRow(rs));
+            }
+        } catch (SQLException e) { e.printStackTrace(); }
+        return list;
+    }
+
     public boolean insert(Customer c) {
-        String sql = "INSERT INTO Customer (customer_id, name, phone, address, email) " +
-                "VALUES (?, ?, ?, ?, ?)";
-        return DBBase.update(sql,
-                c.getCustomerId(), c.getName(), c.getPhone(),
-                c.getAddress(), c.getEmail()) > 0;
+        String sql = "INSERT INTO Customer (customer_id, name, phone, address, email) VALUES (?, ?, ?, ?, ?)";
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, c.getCustomerId());
+            ps.setString(2, c.getName());
+            ps.setString(3, c.getPhone());
+            ps.setString(4, c.getAddress());
+            ps.setString(5, c.getEmail());
+            return ps.executeUpdate() > 0;
+        } catch (SQLIntegrityConstraintViolationException e) {
+            System.out.println("⚠️ LỖI: Số điện thoại [" + c.getPhone() + "] đã được dùng cho khách hàng khác!");
+            return false;
+        } catch (SQLException e) { e.printStackTrace(); return false; }
     }
 
     public boolean update(Customer c) {
-        String sql = "UPDATE Customer SET name=?, phone=?, address=?, email=? " +
-                "WHERE customer_id=?";
-        return DBBase.update(sql,
-                c.getName(), c.getPhone(), c.getAddress(),
-                c.getEmail(), c.getCustomerId()) > 0;
-    }
-
-    public boolean delete(String id) {
-        return DBBase.update(
-                "DELETE FROM Customer WHERE customer_id = ?", id) > 0;
+        String sql = "UPDATE Customer SET name=?, phone=?, address=?, email=? WHERE customer_id=?";
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, c.getName());
+            ps.setString(2, c.getPhone());
+            ps.setString(3, c.getAddress());
+            ps.setString(4, c.getEmail());
+            ps.setString(5, c.getCustomerId());
+            return ps.executeUpdate() > 0;
+        } catch (SQLIntegrityConstraintViolationException e) {
+            System.out.println("⚠️ LỖI: Số điện thoại [" + c.getPhone() + "] đã bị trùng với người khác!");
+            return false;
+        } catch (SQLException e) { e.printStackTrace(); return false; }
     }
 
     public String sinhMaKhachMoi() {
-        List<Object[]> rows = DBBase.query(
-                "SELECT customer_id FROM Customer ORDER BY customer_id DESC LIMIT 1");
+        List<Object[]> rows = DBBase.query("SELECT customer_id FROM Customer ORDER BY customer_id DESC LIMIT 1");
         if (rows.isEmpty()) return "KH001";
         String maCu = rows.get(0)[0].toString();
         int so = Integer.parseInt(maCu.substring(2));
         return String.format("KH%03d", so + 1);
     }
 
-    // =====================================================
-    // HELPER
-    // =====================================================
+    public String chuanHoaSdt(String sdt) {
+        if (sdt == null || sdt.trim().isEmpty()) return "";
+        String s = sdt.trim().replaceAll("\\s+", "");
+        if (s.startsWith("+84")) s = "0" + s.substring(3);
+        s = s.replaceFirst("^0+", "0");
+        return s;
+    }
 
     private Customer mapRow(ResultSet rs) throws SQLException {
         Customer c = new Customer();

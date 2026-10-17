@@ -29,6 +29,7 @@ public class Main {
             try { chon = Integer.parseInt(sc.nextLine()); }
             catch (NumberFormatException e) { chon = -1; }
 
+
             switch (chon) {
                 case 1: new CustomerMenu().hienThi(); break;
                 case 2: new SupplierMenu().hienThi(); break;
