@@ -88,6 +88,17 @@ public class OrderDAO {
         return DBBase.update(sql, soLuong, flowerId) > 0;
     }
 
+    // Lấy số lượng của một loại hoa trong một đơn (trả về 0 nếu không có)
+    public int laySoLuongTrongDon(String orderId, String flowerId) {
+        String sql = "SELECT quantity FROM OrderDetail " +
+                "WHERE order_id = ? " +
+                "AND flower_id = ?";
+        List<Object[]> rows = DBBase.query(sql, orderId, flowerId);
+        if (rows.isEmpty() || rows.get(0)[0] == null)
+            return 0;
+        return (Integer) rows.get(0)[0];
+    }
+
     public boolean capNhatTrangThai(String orderId, String status) {
         String sql = "UPDATE `Order` SET order_status = ? WHERE order_id = ?";
         return DBBase.update(sql, status, orderId) > 0;

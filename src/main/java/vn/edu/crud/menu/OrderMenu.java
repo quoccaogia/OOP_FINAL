@@ -26,8 +26,7 @@ public class OrderMenu {
     private final CustomerDAO customerDAO = new CustomerDAO();
     private final FlowerDAO flowerDAO = new FlowerDAO();
 
-    private static final DateTimeFormatter FMT =
-            DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+    private static final DateTimeFormatter FMT = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
     // =====================================================
     // MENU CHÍNH
@@ -67,24 +66,54 @@ public class OrderMenu {
                 chon = Integer.parseInt(sc.nextLine().trim());
 
                 switch (chon) {
-                    case 1:  taoDonHang(); break;
-                    case 2:  themHoaVaoDon(); break;
-                    case 3:  thanhToanDon(); break;
-                    case 4:  capNhatTrangThai(); break;
-                    case 5:  xoaChiTiet(); break;
-                    case 6:  xoaDon(); break;
-                    case 7:  inBang(dao.donHangGiaCao(new BigDecimal("500000"))); break;
-                    case 8:  inDsDon(dao.donChuaGiaoHomNay()); break;
-                    case 9:  System.out.println("Doanh thu hôm nay: " + dao.doanhThuHomNay() + " VND"); break;
-                    case 10: inBang(dao.khachDaTungDatHang()); break;
-                    case 11: inBang(dao.khachChuaTungDatHang()); break;
-                    case 12: inBang(dao.khachNhieuDonNhat()); break;
-                    case 13: inBang(dao.nhanVienCoDonHang()); break;
-                    case 14: inBang(dao.nhanVienNhieuDonNhat()); break;
-                    case 15: inBang(dao.tongChiTieuTheoKhach()); break;
+                    case 1:
+                        taoDonHang();
+                        break;
+                    case 2:
+                        themHoaVaoDon();
+                        break;
+                    case 3:
+                        thanhToanDon();
+                        break;
+                    case 4:
+                        capNhatTrangThai();
+                        break;
+                    case 5:
+                        xoaChiTiet();
+                        break;
+                    case 6:
+                        xoaDon();
+                        break;
+                    case 7:
+                        inBang(dao.donHangGiaCao(new BigDecimal("500000")));
+                        break;
+                    case 8:
+                        inDsDon(dao.donChuaGiaoHomNay());
+                        break;
+                    case 9:
+                        System.out.println("Doanh thu hôm nay: " + dao.doanhThuHomNay() + " VND");
+                        break;
+                    case 10:
+                        inBang(dao.khachDaTungDatHang());
+                        break;
+                    case 11:
+                        inBang(dao.khachChuaTungDatHang());
+                        break;
+                    case 12:
+                        inBang(dao.khachNhieuDonNhat());
+                        break;
+                    case 13:
+                        inBang(dao.nhanVienCoDonHang());
+                        break;
+                    case 14:
+                        inBang(dao.nhanVienNhieuDonNhat());
+                        break;
+                    case 15:
+                        inBang(dao.tongChiTieuTheoKhach());
+                        break;
                     case 16:
                         System.out.print("Nhập mã khách: ");
-                        inDsDon(dao.donCuaKhach(sc.nextLine().trim()));   // ← ĐÃ SỬA
+                        inDsDon(dao.donCuaKhach(sc.nextLine().trim())); // ← ĐÃ SỬA
                         break;
                     case 17: {
                         Order donChon = chonDonTuDanhSach();
@@ -93,10 +122,17 @@ public class OrderMenu {
                         }
                         break;
                     }
-                    case 18: inBang(dao.donCoNhieuLoaiHoa(3)); break;
-                    case 19: inBang(dao.thongKeDonTheoTrangThai()); break;
-                    case 0:  System.out.println("Quay lại menu chính."); break;
-                    default: System.out.println("⚠️ Chọn sai, vui lòng chọn lại!");
+                    case 18:
+                        inBang(dao.donCoNhieuLoaiHoa(3));
+                        break;
+                    case 19:
+                        inBang(dao.thongKeDonTheoTrangThai());
+                        break;
+                    case 0:
+                        System.out.println("Quay lại menu chính.");
+                        break;
+                    default:
+                        System.out.println("⚠️ Chọn sai, vui lòng chọn lại!");
                 }
             } catch (NumberFormatException e) {
                 System.out.println("⚠️ Vui lòng nhập SỐ, không nhập chữ!");
@@ -127,7 +163,8 @@ public class OrderMenu {
 
                 if (customerId.isEmpty()) {
                     String newId = taoKhachHangMoi();
-                    if (newId == null) continue;
+                    if (newId == null)
+                        continue;
                     o.setCustomerId(newId);
                     break;
                 }
@@ -256,7 +293,10 @@ public class OrderMenu {
                 System.out.println("❌ Phải nhập số!");
                 return;
             }
-            if (chonDon == 0) { System.out.println("→ Đã hủy."); return; }
+            if (chonDon == 0) {
+                System.out.println("→ Đã hủy.");
+                return;
+            }
             if (chonDon < 1 || chonDon > dsDon.size()) {
                 System.out.println("❌ STT không hợp lệ!");
                 return;
@@ -280,7 +320,8 @@ public class OrderMenu {
                 // ==== LẤY HOA CÒN HÀNG ====
                 List<Flower> dsHoa = new ArrayList<>();
                 for (Flower f : flowerDAO.findAll()) {
-                    if (f.getStockQuantity() > 0) dsHoa.add(f);
+                    if (f.getStockQuantity() > 0)
+                        dsHoa.add(f);
                 }
                 dsHoa.sort((a, b) -> a.getFlowerId().compareTo(b.getFlowerId()));
 
@@ -340,8 +381,14 @@ public class OrderMenu {
                     System.out.print("Số lượng (tối đa " + hoaChon.getStockQuantity() + ", 0 để hủy): ");
                     try {
                         int sl = Integer.parseInt(sc.nextLine().trim());
-                        if (sl == 0) { huyHoa = true; break; }
-                        if (sl < 0) { System.out.println("❌ Phải >= 0!"); continue; }
+                        if (sl == 0) {
+                            huyHoa = true;
+                            break;
+                        }
+                        if (sl < 0) {
+                            System.out.println("❌ Phải >= 0!");
+                            continue;
+                        }
                         if (sl > hoaChon.getStockQuantity()) {
                             System.out.println("❌ Vượt tồn kho! Chỉ còn " + hoaChon.getStockQuantity() + ".");
                             continue;
@@ -359,9 +406,7 @@ public class OrderMenu {
                 }
 
                 // ==== ĐƠN GIÁ ====
-                BigDecimal price = hoaChon.getUnitPrice(); 
-                
-                
+                BigDecimal price = hoaChon.getUnitPrice();
 
                 // ==== THÊM VÀO ĐƠN ====
                 String flowerId = hoaChon.getFlowerId();
@@ -399,6 +444,7 @@ public class OrderMenu {
             e.printStackTrace();
         }
     }
+
     // =====================================================
     // 3. THANH TOÁN ĐƠN HÀNG
     // =====================================================
@@ -442,7 +488,8 @@ public class OrderMenu {
 
             System.out.print("Phương thức (TIEN_MAT/CHUYEN_KHOAN/MOMO/VNPAY): ");
             String method = sc.nextLine().trim().toUpperCase();
-            if (method.isEmpty()) method = "TIEN_MAT";
+            if (method.isEmpty())
+                method = "TIEN_MAT";
 
             Payment p = new Payment();
             p.setPaymentId(paymentDAO.sinhMaThanhToan());
@@ -522,9 +569,9 @@ public class OrderMenu {
             int stt = 1;
 
             for (Object[] row : chiTiet) {
-                String tenHoa        = String.valueOf(row[0]);
-                int soLuong          = ((Number) row[1]).intValue();
-                BigDecimal donGia    = (BigDecimal) row[2];
+                String tenHoa = String.valueOf(row[0]);
+                int soLuong = ((Number) row[1]).intValue();
+                BigDecimal donGia = (BigDecimal) row[2];
                 BigDecimal thanhTien = donGia.multiply(BigDecimal.valueOf(soLuong));
 
                 tongTien = tongTien.add(thanhTien);
@@ -571,11 +618,21 @@ public class OrderMenu {
             try {
                 int c = Integer.parseInt(sc.nextLine().trim());
                 switch (c) {
-                    case 1: status = "CHO_XAC_NHAN"; break;
-                    case 2: status = "DANG_XU_LY"; break;
-                    case 3: status = "DANG_GIAO"; break;
-                    case 4: status = "HOAN_THANH"; break;
-                    case 5: status = "DA_HUY"; break;
+                    case 1:
+                        status = "CHO_XAC_NHAN";
+                        break;
+                    case 2:
+                        status = "DANG_XU_LY";
+                        break;
+                    case 3:
+                        status = "DANG_GIAO";
+                        break;
+                    case 4:
+                        status = "HOAN_THANH";
+                        break;
+                    case 5:
+                        status = "DA_HUY";
+                        break;
                     default:
                         System.out.println("⚠️ Chọn sai!");
                         return;
@@ -628,7 +685,9 @@ public class OrderMenu {
 
             System.out.print("Xác nhận xóa (y/n): ");
             if (sc.nextLine().equalsIgnoreCase("y")) {
+                int soLuong = dao.laySoLuongTrongDon(orderId, flowerId);
                 if (dao.xoaChiTiet(orderId, flowerId)) {
+                    dao.congTonKho(flowerId, soLuong);
                     System.out.println("✅ Đã xóa chi tiết!");
                 } else {
                     System.out.println("❌ Xóa thất bại!");
@@ -822,8 +881,10 @@ public class OrderMenu {
     private String layTenKhach(String customerId) {
         try {
             Customer c = customerDAO.findById(customerId);
-            if (c != null && c.getName() != null) return c.getName();
-        } catch (Exception ignored) {}
+            if (c != null && c.getName() != null)
+                return c.getName();
+        } catch (Exception ignored) {
+        }
         return customerId;
     }
 
@@ -831,15 +892,18 @@ public class OrderMenu {
         try {
             List<Object[]> ct = dao.chiTietDonHang(orderId);
             return ct == null ? 0 : ct.size();
-        } catch (Exception e) { return 0; }
+        } catch (Exception e) {
+            return 0;
+        }
     }
 
     private String catChuoi(String s, int maxLen) {
-        if (s == null) return "";
-        if (s.length() <= maxLen) return s;
+        if (s == null)
+            return "";
+        if (s.length() <= maxLen)
+            return s;
         return s.substring(0, maxLen - 1) + "…";
     }
-
 
     private Order chonDonTuDanhSach() {
         List<Order> dsDon = dao.findAll();
@@ -878,7 +942,10 @@ public class OrderMenu {
             return null;
         }
 
-        if (chon == 0) { System.out.println("→ Đã hủy."); return null; }
+        if (chon == 0) {
+            System.out.println("→ Đã hủy.");
+            return null;
+        }
         if (chon < 1 || chon > dsDon.size()) {
             System.out.println("❌ STT không hợp lệ!");
             return null;
@@ -891,8 +958,10 @@ public class OrderMenu {
     private String laySdtKhach(String customerId) {
         try {
             Customer c = customerDAO.findById(customerId);
-            if (c != null && c.getPhone() != null) return c.getPhone();
-        } catch (Exception ignored) {}
+            if (c != null && c.getPhone() != null)
+                return c.getPhone();
+        } catch (Exception ignored) {
+        }
         return "";
     }
 }
