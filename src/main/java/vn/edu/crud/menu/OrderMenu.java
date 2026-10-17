@@ -670,7 +670,15 @@ public class OrderMenu {
                 System.out.println("❌ Đơn '" + orderId + "' không tồn tại!");
                 return;
             }
-
+            if (dao.donDaCoThanhToan(orderId)) {
+                System.out.println("❌ Đơn đã có thanh toán, không thể xóa!");
+                return;
+            }
+            String trangThai = dao.layTrangThaiDon(orderId);
+            if ("HOAN_THANH".equals(trangThai) || "DA_HUY".equals(trangThai)) {
+                System.out.println("❌ Đơn đã hoàn thành hoặc đã hủy, không thể xóa hoa!");
+                return;
+            }
             System.out.print("Mã hoa: ");
             String flowerId = sc.nextLine().trim();
             if (flowerId.isEmpty()) {

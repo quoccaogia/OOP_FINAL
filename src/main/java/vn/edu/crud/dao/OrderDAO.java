@@ -99,6 +99,16 @@ public class OrderDAO {
         return (Integer) rows.get(0)[0];
     }
 
+    // Lấy trạng thái của một đơn
+    public String layTrangThaiDon(String orderId) {
+        String sql = "SELECT order_status FROM `Order` " +
+                "WHERE order_id = ?";
+        List<Object[]> rows = DBBase.query(sql, orderId);
+        if (rows.isEmpty() || rows.get(0)[0] == null)
+            return null;
+        return (String) rows.get(0)[0];
+    }
+
     public boolean capNhatTrangThai(String orderId, String status) {
         String sql = "UPDATE `Order` SET order_status = ? WHERE order_id = ?";
         return DBBase.update(sql, status, orderId) > 0;
