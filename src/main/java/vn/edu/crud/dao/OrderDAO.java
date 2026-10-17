@@ -15,12 +15,11 @@ public class OrderDAO {
     // NHÓM THAO TÁC
     // =====================================================
 
-
-
     public String sinhMaDonMoi() {
         String sql = "SELECT order_id FROM `Order` ORDER BY order_id DESC LIMIT 1";
         List<Object[]> rows = DBBase.query(sql);
-        if (rows.isEmpty()) return "ORD001";
+        if (rows.isEmpty())
+            return "ORD001";
         String maCu = rows.get(0)[0].toString();
         int so = Integer.parseInt(maCu.substring(3));
         return String.format("ORD%03d", so + 1);
@@ -31,10 +30,13 @@ public class OrderDAO {
         String sql = "SELECT * FROM `Order` ORDER BY order_id DESC";
 
         try (Connection conn = DBConnection.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql);
-             ResultSet rs = ps.executeQuery()) {
-            while (rs.next()) list.add(docMotDon(rs));
-        } catch (SQLException e) { e.printStackTrace(); }
+                PreparedStatement ps = conn.prepareStatement(sql);
+                ResultSet rs = ps.executeQuery()) {
+            while (rs.next())
+                list.add(docMotDon(rs));
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
         return list;
     }
 
@@ -60,7 +62,7 @@ public class OrderDAO {
     }
 
     public boolean themChiTiet(String orderId, String flowerId,
-                               int quantity, BigDecimal price) {
+            int quantity, BigDecimal price) {
         String sql = "INSERT INTO OrderDetail " +
                 "(order_id, flower_id, quantity, unit_price_at_sale) " +
                 "VALUES (?, ?, ?, ?)";
@@ -75,6 +77,13 @@ public class OrderDAO {
 
     public boolean truSoLuong(String flowerId, int soLuong) {
         String sql = "UPDATE Flower SET stock_quantity = stock_quantity - ? " +
+                "WHERE flower_id = ?";
+        return DBBase.update(sql, soLuong, flowerId) > 0;
+    }
+
+    // cong lai hoa vao kho khi ma hoa bi remove
+    public boolean congTonKho(String flowerId, int soLuong) {
+        String sql = "UPDATE Flower SET stock_quantity = stock_quantity + ? " +
                 "WHERE flower_id = ?";
         return DBBase.update(sql, soLuong, flowerId) > 0;
     }
@@ -119,10 +128,13 @@ public class OrderDAO {
                 "AND order_status NOT IN ('HOAN_THANH', 'DA_HUY')";
 
         try (Connection conn = DBConnection.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql);
-             ResultSet rs = ps.executeQuery()) {
-            while (rs.next()) list.add(docMotDon(rs));
-        } catch (SQLException e) { e.printStackTrace(); }
+                PreparedStatement ps = conn.prepareStatement(sql);
+                ResultSet rs = ps.executeQuery()) {
+            while (rs.next())
+                list.add(docMotDon(rs));
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
         return list;
     }
 
@@ -131,7 +143,8 @@ public class OrderDAO {
                 "WHERE DATE(payment_date) = CURDATE() " +
                 "AND payment_status = 'THANH_TOAN_THANH_CONG'";
         List<Object[]> rows = DBBase.query(sql);
-        if (rows.isEmpty() || rows.get(0)[0] == null) return BigDecimal.ZERO;
+        if (rows.isEmpty() || rows.get(0)[0] == null)
+            return BigDecimal.ZERO;
         return (BigDecimal) rows.get(0)[0];
     }
 
@@ -185,12 +198,15 @@ public class OrderDAO {
         String sql = "SELECT * FROM `Order` WHERE customer_id = ?";
 
         try (Connection conn = DBConnection.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
+                PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setString(1, maKhach);
             try (ResultSet rs = ps.executeQuery()) {
-                while (rs.next()) list.add(docMotDon(rs));
+                while (rs.next())
+                    list.add(docMotDon(rs));
             }
-        } catch (SQLException e) { e.printStackTrace(); }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
         return list;
     }
 
