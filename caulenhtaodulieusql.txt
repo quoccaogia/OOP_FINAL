@@ -1,269 +1,193 @@
--- =====================================================================
--- HỆ THỐNG QUẢN LÝ CỬA HÀNG BÁN HOA
--- File tổng hợp: Tạo DB + Bảng + Dữ liệu mẫu
--- MySQL 5.7+ / 8.0
--- =====================================================================
-
-DROP DATABASE IF EXISTS flower_shop;
-CREATE DATABASE flower_shop CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+-- 1. Tạo Database và sử dụng
+CREATE DATABASE IF NOT EXISTS flower_shop CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 USE flower_shop;
 
--- =====================================================================
--- PHẦN 1: TẠO BẢNG
--- =====================================================================
+-- Xóa các bảng cũ nếu đã tồn tại (để tránh lỗi khi chạy lại)
+DROP TABLE IF EXISTS CareSchedule;
+DROP TABLE IF EXISTS Payment;
+DROP TABLE IF EXISTS OrderDetail;
+DROP TABLE IF EXISTS `Order`;
+DROP TABLE IF EXISTS FlowerBatch;
+DROP TABLE IF EXISTS PurchaseOrder;
+DROP TABLE IF EXISTS Flower;
+DROP TABLE IF EXISTS Supplier;
+DROP TABLE IF EXISTS Employee;
+DROP TABLE IF EXISTS Customer;
 
+-- =====================================================
+-- 2. TẠO CÁC BẢNG (THEO THỨ TỰ KHÓA NGOẠI)
+-- =====================================================
+
+-- Bảng Khách Hàng (Ép UNIQUE cho SĐT như đã bàn)
 CREATE TABLE Customer (
     customer_id VARCHAR(10) PRIMARY KEY,
-    name        NVARCHAR(100) NOT NULL,
-    phone       VARCHAR(15),
-    address     NVARCHAR(255),
-    email       VARCHAR(100)
+    name VARCHAR(100) NOT NULL,
+    phone VARCHAR(15) NOT NULL UNIQUE, 
+    address VARCHAR(255),
+    email VARCHAR(100)
 );
 
-CREATE TABLE Supplier (
-    supplier_id    VARCHAR(10) PRIMARY KEY,
-    name           NVARCHAR(150) NOT NULL,
-    phone          VARCHAR(15),
-    address        NVARCHAR(255),
-    representative NVARCHAR(100)
-);
-
+-- Bảng Nhân Viên (Lưu role dạng chữ in hoa: CHAM_HOA, THU_NGAN...)
 CREATE TABLE Employee (
     employee_id VARCHAR(10) PRIMARY KEY,
-    name        NVARCHAR(100) NOT NULL,
-    role        NVARCHAR(50),
-    phone       VARCHAR(15),
-    salary      DECIMAL(12,2)
+    name VARCHAR(100) NOT NULL,
+    role VARCHAR(50),
+    phone VARCHAR(15),
+    salary DECIMAL(15, 2)
 );
 
+-- Bảng Nhà Cung Cấp (Ép UNIQUE cho SĐT)
+CREATE TABLE Supplier (
+    supplier_id VARCHAR(10) PRIMARY KEY,
+    name VARCHAR(100) NOT NULL,
+    phone VARCHAR(15) NOT NULL UNIQUE,
+    address VARCHAR(255),
+    representative VARCHAR(100)
+);
+
+-- Bảng Hoa
 CREATE TABLE Flower (
-    flower_id      VARCHAR(10) PRIMARY KEY,
-    name           NVARCHAR(150) NOT NULL,
-    category       NVARCHAR(50),
-    unit_price     DECIMAL(12,2),
+    flower_id VARCHAR(10) PRIMARY KEY,
+    name VARCHAR(100) NOT NULL,
+    category VARCHAR(50),
+    unit_price DECIMAL(15, 2),
     stock_quantity INT DEFAULT 0,
-    color          NVARCHAR(30),
-    supplier_id    VARCHAR(10),
-    FOREIGN KEY (supplier_id) REFERENCES Supplier(supplier_id)
+    color VARCHAR(30),
+    supplier_id VARCHAR(10),
+    FOREIGN KEY (supplier_id) REFERENCES Supplier(supplier_id) ON DELETE SET NULL
 );
 
-CREATE TABLE `Order` (
-    order_id         VARCHAR(10) PRIMARY KEY,
-    customer_id      VARCHAR(10) NOT NULL,
-    employee_id      VARCHAR(10) NOT NULL,
-    order_date       DATETIME,
-    delivery_date    DATETIME,
-    delivery_address NVARCHAR(255),
-    order_status     VARCHAR(30),
-    FOREIGN KEY (customer_id) REFERENCES Customer(customer_id),
-    FOREIGN KEY (employee_id) REFERENCES Employee(employee_id)
-);
-
-CREATE TABLE OrderDetail (
-    order_id           VARCHAR(10),
-    flower_id          VARCHAR(10),
-    quantity           INT NOT NULL CHECK (quantity > 0),
-    unit_price_at_sale DECIMAL(12,2) NOT NULL,
-    PRIMARY KEY (order_id, flower_id),
-    FOREIGN KEY (order_id)  REFERENCES `Order`(order_id) ON DELETE CASCADE,
-    FOREIGN KEY (flower_id) REFERENCES Flower(flower_id)
-);
-
-CREATE TABLE Payment (
-    payment_id     VARCHAR(10) PRIMARY KEY,
-    order_id       VARCHAR(10) NOT NULL,
-    amount         DECIMAL(12,2),
-    payment_method VARCHAR(30),
-    payment_date   DATETIME,
-    payment_status VARCHAR(30),
-    FOREIGN KEY (order_id) REFERENCES `Order`(order_id)
-);
-
-CREATE TABLE CareSchedule (
-    care_id         VARCHAR(10) PRIMARY KEY,
-    flower_id       VARCHAR(10) NOT NULL,
-    employee_id     VARCHAR(10) NOT NULL,
-    check_date      DATETIME,
-    freshness_level NVARCHAR(50),
-    water_status    NVARCHAR(50),
-    action_taken    NVARCHAR(255),
-    note            NVARCHAR(255),
-    FOREIGN KEY (flower_id)   REFERENCES Flower(flower_id),
-    FOREIGN KEY (employee_id) REFERENCES Employee(employee_id)
-);
-
+-- Bảng Phiếu Nhập Hàng
 CREATE TABLE PurchaseOrder (
     purchase_order_id VARCHAR(10) PRIMARY KEY,
-    supplier_id       VARCHAR(10) NOT NULL,
-    employee_id       VARCHAR(10) NOT NULL,
-    import_date       DATETIME,
-    total_amount      DECIMAL(12,2),
-    status            VARCHAR(30),
-    note              NVARCHAR(255),
+    supplier_id VARCHAR(10),
+    employee_id VARCHAR(10),
+    import_date DATETIME,
+    total_amount DECIMAL(15, 2),
+    status VARCHAR(50),
+    note TEXT,
     FOREIGN KEY (supplier_id) REFERENCES Supplier(supplier_id),
     FOREIGN KEY (employee_id) REFERENCES Employee(employee_id)
 );
 
+-- Bảng Lô Hoa (Chi tiết phiếu nhập)
 CREATE TABLE FlowerBatch (
-    batch_id           VARCHAR(10) PRIMARY KEY,
-    purchase_order_id  VARCHAR(10) NOT NULL,
-    flower_id          VARCHAR(10) NOT NULL,
-    quantity_imported  INT,
+    batch_id VARCHAR(10) PRIMARY KEY,
+    purchase_order_id VARCHAR(10),
+    flower_id VARCHAR(10),
+    quantity_imported INT,
     quantity_remaining INT,
-    unit_cost          DECIMAL(12,2),
-    import_date        DATETIME,
-    expiry_date        DATE,
-    status             VARCHAR(30),
-    note               NVARCHAR(255),
+    unit_cost DECIMAL(15, 2),
+    import_date DATETIME,
+    expiry_date DATE,
+    status VARCHAR(50),
+    note TEXT,
     FOREIGN KEY (purchase_order_id) REFERENCES PurchaseOrder(purchase_order_id),
-    FOREIGN KEY (flower_id)         REFERENCES Flower(flower_id)
+    FOREIGN KEY (flower_id) REFERENCES Flower(flower_id)
 );
 
--- =====================================================================
--- PHẦN 2: DỮ LIỆU MẪU
--- =====================================================================
+-- Bảng Đơn Hàng (Lưu ý dấu `Order` vì trùng từ khóa)
+CREATE TABLE `Order` (
+    order_id VARCHAR(10) PRIMARY KEY,
+    customer_id VARCHAR(10),
+    employee_id VARCHAR(10),
+    order_date DATETIME,
+    delivery_date DATETIME,
+    delivery_address VARCHAR(255),
+    order_status VARCHAR(50),
+    FOREIGN KEY (customer_id) REFERENCES Customer(customer_id),
+    FOREIGN KEY (employee_id) REFERENCES Employee(employee_id)
+);
 
--- ---------- 2.1. CUSTOMER ----------
-INSERT INTO Customer (customer_id, name, phone, address, email) VALUES
-('KH001', N'Nguyễn Văn An', '0901234567', N'Phường Phước Long B, TP. Thủ Đức', 'an.nguyen@gmail.com'),
-('KH002', N'Trần Thị Bích', '0912345678', N'Quận 1, TP.HCM', NULL),
-('KH003', N'Lê Hoàng Nam', '0983334444', N'Phường Dĩ An, TP. Dĩ An', 'nam.le@gmail.com'),
-('KH004', N'Phạm Thu Thảo', '0978889999', N'Phường Bến Nghé, Quận 1', 'thao.pham@gmail.com'),
-('KH005', N'Vũ Quốc Anh',  '0934567890', N'Phường Hiệp Phú, TP. Thủ Đức', NULL),
-('KH006', N'Hoàng Minh Tuấn','0905556677', N'Quận 3, TP.HCM', 'tuan.hoang@gmail.com'),
-('KH007', N'Đặng Thùy Linh','0918223344', N'Quận Bình Thạnh, TP.HCM', 'linh.dang@gmail.com'),
-('KH008', N'Bùi Văn Khánh', '0938776655', N'TP. Biên Hòa, Đồng Nai', NULL),
-('KH009', N'Ngô Thanh Vân', '0941112233', N'Quận 7, TP.HCM', 'van.ngo@gmail.com'),
-('KH010', N'Đỗ Minh Trí',   '0965554433', N'Phường Linh Trung, TP. Thủ Đức', 'tri.do@gmail.com'),
-('KH011', N'Lý Thanh Hà',   '0977889900', N'Quận Tân Bình, TP.HCM', 'ha.ly@gmail.com'),
-('KH012', N'Trương Quốc Bảo','0909112233', N'TP. Thủ Dầu Một, Bình Dương', NULL),
-('KH013', N'Bùi Tiến Dũng', '0908887766', N'Thành phố Dĩ An, Bình Dương', 'tiendung@gmail.com');
+-- Bảng Chi Tiết Đơn Hàng
+CREATE TABLE OrderDetail (
+    order_id VARCHAR(10),
+    flower_id VARCHAR(10),
+    quantity INT,
+    unit_price_at_sale DECIMAL(15, 2), -- Lưu giá lúc bán, không đổi khi giá gốc thay đổi
+    PRIMARY KEY (order_id, flower_id),
+    FOREIGN KEY (order_id) REFERENCES `Order`(order_id) ON DELETE CASCADE,
+    FOREIGN KEY (flower_id) REFERENCES Flower(flower_id)
+);
 
--- ---------- 2.2. SUPPLIER ----------
-INSERT INTO Supplier (supplier_id, name, phone, address, representative) VALUES
-('NCC01', N'Vườn Hoa Đà Lạt Farm', '0633123456', N'Phường 11, TP. Đà Lạt, Lâm Đồng', N'Nguyễn Thị Kiều'),
-('NCC02', N'Hoa Tươi Miền Tây Co.', '02923888999', N'Quận Ninh Kiều, Cần Thơ', N'Trần Thị Hoa'),
-('NCC03', N'Công ty Hoa Nhập Khẩu Sapa', '02143777888', N'Thị xã Sa Pa, Lào Cai', N'Phan Văn Hiền'),
-('NCC04', N'Nông trại Hoa Hướng Dương Bình Dương', '02743555666', N'TP. Dĩ An, Bình Dương', N'Huỳnh Văn Thiện'),
-('NCC05', N'Vườn Hoa Tulip Hà Lan', '02437788999', N'Huyện Mê Linh, Hà Nội', N'Lê Văn Hùng'),
-('NCC06', N'Trang trại Sen Việt', '02763344555', N'Huyện Cao Lãnh, Đồng Tháp', N'Nguyễn Thị Sen');
+-- Bảng Thanh Toán
+CREATE TABLE Payment (
+    payment_id VARCHAR(10) PRIMARY KEY,
+    order_id VARCHAR(10),
+    amount DECIMAL(15, 2),
+    payment_method VARCHAR(50),
+    payment_date DATETIME,
+    payment_status VARCHAR(50),
+    FOREIGN KEY (order_id) REFERENCES `Order`(order_id)
+);
 
--- ---------- 2.3. EMPLOYEE ----------
+-- Bảng Lịch Chăm Sóc Hoa
+CREATE TABLE CareSchedule (
+    care_id VARCHAR(10) PRIMARY KEY,
+    flower_id VARCHAR(10),
+    employee_id VARCHAR(10),
+    check_date DATETIME,
+    freshness_level VARCHAR(50),
+    water_status VARCHAR(50),
+    action_taken VARCHAR(255),
+    note TEXT,
+    FOREIGN KEY (flower_id) REFERENCES Flower(flower_id),
+    FOREIGN KEY (employee_id) REFERENCES Employee(employee_id)
+);
+
+-- =====================================================
+-- 3. CHÈN DỮ LIỆU MẪU (MOCK DATA) ĐỂ TEST
+-- =====================================================
+
+-- Thêm Nhân Viên (Đúng Role và Lương tháng như bạn yêu cầu)
 INSERT INTO Employee (employee_id, name, role, phone, salary) VALUES
-('NV01', N'Văn Đạt',    N'Nhân Viên Giao Hàng',  '0234567896', 100000),
-('NV02', N'Kim Duyên',  N'Thu Ngân',             '0456789345', 150000),
-('NV03', N'Thị Hương',  N'Nhân Viên Chăm Sóc Hoa','0987654356', 120000),
-('NV04', N'Minh Hoa',   N'Nhân Viên Chăm Sóc Hoa','0867444566', 110000),
-('NV05', N'Văn Thành',  N'Nhân Viên Kho',        '0857676767', 140000),
-('NV06', N'Văn Thanh',  N'Nhân Viên Cắm Hoa',    '0576768979', 150000),
-('NV07', N'Ngọc Hân',   N'Nhân Viên Cắm Hoa',    '0984757456', 150000),
-('NV08', N'Kim Ngọc',   N'Nhân Viên Thu Ngân',   '09845677776',130000);
+('NV01', 'Nguyễn Văn Đạt', 'GIAO_HANG', '0901234567', 6000000),
+('NV02', 'Trần Thị Kim Duyên', 'THU_NGAN', '0912345678', 5000000),
+('NV03', 'Lê Thị Hương', 'CHAM_HOA', '0923456789', 5500000),
+('NV04', 'Phạm Minh Quản', 'QUAN_LY', '0934567890', 10000000);
 
--- ---------- 2.4. FLOWER ----------
+-- Thêm Khách Hàng
+INSERT INTO Customer (customer_id, name, phone, address, email) VALUES
+('KH001', 'Cao Gia Quốc', '0328816927', 'KTX Khu B ĐHQG HCM', 'quoccoao@gmail.com'),
+('KH002', 'Nguyễn Thị Hoa', '0987654321', 'Quận 1, TP.HCM', 'hoa.nguyen@gmail.com'),
+('KH003', 'Trần Văn A', '0909090909', 'Thủ Đức, TP.HCM', 'vana@gmail.com');
+
+-- Thêm Nhà Cung Cấp
+INSERT INTO Supplier (supplier_id, name, phone, address, representative) VALUES
+('NCC01', 'Vựa Hoa Đà Lạt', '02633888999', 'Đà Lạt, Lâm Đồng', 'Ông Bảy'),
+('NCC02', 'Cửa Hàng Hoa Sài Gòn', '02888777666', 'Quận 12, TP.HCM', 'Bà Tám');
+
+-- Thêm Hoa
 INSERT INTO Flower (flower_id, name, category, unit_price, stock_quantity, color, supplier_id) VALUES
-('FL01', N'Bó Hoa Hồng Đỏ Cổ Điển',        N'Hoa Hồng',       250000,  35, N'Đỏ',    'NCC01'),
-('FL02', N'Bó Hoa Hồng Vàng Ấm Áp',        N'Hoa Hồng',       220000,   3, N'Vàng',  'NCC01'),
-('FL03', N'Lẵng Hoa Cúc Tơ Trắng',         N'Hoa Cúc',        180000,   8, N'Trắng', 'NCC02'),
-('FL04', N'Chậu Lan Hồ Điệp 3 Nhánh',      N'Hoa Lan',       1200000,   5, N'Tím',   'NCC03'),
-('FL05', N'Bó Hoa Hướng Dương Rực Rỡ',     N'Hoa Hướng Dương',300000,  18, N'Vàng',  'NCC04'),
-('FL06', N'Bó Hoa Baby Trắng Tinh Khôi',   N'Hoa Baby',       320000,  20, N'Trắng', 'NCC05'),
-('FL07', N'Bó Hoa Tulip Hà Lan Đỏ',        N'Hoa Tulip',      650000,   6, N'Đỏ',    'NCC05'),
-('FL08', N'Lẵng Hoa Sen Quan Âm Cao Cấp',  N'Hoa Sen',        450000,   4, N'Hồng',  'NCC06'),
-('FL09', N'Bó Hoa Cát Tường Tím',          N'Hoa Cát Tường',  190000,  25, N'Tím',   'NCC02'),
-('FL10', N'Lẵng Hoa Ly Trắng Sang Trọng',  N'Hoa Ly',         350000,  12, N'Trắng', 'NCC03'),
-('FL11', N'Giỏ Hoa Lan Vũ Nữ Vàng',        N'Hoa Lan',       2100000,   3, N'Vàng',  'NCC03'),
-('FL12', N'Bó Hoa Cẩm Chướng Hồng',        N'Hoa Cẩm Chướng', 200000,  22, N'Hồng',  'NCC01'),
-('FL13', N'Bó Hoa Đồng Tiền Đỏ',           N'Hoa Đồng Tiền',  850000,   7, N'Đỏ',    'NCC04'),
-('FL14', N'Bó Hoa Thạch Thảo Trắng',       N'Hoa Thạch Thảo', 280000,  16, N'Trắng', 'NCC05');
+('FL01', 'Hồng Đỏ Đà Lạt', 'Hồng', 5000, 100, 'Đỏ', 'NCC01'),
+('FL02', 'Lan Hồ Điệp Trắng', 'Lan', 150000, 20, 'Trắng', 'NCC01'),
+('FL03', 'Cẩm Tú Cầu', 'Cẩm Tú Cầu', 20000, 50, 'Xanh', 'NCC02'),
+('FL04', 'Hướng Dương', 'Hướng Dương', 15000, 30, 'Vàng', 'NCC02');
 
--- ---------- 2.5. ORDER ----------
-INSERT INTO `Order` (order_id, customer_id, employee_id, order_date, delivery_date, delivery_address, order_status) VALUES
-('ORD001','KH001','NV01','2026-09-25 08:30:00','2026-09-25 10:00:00', N'Phường Phước Long B, TP. Thủ Đức', N'HOAN_THANH'),
-('ORD002','KH002','NV01','2026-09-26 14:15:00','2026-09-26 16:30:00', N'Phường Bến Nghé, Quận 1, TP.HCM',  N'HOAN_THANH'),
-('ORD003','KH003','NV02','2026-09-28 09:00:00','2026-09-28 11:00:00', N'Phường Dĩ An, TP. Dĩ An',           N'HOAN_THANH'),
-('ORD004','KH004','NV01','2026-09-30 10:20:00','2026-09-30 14:00:00', N'Phường Linh Trung, TP. Thủ Đức',    N'HOAN_THANH'),
-('ORD005','KH001','NV01','2026-10-01 08:10:00','2026-10-01 10:30:00', N'Phường Phước Long B, TP. Thủ Đức', N'DANG_GIAO'),
-('ORD006','KH005','NV01','2026-10-01 08:40:00','2026-10-01 15:00:00', N'Phường Hiệp Phú, TP. Thủ Đức',      N'CHO_XAC_NHAN'),
-('ORD007','KH002','NV01','2026-09-29 11:15:00','2026-09-29 14:00:00', N'Quận 1, TP.HCM',                    N'HOAN_THANH'),
-('ORD008','KH003','NV02','2026-09-30 16:20:00','2026-09-30 18:00:00', N'Thành phố Dĩ An, Bình Dương',       N'DA_HUY'),
-('ORD009','KH004','NV03','2026-10-01 07:30:00','2026-10-01 09:30:00', N'Phường Bến Nghé, Quận 1',           N'HOAN_THANH'),
-('ORD010','KH005','NV01','2026-10-01 09:10:00','2026-10-01 11:00:00', N'Phường Hiệp Phú, TP. Thủ Đức',      N'DANG_XU_LY');
-
--- ---------- 2.6. ORDERDETAIL ----------
-INSERT INTO OrderDetail (order_id, flower_id, quantity, unit_price_at_sale) VALUES
-('ORD001','FL01',2, 250000),
-('ORD002','FL04',1,1200000),
-('ORD003','FL05',1, 300000),
-('ORD004','FL07',1, 650000),
-('ORD004','FL06',1, 320000),
-('ORD005','FL01',1, 250000),
-('ORD006','FL04',1,1200000),
-('ORD007','FL11',1,2100000),
-('ORD008','FL10',2, 350000),
-('ORD009','FL14',1, 280000),
-('ORD009','FL09',1, 190000),
-('ORD010','FL13',1, 850000);
-
--- ---------- 2.7. PAYMENT ----------
-INSERT INTO Payment (payment_id, order_id, amount, payment_method, payment_date, payment_status) VALUES
-('P001','ORD001', 500000, N'TIEN_MAT',     '2026-09-25 08:35:00', N'THANH_TOAN_THANH_CONG'),
-('P002','ORD002',1200000, N'CHUYEN_KHOAN', '2026-09-26 14:20:00', N'THANH_TOAN_THANH_CONG'),
-('P003','ORD003', 300000, N'MOMO',         '2026-09-28 09:05:00', N'THANH_TOAN_THANH_CONG'),
-('P004','ORD004', 970000, N'VNPAY',        '2026-09-30 10:25:00', N'THANH_TOAN_THANH_CONG'),
-('P005','ORD005', 250000, N'TIEN_MAT',     '2026-10-01 08:12:00', N'THANH_TOAN_THANH_CONG'),
-('P006','ORD006',1200000, N'CHUYEN_KHOAN', NULL,                  N'CHO_THANH_TOAN'),
-('P007','ORD007',2100000, N'CHUYEN_KHOAN', '2026-09-29 11:20:00', N'THANH_TOAN_THANH_CONG'),
-('P008','ORD008', 700000, N'MOMO',         '2026-09-30 16:22:00', N'DA_HOAN_TIEN'),
-('P009','ORD009', 470000, N'VNPAY',        '2026-10-01 07:32:00', N'THANH_TOAN_THANH_CONG'),
-('P010','ORD010', 850000, N'CHUYEN_KHOAN', NULL,                  N'CHO_THANH_TOAN');
-
--- ---------- 2.8. CARESCHEDULE ----------
-INSERT INTO CareSchedule (care_id, flower_id, employee_id, check_date, freshness_level, water_status, action_taken, note) VALUES
-('CS001','FL01','NV03','2026-09-29 07:00:00', N'Tươi tốt (100%)',   N'Đủ nước',      N'Phun sương, thay nước dưỡng hoa',       N'Hoa mới nhập, cành khỏe'),
-('CS002','FL02','NV03','2026-09-30 07:30:00', N'Khá tươi (80%)',    N'Thiếu nhẹ',    N'Thêm chất dinh dưỡng, tỉa bớt lá chân', N'Hoa nhập ngày 22/09, cần đẩy mạnh bán'),
-('CS003','FL03','NV04','2026-09-30 08:00:00', N'Trung bình (60%)',  N'Đủ nước',      N'Tỉa cánh hoa héo, hạ giá niêm yết',     N'Lẵng cúc nhập lâu, cân nhắc thanh lý'),
-('CS004','FL04','NV04','2026-10-01 07:00:00', N'Rất tốt (95%)',     N'Ẩm vừa đủ',    N'Lau lá, kiểm tra rễ chậu lan',          N'Đang nở đẹp, để khu vực trưng bày chính'),
-('CS005','FL08','NV04','2026-10-01 07:15:00', N'Khá tươi (75%)',    N'Đủ nước',      N'Thay nước bình, bọc lại chân cành',     N'Chờ giao cho khách đặt trước'),
-('CS006','FL09','NV03','2026-10-01 08:30:00', N'Rất tốt (98%)',     N'Đủ nước',      N'Thay nước mới, kiểm tra độ nở',         N'Hoa mới về sáng nay'),
-('CS007','FL10','NV04','2026-10-01 08:45:00', N'Tươi tốt (90%)',    N'Đủ nước',      N'Tỉa lá gãy, xịt phun sương',            N'Đặt ở kệ trưng bày số 2'),
-('CS008','FL11','NV04','2026-10-01 09:00:00', N'Rất tốt (100%)',    N'Ẩm vừa đủ',    N'Vệ sinh chậu sứ, kiểm tra ngọn',        N'Hàng VIP cho khách doanh nghiệp'),
-('CS009','FL14','NV03','2026-10-01 09:15:00', N'Tươi tốt (95%)',    N'Đủ nước',      N'Cắt gốc 1cm, ngâm dung dịch dưỡng',     N'Sẵn sàng đóng bó giao khách');
-
--- ---------- 2.9. PURCHASEORDER ----------
+-- Thêm Phiếu Nhập
 INSERT INTO PurchaseOrder (purchase_order_id, supplier_id, employee_id, import_date, total_amount, status, note) VALUES
-('PN001','NCC01','NV05','2026-09-20 08:00:00',  9500000, N'RECEIVED',  N'Nhập hoa hồng đợt 1 tháng 9'),
-('PN002','NCC02','NV05','2026-09-22 09:30:00',  3600000, N'RECEIVED',  N'Nhập hoa cúc và cát tường'),
-('PN003','NCC03','NV05','2026-09-24 10:00:00', 18000000, N'RECEIVED',  N'Nhập lan hồ điệp và ly trắng'),
-('PN004','NCC04','NV05','2026-09-26 07:45:00',  6000000, N'RECEIVED',  N'Nhập hướng dương và đồng tiền'),
-('PN005','NCC05','NV05','2026-09-28 08:15:00',  9800000, N'RECEIVED',  N'Nhập tulip và baby'),
-('PN006','NCC06','NV05','2026-09-30 07:00:00',  1800000, N'CANCELLED', N'Đơn hủy do sen không đạt chất lượng');
+('PN001', 'NCC01', 'NV03', '2023-10-20 08:00:00', 2000000, 'HOAN_THANH', 'Nhập đợt 1 tháng 10');
 
--- ---------- 2.10. FLOWERBATCH ----------
+-- Thêm Lô Hoa
 INSERT INTO FlowerBatch (batch_id, purchase_order_id, flower_id, quantity_imported, quantity_remaining, unit_cost, import_date, expiry_date, status, note) VALUES
-('L001','PN001','FL01', 50, 35, 150000, '2026-09-20 08:00:00','2026-10-05', N'AVAILABLE', N'Lô hồng đỏ chính'),
-('L002','PN001','FL02', 10,  3, 140000, '2026-09-20 08:00:00','2026-10-03', N'AVAILABLE', N'Lô hồng vàng gần hết'),
-('L003','PN002','FL03', 20,  8, 100000, '2026-09-22 09:30:00','2026-10-02', N'AVAILABLE', N'Lô cúc trắng cần đẩy bán'),
-('L004','PN002','FL09', 30, 25,  90000, '2026-09-22 09:30:00','2026-10-10', N'AVAILABLE', N'Cát tường mới'),
-('L005','PN003','FL04', 10,  5, 800000, '2026-09-24 10:00:00','2026-11-01', N'AVAILABLE', N'Lan hồ điệp để trưng bày'),
-('L006','PN003','FL10', 20, 12, 220000, '2026-09-24 10:00:00','2026-10-08', N'AVAILABLE', N'Ly trắng'),
-('L007','PN003','FL11',  5,  3,1500000, '2026-09-24 10:00:00','2026-10-20', N'AVAILABLE', N'Lan vũ nữ VIP'),
-('L008','PN004','FL05', 30, 18, 180000, '2026-09-26 07:45:00','2026-10-07', N'AVAILABLE', N'Hướng dương vàng'),
-('L009','PN004','FL13', 10,  7, 600000, '2026-09-26 07:45:00','2026-10-12', N'AVAILABLE', N'Đồng tiền đỏ'),
-('L010','PN005','FL06', 40, 20, 220000, '2026-09-28 08:15:00','2026-10-11', N'AVAILABLE', N'Baby trắng'),
-('L011','PN005','FL07', 15,  6, 450000, '2026-09-28 08:15:00','2026-10-06', N'AVAILABLE', N'Tulip đỏ'),
-('L012','PN005','FL14', 25, 16, 180000, '2026-09-28 08:15:00','2026-10-09', N'AVAILABLE', N'Thạch thảo trắng');
+('L001', 'PN001', 'FL01', 200, 150, 3000, '2023-10-20 08:00:00', '2023-11-05', 'AVAILABLE', 'Hoa tươi'),
+('L002', 'PN001', 'FL02', 20, 20, 100000, '2023-10-20 08:00:00', '2023-11-20', 'AVAILABLE', 'Hàng xịn');
 
--- =====================================================================
--- PHẦN 3: KIỂM TRA
--- =====================================================================
+-- Thêm Đơn Hàng
+INSERT INTO `Order` (order_id, customer_id, employee_id, order_date, delivery_date, delivery_address, order_status) VALUES
+('ORD001', 'KH001', 'NV02', '2023-10-25 09:00:00', '2023-10-25 15:00:00', 'KTX Khu B ĐHQG HCM', 'HOAN_THANH'),
+('ORD002', 'KH002', 'NV02', '2023-10-26 10:00:00', '2023-10-27 08:00:00', 'Quận 1, TP.HCM', 'CHO_XU_LY');
 
-SELECT 'Customer'      AS bang, COUNT(*) AS so_dong FROM Customer      UNION ALL
-SELECT 'Supplier',              COUNT(*) FROM Supplier                 UNION ALL
-SELECT 'Employee',              COUNT(*) FROM Employee                 UNION ALL
-SELECT 'Flower',                COUNT(*) FROM Flower                   UNION ALL
-SELECT 'Order',                 COUNT(*) FROM `Order`                  UNION ALL
-SELECT 'OrderDetail',           COUNT(*) FROM OrderDetail              UNION ALL
-SELECT 'Payment',               COUNT(*) FROM Payment                  UNION ALL
-SELECT 'CareSchedule',          COUNT(*) FROM CareSchedule             UNION ALL
-SELECT 'PurchaseOrder',         COUNT(*) FROM PurchaseOrder            UNION ALL
-SELECT 'FlowerBatch',           COUNT(*) FROM FlowerBatch;
+-- Thêm Chi Tiết Đơn Hàng
+INSERT INTO OrderDetail (order_id, flower_id, quantity, unit_price_at_sale) VALUES
+('ORD001', 'FL01', 20, 5000),    -- Mua 20 Hồng (Thành tiền 100k)
+('ORD001', 'FL03', 2, 20000),    -- Mua 2 Cẩm tú cầu (Thành tiền 40k)
+('ORD002', 'FL02', 1, 150000);   -- Mua 1 Lan (Thành tiền 150k)
+
+-- Thêm Thanh Toán (Đơn 1 đã thanh toán)
+INSERT INTO Payment (payment_id, order_id, amount, payment_method, payment_date, payment_status) VALUES
+('P001', 'ORD001', 140000, 'TIEN_MAT', '2023-10-25 09:30:00', 'THANH_TOAN_THANH_CONG');
+
+-- Thêm Lịch Chăm Sóc
+INSERT INTO CareSchedule (care_id, flower_id, employee_id, check_date, freshness_level, water_status, action_taken, note) VALUES
+('CS001', 'FL01', 'NV03', '2023-10-21 08:00:00', 'TƯƠI', 'ĐỦ', 'Tỉa lá', 'Bình thường');

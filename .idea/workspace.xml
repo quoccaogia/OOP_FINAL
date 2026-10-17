@@ -5,11 +5,14 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="02a28356-298d-41df-b7e9-842f8e55ad68" name="Changes" comment="">
+      <change afterPath="$PROJECT_DIR$/src/main/java/vn/edu/crud/model/EmployeeRole.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/vn/edu/crud/Main.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/vn/edu/crud/Main.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/vn/edu/crud/dao/CustomerDAO.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/vn/edu/crud/dao/CustomerDAO.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/vn/edu/crud/menu/CustomerMenu.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/vn/edu/crud/menu/CustomerMenu.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/vn/edu/crud/Main.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/vn/edu/crud/Main.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/vn/edu/crud/dao/EmployeeDAO.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/vn/edu/crud/dao/EmployeeDAO.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/vn/edu/crud/dao/SupplierDAO.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/vn/edu/crud/dao/SupplierDAO.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/vn/edu/crud/menu/EmployeeMenu.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/vn/edu/crud/menu/EmployeeMenu.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/vn/edu/crud/menu/SupplierMenu.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/vn/edu/crud/menu/SupplierMenu.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/vn/edu/crud/dao/SupplierDAO.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/vn/edu/crud/dao/SupplierDAO.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/vn/edu/crud/menu/SupplierMenu.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/vn/edu/crud/menu/SupplierMenu.class" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
