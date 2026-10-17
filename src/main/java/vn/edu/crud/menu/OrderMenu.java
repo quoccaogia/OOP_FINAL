@@ -376,6 +376,7 @@ public class OrderMenu {
 
                 if (ok) {
                     soLanThem++;
+                    dao.truSoLuong(flowerId, quantity);
                     System.out.println("✅ Đã thêm " + hoaChon.getName()
                             + " x" + quantity + " vào đơn!");
                 } else {

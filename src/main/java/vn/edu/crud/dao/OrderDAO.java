@@ -73,6 +73,12 @@ public class OrderDAO {
         return DBBase.update(sql, them, orderId, flowerId) > 0;
     }
 
+    public boolean truSoLuong(String flowerId, int soLuong) {
+        String sql = "UPDATE Flower SET stock_quantity = stock_quantity - ? " +
+                "WHERE flower_id = ?";
+        return DBBase.update(sql, soLuong, flowerId) > 0;
+    }
+
     public boolean capNhatTrangThai(String orderId, String status) {
         String sql = "UPDATE `Order` SET order_status = ? WHERE order_id = ?";
         return DBBase.update(sql, status, orderId) > 0;
