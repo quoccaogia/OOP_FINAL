@@ -359,18 +359,9 @@ public class OrderMenu {
                 }
 
                 // ==== ĐƠN GIÁ ====
-                BigDecimal price = hoaChon.getUnitPrice();
-                System.out.print("Đơn giá (Enter = " + price + "đ): ");
-                String sGia = sc.nextLine().trim();
-                if (!sGia.isEmpty()) {
-                    try {
-                        BigDecimal giaNhap = new BigDecimal(sGia);
-                        if (giaNhap.compareTo(BigDecimal.ZERO) >= 0) price = giaNhap;
-                        else System.out.println("⚠️ Giá âm, dùng giá mặc định.");
-                    } catch (NumberFormatException e) {
-                        System.out.println("⚠️ Giá không hợp lệ, dùng giá mặc định.");
-                    }
-                }
+                BigDecimal price = hoaChon.getUnitPrice(); 
+                
+                
 
                 // ==== THÊM VÀO ĐƠN ====
                 String flowerId = hoaChon.getFlowerId();
