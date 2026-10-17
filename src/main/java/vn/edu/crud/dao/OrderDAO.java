@@ -120,7 +120,7 @@ public class OrderDAO {
     }
 
     public boolean donDaCoThanhToan(String orderId) {
-        String sql = "SELECT 1 FROM Payment WHERE order_id = ?";
+        String sql = "SELECT 1 FROM Payment WHERE order_id = ? AND payment_status = 'THANH_TOAN_THANH_CONG'";
         return !DBBase.query(sql, orderId).isEmpty();
     }
 
