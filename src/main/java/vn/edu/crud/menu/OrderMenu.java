@@ -734,11 +734,19 @@ public class OrderMenu {
 
             System.out.print("Xác nhận xóa đơn " + orderId + " (y/n): ");
             if (sc.nextLine().equalsIgnoreCase("y")) {
+                //doc so hoa trong don truoc khi xoa
+                List<Object[]> dsHoa = dao.layHoaTrongDon(orderId);
                 if (dao.xoaDon(orderId)) {
+                    for (Object[] dong : dsHoa) {
+                        String maHoa = (String) dong[0];
+                        int soLuong = (Integer) dong[1];
+                        dao.congTonKho(maHoa, soLuong);
+                    }
                     System.out.println("✅ Đã xóa đơn và chi tiết!");
                 } else {
                     System.out.println("❌ Xóa thất bại!");
                 }
+
             } else {
                 System.out.println("Đã hủy thao tác.");
             }

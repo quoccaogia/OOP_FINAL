@@ -109,6 +109,13 @@ public class OrderDAO {
         return (String) rows.get(0)[0];
     }
 
+     public List<Object[]> layHoaTrongDon(String maDon) {
+        String sql = "SELECT flower_id, quantity " +
+                "FROM OrderDetail " +
+                "WHERE order_id = ? ";
+        return DBBase.query(sql, maDon);
+    }
+
     public boolean capNhatTrangThai(String orderId, String status) {
         String sql = "UPDATE `Order` SET order_status = ? WHERE order_id = ?";
         return DBBase.update(sql, status, orderId) > 0;
