@@ -10,7 +10,6 @@ import vn.edu.crud.model.Employee;
 import vn.edu.crud.model.Flower;
 import vn.edu.crud.model.Order;
 import vn.edu.crud.model.Payment;
-import vn.edu.crud.util.DBBase;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -175,7 +174,6 @@ public class OrderMenu {
                 System.out.println("→ Dùng mặc định: " + o.getDeliveryDate().format(FMT));
             } else {
                 try {
-                    // Cho phép nhập thiếu giây
                     if (dateStr.length() == 16) dateStr += ":00";
                     o.setDeliveryDate(LocalDateTime.parse(dateStr.replace(" ", "T")));
                 } catch (DateTimeParseException e) {
@@ -297,9 +295,6 @@ public class OrderMenu {
 
                 if (ok) {
                     soLanThem++;
-                    // Lưu ý: Cần hàm trừ tồn kho trong FlowerDAO hoặc OrderDAO của bạn
-                    // Nếu chưa có, hãy bỏ qua dòng dưới hoặc viết thêm vào DAO
-                    // flowerDAO.truSoLuong(flowerId, quantity);
                     System.out.println("✅ Đã thêm " + hoaChon.getName() + " x" + quantity + " vào đơn!");
                 } else {
                     System.out.println("❌ Thêm thất bại!");
@@ -480,7 +475,6 @@ public class OrderMenu {
     // HÀM HỖ TRỢ (GOM TỪ CẢ 2 BẢN)
     // =====================================================
 
-    // Tạo khách nhanh bằng SĐT (Bản 1)
     private String taoKhachHangNhanh(String sdtDaNhap) {
         String id = customerDAO.sinhMaKhachMoi();
         System.out.println("\n--- TẠO KHÁCH HÀNG MỚI (Mã: " + id + ") ---");
@@ -499,7 +493,6 @@ public class OrderMenu {
         return customerDAO.insert(khMoi) ? id : null;
     }
 
-    // Xem đơn của khách qua SĐT (Bản 1)
     private void xemDonCuaKhach() {
         System.out.print("Nhập SĐT khách hàng: ");
         String sdt = customerDAO.chuanHoaSdt(sc.nextLine());
@@ -514,7 +507,6 @@ public class OrderMenu {
         inDsDon(orderDAO.donCuaKhach(kh.getCustomerId()));
     }
 
-    // Lấy thông tin khách (Bản 2)
     private String layDiaChiKhach(String customerId) {
         try {
             Customer c = customerDAO.findById(customerId);
@@ -544,7 +536,6 @@ public class OrderMenu {
         return s.substring(0, maxLen - 1) + "…";
     }
 
-    // In danh sách đơn (Bản 1)
     private void inDsDon(List<Order> list) {
         if (list == null || list.isEmpty()) { System.out.println("Không có dữ liệu."); return; }
         System.out.printf("%-10s | %-15s | %-20s | %-15s%n", "Mã Đơn", "Mã KH", "Ngày Đặt", "Trạng Thái");
@@ -555,7 +546,6 @@ public class OrderMenu {
         }
     }
 
-    // In bảng báo cáo (Bản 1)
     private void inBang(List<?> list) {
         if (list == null || list.isEmpty()) { System.out.println("Không có dữ liệu."); return; }
         for (Object o : list) {
