@@ -592,6 +592,24 @@ public class OrderMenu {
     // =====================================================
     // 4. CẬP NHẬT TRẠNG THÁI
     // =====================================================
+    private List<String> trangThaiTiepTheo(String hienTai) {
+        List<String> ds = new ArrayList<>();
+        switch (hienTai) {
+            case "CHO_XAC_NHAN":
+                ds.add("DANG_XU_LY");
+                ds.add("DA_HUY");
+                break;
+            case "DANG_XU_LY":
+                ds.add("DANG_GIAO");
+                ds.add("DA_HUY");
+                break;
+            case "DANG_GIAO":
+                ds.add("HOAN_THANH");
+                break;
+        }
+        return ds;
+    }
+
     private void capNhatTrangThai() {
         try {
             System.out.print("Mã đơn hàng: ");
@@ -606,37 +624,33 @@ public class OrderMenu {
                 return;
             }
 
-            System.out.println("Trạng thái mới:");
-            System.out.println("  1. CHO_XAC_NHAN");
-            System.out.println("  2. DANG_XU_LY");
-            System.out.println("  3. DANG_GIAO");
-            System.out.println("  4. HOAN_THANH");
-            System.out.println("  5. DA_HUY");
+            String trangThai = dao.layTrangThaiDon(orderId);
+            if ("HOAN_THANH".equals(trangThai) || "DA_HUY".equals(trangThai)) {
+                System.out.println("❌ Đơn đã hoàn thành hoặc đã hủy, không thể xóa hoa!");
+                return;
+            }
+            String hienTai = dao.layTrangThaiDon(orderId);
+            System.out.println("Trạng thái hiện tại: " + hienTai);
+
+            List<String> dsTiep = trangThaiTiepTheo(hienTai);
+            if (dsTiep.isEmpty()) {
+                System.out.println("⚠️ Đơn đã kết thúc, không thể đổi trạng thái!");
+                return;
+            }
+
+            for (int i = 0; i < dsTiep.size(); i++) {
+                System.out.println("  " + (i + 1) + ". " + dsTiep.get(i));
+            }
             System.out.print("Chọn: ");
 
             String status;
             try {
                 int c = Integer.parseInt(sc.nextLine().trim());
-                switch (c) {
-                    case 1:
-                        status = "CHO_XAC_NHAN";
-                        break;
-                    case 2:
-                        status = "DANG_XU_LY";
-                        break;
-                    case 3:
-                        status = "DANG_GIAO";
-                        break;
-                    case 4:
-                        status = "HOAN_THANH";
-                        break;
-                    case 5:
-                        status = "DA_HUY";
-                        break;
-                    default:
-                        System.out.println("⚠️ Chọn sai!");
-                        return;
+                if (c < 1 || c > dsTiep.size()) {
+                    System.out.println("⚠️ Chọn sai!");
+                    return;
                 }
+                status = dsTiep.get(c - 1);
             } catch (NumberFormatException e) {
                 System.out.println("❌ Phải nhập số!");
                 return;
@@ -734,7 +748,7 @@ public class OrderMenu {
 
             System.out.print("Xác nhận xóa đơn " + orderId + " (y/n): ");
             if (sc.nextLine().equalsIgnoreCase("y")) {
-                //doc so hoa trong don truoc khi xoa
+                // doc so hoa trong don truoc khi xoa
                 List<Object[]> dsHoa = dao.layHoaTrongDon(orderId);
                 if (dao.xoaDon(orderId)) {
                     for (Object[] dong : dsHoa) {
