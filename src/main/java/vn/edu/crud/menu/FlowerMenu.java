@@ -1,5 +1,7 @@
 package vn.edu.crud.menu;
 
+
+import java.util.ArrayList;
 import vn.edu.crud.dao.FlowerDAO;
 import vn.edu.crud.model.Flower;
 
@@ -45,8 +47,18 @@ public class FlowerMenu {
                 case 1: inDsHoa(dao.findAll()); break;
                 case 2:
                     System.out.print("Mã hoa: ");
-                    Flower f = dao.timTheoMa(sc.nextLine());
-                    System.out.println(f != null ? f : "Không tìm thấy!");
+                    String maHoa = sc.nextLine().toUpperCase();
+                    Flower f = dao.timTheoMa(maHoa);
+
+                    if (f != null) {
+                        System.out.println("✅ Thông tin hoa:");
+                        // Tạo một List tạm chứa 1 bông hoa này để tái sử dụng hàm in bảng
+                        List<Flower> ketQua = new ArrayList<>();
+                        ketQua.add(f);
+                        inDsHoa(ketQua);
+                    } else {
+                        System.out.println("❌ Không tìm thấy hoa có mã: " + maHoa);
+                    }
                     break;
                 case 3: themHoa(); break;
                 case 4: suaHoa(); break;
