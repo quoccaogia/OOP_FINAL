@@ -15,7 +15,8 @@ public class PaymentDAO {
     public String sinhMaThanhToan() {
         String sql = "SELECT payment_id FROM Payment ORDER BY payment_id DESC LIMIT 1";
         List<Object[]> rows = DBBase.query(sql);
-        if (rows.isEmpty()) return "P001";
+        if (rows.isEmpty())
+            return "P001";
         String maCu = rows.get(0)[0].toString();
         int so = Integer.parseInt(maCu.substring(1));
         return String.format("P%03d", so + 1);
@@ -25,7 +26,17 @@ public class PaymentDAO {
         String sql = "SELECT COALESCE(SUM(quantity * unit_price_at_sale), 0) " +
                 "FROM OrderDetail WHERE order_id = ?";
         List<Object[]> rows = DBBase.query(sql, orderId);
-        if (rows.isEmpty() || rows.get(0)[0] == null) return BigDecimal.ZERO;
+        if (rows.isEmpty() || rows.get(0)[0] == null)
+            return BigDecimal.ZERO;
+        return (BigDecimal) rows.get(0)[0];
+    }
+
+    public BigDecimal tinhDaTra(String orderId) {
+        String sql = "SELECT COALESCE(SUM(amount), 0) FROM Payment " +
+                "WHERE order_id = ? AND payment_status = 'THANH_TOAN_THANH_CONG'";
+        List<Object[]> rows = DBBase.query(sql, orderId);
+        if (rows.isEmpty() || rows.get(0)[0] == null)
+            return BigDecimal.ZERO;
         return (BigDecimal) rows.get(0)[0];
     }
 

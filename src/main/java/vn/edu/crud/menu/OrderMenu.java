@@ -12,6 +12,7 @@ import vn.edu.crud.model.Order;
 import vn.edu.crud.model.Payment;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
@@ -380,21 +381,69 @@ public class OrderMenu {
                 return;
             }
 
+            String trangThai = orderDAO.layTrangThaiDon(orderId);
+            if ("DA_HUY".equals(trangThai)) {
+                System.out.println("❌ Đơn đã hủy, không thể thanh toán!");
+                return;
+            }
+
             BigDecimal tongTien = paymentDAO.tinhTongTienDon(orderId);
-            System.out.println("Tổng tiền đơn: " + tongTien + " VND");
             if (tongTien.compareTo(BigDecimal.ZERO) == 0) {
                 System.out.println("⚠️ Đơn chưa có chi tiết hoa, không thể thanh toán!");
                 return;
             }
 
-            System.out.print("Số tiền thanh toán (Enter = thanh toán hết): ");
-            String s = sc.nextLine().trim();
-            BigDecimal amount = s.isEmpty() ? tongTien : new BigDecimal(s);
+            BigDecimal daTra = paymentDAO.tinhDaTra(orderId);
+            BigDecimal conLai = tongTien.subtract(daTra);
+            BigDecimal tienCoc = tongTien.multiply(new BigDecimal("0.2"))
+                    .setScale(0, RoundingMode.CEILING);
 
-            System.out.print("Phương thức (TIEN_MAT/CHUYEN_KHOAN/MOMO): ");
+            System.out.println("Tổng tiền đơn: " + tongTien + " VND");
+            System.out.println("Đã trả:        " + daTra + " VND");
+            System.out.println("Còn lại:       " + conLai + " VND");
+
+            if (conLai.compareTo(BigDecimal.ZERO) <= 0) {
+                System.out.println("✅ Đơn đã thanh toán đủ, không cần thanh toán thêm.");
+                return;
+            }
+
+            boolean lanDau = daTra.compareTo(BigDecimal.ZERO) == 0;
+            if (lanDau) {
+                System.out.println("Lần đầu phải trả ít nhất tiền cọc (20%): " + tienCoc + " VND");
+            }
+
+            System.out.print("Số tiền thanh toán (Enter = trả hết phần còn lại): ");
+            String s = sc.nextLine().trim();
+            BigDecimal amount;
+            try {
+                amount = s.isEmpty() ? conLai : new BigDecimal(s);
+            } catch (NumberFormatException e) {
+                System.out.println("❌ Số tiền phải là số!");
+                return;
+            }
+
+            if (amount.compareTo(BigDecimal.ZERO) <= 0) {
+                System.out.println("❌ Số tiền phải lớn hơn 0!");
+                return;
+            }
+            if (amount.compareTo(conLai) > 0) {
+                System.out.println("❌ Không được trả quá số còn lại (" + conLai + " VND)!");
+                return;
+            }
+            if (lanDau && amount.compareTo(tienCoc) < 0) {
+                System.out.println("❌ Lần đầu phải trả ít nhất tiền cọc (" + tienCoc + " VND)!");
+                return;
+            }
+
+            List<String> phuongThucHopLe = List.of("TIEN_MAT", "CHUYEN_KHOAN", "MOMO", "THE_TIN_DUNG");
+            System.out.print("Phương thức (TIEN_MAT/CHUYEN_KHOAN/MOMO/THE_TIN_DUNG, Enter = TIEN_MAT): ");
             String method = sc.nextLine().trim().toUpperCase();
             if (method.isEmpty())
                 method = "TIEN_MAT";
+            if (!phuongThucHopLe.contains(method)) {
+                System.out.println("❌ Phương thức không hợp lệ!");
+                return;
+            }
 
             Payment p = new Payment();
             p.setPaymentId(paymentDAO.sinhMaThanhToan());
@@ -406,6 +455,7 @@ public class OrderMenu {
 
             if (paymentDAO.taoThanhToan(p)) {
                 System.out.println("✅ Thanh toán thành công! Mã GD: " + p.getPaymentId());
+                System.out.println("Còn lại: " + conLai.subtract(amount) + " VND");
             } else {
                 System.out.println("❌ Thanh toán thất bại!");
             }
