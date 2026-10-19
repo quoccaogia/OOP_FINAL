@@ -20,7 +20,7 @@ public class PaymentMenu {
             System.out.println("║  1. Xem tất cả                       ║");
             System.out.println("║  2. Theo phương thức                 ║");
             System.out.println("║  3. Doanh thu hôm nay                ║");
-            System.out.println("║  4. Xóa thanh toán                   ║");
+            System.out.println("║  4. Hủy giao dịch                   ║");
             System.out.println("║  0. Quay lại                         ║");
             System.out.println("╚══════════════════════════════════════╝");
             System.out.print("Chọn: ");
@@ -48,6 +48,10 @@ public class PaymentMenu {
                     String maDon = dao.layMaDon(id);
                     if (maDon == null) {
                         System.out.println("❌ Không tìm thấy giao dịch!");
+                        break;
+                    }
+                    if ("DA_HUY".equals(dao.layTrangThaiThanhToan(id))) {
+                        System.out.println("⚠️ Giao dịch " + id + " đã bị hủy trước đó!");
                         break;
                     }
                     String trangThai = orderDAO.layTrangThaiDon(maDon);

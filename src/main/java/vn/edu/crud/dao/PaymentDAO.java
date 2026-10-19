@@ -4,6 +4,7 @@ import vn.edu.crud.model.Payment;
 import vn.edu.crud.util.DBBase;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.List;
 
 public class PaymentDAO {
@@ -59,6 +60,19 @@ public class PaymentDAO {
         return (String) rows.get(0)[0];
     }
 
+    public String layTrangThaiThanhToan(String paymentId) {
+        String sql = "SELECT payment_status FROM Payment WHERE payment_id = ?";
+        List<Object[]> rows = DBBase.query(sql, paymentId);
+        if (rows.isEmpty() || rows.get(0)[0] == null)
+            return null;
+        return (String) rows.get(0)[0];
+    }
+
+    public BigDecimal tinhTienCoc(String orderId) {
+        return tinhTongTienDon(orderId)
+                .multiply(new BigDecimal("0.2"))
+                .setScale(0, RoundingMode.CEILING);
+    }
 
     public boolean xoaThanhToan(String paymentId) {
         return DBBase.update(
