@@ -1,25 +1,17 @@
--- 1. TẮT KIỂM TRA KHÓA NGOẠI ĐỂ DỄ DÀNG XÓA BẢNG CŨ
+-- =====================================================
+-- BƯỚC 1: XÓA SẠCH VÀ TẠO MỚI DATABASE
+-- =====================================================
 SET FOREIGN_KEY_CHECKS = 0;
 
-CREATE DATABASE IF NOT EXISTS flower_shop CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+DROP DATABASE IF EXISTS flower_shop;
+CREATE DATABASE flower_shop CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 USE flower_shop;
 
--- 2. XÓA CÁC BẢNG CŨ NẾU ĐÃ TỒN TẠI
-DROP TABLE IF EXISTS careschedule;
-DROP TABLE IF EXISTS payment;
-DROP TABLE IF EXISTS orderdetail;
-DROP TABLE IF EXISTS `order`;
-DROP TABLE IF EXISTS flowerbatch;
-DROP TABLE IF EXISTS purchaseorder;
-DROP TABLE IF EXISTS flower;
-DROP TABLE IF EXISTS supplier;
-DROP TABLE IF EXISTS employee;
-DROP TABLE IF EXISTS customer;
-
 -- =====================================================
--- 3. TẠO CÁC BẢNG (CHỮ THƯỜNG 100%)
+-- BƯỚC 2: TẠO CÁC BẢNG (CHUẨN HÓA)
 -- =====================================================
 
+-- Bảng Khách Hàng (SĐT không được trùng)
 CREATE TABLE customer (
     customer_id VARCHAR(10) PRIMARY KEY,
     name VARCHAR(100) NOT NULL,
@@ -28,6 +20,7 @@ CREATE TABLE customer (
     email VARCHAR(100)
 );
 
+-- Bảng Nhân Viên
 CREATE TABLE employee (
     employee_id VARCHAR(10) PRIMARY KEY,
     name VARCHAR(100) NOT NULL,
@@ -36,6 +29,7 @@ CREATE TABLE employee (
     salary DECIMAL(15, 2)
 );
 
+-- Bảng Nhà Cung Cấp (SĐT không được trùng)
 CREATE TABLE supplier (
     supplier_id VARCHAR(10) PRIMARY KEY,
     name VARCHAR(100) NOT NULL,
@@ -44,6 +38,7 @@ CREATE TABLE supplier (
     representative VARCHAR(100)
 );
 
+-- Bảng Hoa
 CREATE TABLE flower (
     flower_id VARCHAR(10) PRIMARY KEY,
     name VARCHAR(100) NOT NULL,
@@ -55,6 +50,7 @@ CREATE TABLE flower (
     FOREIGN KEY (supplier_id) REFERENCES supplier(supplier_id) ON DELETE SET NULL
 );
 
+-- Bảng Phiếu Nhập Hàng
 CREATE TABLE purchaseorder (
     purchase_order_id VARCHAR(10) PRIMARY KEY,
     supplier_id VARCHAR(10),
@@ -67,6 +63,7 @@ CREATE TABLE purchaseorder (
     FOREIGN KEY (employee_id) REFERENCES employee(employee_id)
 );
 
+-- Bảng Lô Hoa
 CREATE TABLE flowerbatch (
     batch_id VARCHAR(10) PRIMARY KEY,
     purchase_order_id VARCHAR(10),
@@ -82,7 +79,7 @@ CREATE TABLE flowerbatch (
     FOREIGN KEY (flower_id) REFERENCES flower(flower_id)
 );
 
--- Lưu ý: order là từ khóa nên phải bọc bằng dấu huyền `order`
+-- Bảng Đơn Hàng
 CREATE TABLE `order` (
     order_id VARCHAR(10) PRIMARY KEY,
     customer_id VARCHAR(10),
@@ -95,6 +92,7 @@ CREATE TABLE `order` (
     FOREIGN KEY (employee_id) REFERENCES employee(employee_id)
 );
 
+-- Bảng Chi Tiết Đơn Hàng
 CREATE TABLE orderdetail (
     order_id VARCHAR(10),
     flower_id VARCHAR(10),
@@ -105,6 +103,7 @@ CREATE TABLE orderdetail (
     FOREIGN KEY (flower_id) REFERENCES flower(flower_id)
 );
 
+-- Bảng Thanh Toán
 CREATE TABLE payment (
     payment_id VARCHAR(10) PRIMARY KEY,
     order_id VARCHAR(10),
@@ -115,25 +114,25 @@ CREATE TABLE payment (
     FOREIGN KEY (order_id) REFERENCES `order`(order_id)
 );
 
--- Bảng chăm sóc liên kết với MÃ LÔ (batch_id) thay vì Mã Hoa
+-- Bảng Lịch Chăm Sóc Hoa (ĐÃ SỬA: Dùng flower_id thay vì batch_id)
 CREATE TABLE careschedule (
     care_id VARCHAR(10) PRIMARY KEY,
-    batch_id VARCHAR(10),
+    flower_id VARCHAR(10),  -- Chăm sóc theo loài hoa
     employee_id VARCHAR(10),
     check_date DATETIME,
     freshness_level VARCHAR(50),
     water_status VARCHAR(50),
     action_taken VARCHAR(255),
     note TEXT,
-    FOREIGN KEY (batch_id) REFERENCES flowerbatch(batch_id),
+    FOREIGN KEY (flower_id) REFERENCES flower(flower_id),
     FOREIGN KEY (employee_id) REFERENCES employee(employee_id)
 );
 
 -- =====================================================
--- 4. CHÈN DỮ LIỆU MẪU (MOCK DATA)
+-- BƯỚC 3: CHÈN DỮ LIỆU MẪU (MOCK DATA)
 -- =====================================================
 
--- Nhân Viên
+-- 1. Nhân Viên
 INSERT INTO employee (employee_id, name, role, phone, salary) VALUES
 ('NV01', 'Nguyễn Văn Đạt', 'GIAO_HANG', '0901234567', 6000000),
 ('NV02', 'Trần Thị Kim Duyên', 'THU_NGAN', '0912345678', 5000000),
@@ -142,7 +141,7 @@ INSERT INTO employee (employee_id, name, role, phone, salary) VALUES
 ('NV05', 'Hoàng Thùy Linh', 'CHAM_HOA', '0945678901', 5500000),
 ('NV06', 'Ngô Kiến Huy', 'GIAO_HANG', '0956789012', 6000000);
 
--- Khách Hàng (Chặn trùng SĐT)
+-- 2. Khách Hàng
 INSERT INTO customer (customer_id, name, phone, address, email) VALUES
 ('KH001', 'Cao Gia Quốc', '0328816927', 'KTX Khu B ĐHQG HCM', 'quoccoao@gmail.com'),
 ('KH002', 'Nguyễn Thị Hoa', '0987654321', 'Quận 1, TP.HCM', 'hoa.nguyen@gmail.com'),
@@ -155,7 +154,7 @@ INSERT INTO customer (customer_id, name, phone, address, email) VALUES
 ('KH009', 'Lý Hải', '0966666666', 'Tân Bình, TP.HCM', 'lyhai@gmail.com'),
 ('KH010', 'Trấn Thành', '0977777777', 'Quận 1, TP.HCM', 'thanhtran@gmail.com');
 
--- Nhà Cung Cấp (Chặn trùng SĐT)
+-- 3. Nhà Cung Cấp
 INSERT INTO supplier (supplier_id, name, phone, address, representative) VALUES
 ('NCC01', 'Vựa Hoa Đà Lạt', '02633888999', 'Đà Lạt, Lâm Đồng', 'Ông Bảy'),
 ('NCC02', 'Cửa Hàng Hoa Sài Gòn', '02888777666', 'Quận 12, TP.HCM', 'Bà Tám'),
@@ -163,7 +162,7 @@ INSERT INTO supplier (supplier_id, name, phone, address, representative) VALUES
 ('NCC04', 'Hoa Tươi Đà Lạt Xanh', '0263999111', 'Đà Lạt, Lâm Đồng', 'Cô Hạnh'),
 ('NCC05', 'Công Ty Hoa Nhập Khẩu', '0287777888', 'Quận 5, TP.HCM', 'Anh Tuấn');
 
--- Hoa
+-- 4. Hoa
 INSERT INTO flower (flower_id, name, category, unit_price, stock_quantity, color, supplier_id) VALUES
 ('FL01', 'Hồng Đỏ Đà Lạt', 'Hồng', 5000, 150, 'Đỏ', 'NCC01'),
 ('FL02', 'Lan Hồ Điệp Trắng', 'Lan', 150000, 20, 'Trắng', 'NCC01'),
@@ -174,15 +173,18 @@ INSERT INTO flower (flower_id, name, category, unit_price, stock_quantity, color
 ('FL07', 'Ly Trắng', 'Ly', 25000, 50, 'Trắng', 'NCC01'),
 ('FL08', 'Tulip Đỏ', 'Tulip', 80000, 15, 'Đỏ', 'NCC05'),
 ('FL09', 'Hồng Vàng', 'Hồng', 7000, 50, 'Vàng', 'NCC03'),
-('FL10', 'Lan Vũ Nữ', 'Lan', 120000, 20, 'Vàng', 'NCC04');
+('FL10', 'Lan Vũ Nữ', 'Lan', 120000, 20, 'Vàng', 'NCC04'),
+('FL11', 'Cẩm Chướng', 'Cẩm Chướng', 10000, 100, 'Hồng', 'NCC05'),
+('FL12', 'Hoa Cát Tường', 'Cát Tường', 35000, 30, 'Tím', 'NCC01'),
+('FL13', 'Hoa Baby', 'Baby', 15000, 150, 'Trắng', 'NCC02');
 
--- Phiếu Nhập
+-- 5. Phiếu Nhập Hàng
 INSERT INTO purchaseorder (purchase_order_id, supplier_id, employee_id, import_date, total_amount, status, note) VALUES
 ('PN001', 'NCC01', 'NV03', '2023-10-20 08:00:00', 2000000, 'HOAN_THANH', 'Nhập đợt 1 tháng 10'),
 ('PN002', 'NCC02', 'NV03', DATE_SUB(NOW(), INTERVAL 30 DAY), 5000000, 'HOAN_THANH', 'Nhập đợt cũ'),
 ('PN003', 'NCC04', 'NV05', NOW(), 3000000, 'HOAN_THANH', 'Hàng đang về');
 
--- Lô Hoa (Sinh ra từ Phiếu Nhập)
+-- 6. Lô Hoa
 INSERT INTO flowerbatch (batch_id, purchase_order_id, flower_id, quantity_imported, quantity_remaining, unit_cost, import_date, expiry_date, status, note) VALUES
 ('L001', 'PN001', 'FL01', 200, 150, 3000, '2023-10-20 08:00:00', '2023-11-05', 'AVAILABLE', 'Hoa tươi'),
 ('L002', 'PN001', 'FL02', 20, 20, 100000, '2023-10-20 08:00:00', '2023-11-20', 'AVAILABLE', 'Hàng xịn'),
@@ -190,7 +192,7 @@ INSERT INTO flowerbatch (batch_id, purchase_order_id, flower_id, quantity_import
 ('L004', 'PN002', 'FL09', 100, 50, 5000, DATE_SUB(NOW(), INTERVAL 20 DAY), DATE_ADD(NOW(), INTERVAL 10 DAY), 'AVAILABLE', 'Hồng vàng nhập đợt 2'),
 ('L005', 'PN003', 'FL10', 20, 20, 90000, NOW(), DATE_ADD(NOW(), INTERVAL 15 DAY), 'AVAILABLE', 'Lan Vũ Nữ mới về');
 
--- Đơn Hàng (Sử dụng trạng thái DANG_CHUAN_BI)
+-- 7. Đơn Hàng
 INSERT INTO `order` (order_id, customer_id, employee_id, order_date, delivery_date, delivery_address, order_status) VALUES
 ('ORD001', 'KH001', 'NV02', '2023-10-25 09:00:00', '2023-10-25 15:00:00', 'KTX Khu B ĐHQG HCM', 'HOAN_THANH'),
 ('ORD002', 'KH002', 'NV02', '2023-10-26 10:00:00', '2023-10-27 08:00:00', 'Quận 1, TP.HCM', 'DANG_CHUAN_BI'),
@@ -203,7 +205,7 @@ INSERT INTO `order` (order_id, customer_id, employee_id, order_date, delivery_da
 ('ORD009', 'KH009', 'NV03', NOW(), DATE_ADD(NOW(), INTERVAL 2 DAY), 'Tân Bình', 'DANG_CHUAN_BI'),
 ('ORD010', 'KH010', 'NV02', DATE_SUB(NOW(), INTERVAL 1 DAY), NOW(), 'Quận 1', 'HOAN_THANH');
 
--- Chi Tiết Đơn Hàng
+-- 8. Chi Tiết Đơn Hàng
 INSERT INTO orderdetail (order_id, flower_id, quantity, unit_price_at_sale) VALUES
 ('ORD001', 'FL01', 20, 5000),
 ('ORD001', 'FL03', 2, 20000),
@@ -220,7 +222,7 @@ INSERT INTO orderdetail (order_id, flower_id, quantity, unit_price_at_sale) VALU
 ('ORD010', 'FL13', 100, 15000),
 ('ORD010', 'FL01', 100, 5000);
 
--- Thanh Toán
+-- 9. Thanh Toán
 INSERT INTO payment (payment_id, order_id, amount, payment_method, payment_date, payment_status) VALUES
 ('P001', 'ORD001', 140000, 'TIEN_MAT', '2023-10-25 09:30:00', 'THANH_TOAN_THANH_CONG'),
 ('P002', 'ORD003', 330000, 'CHUYEN_KHOAN', DATE_SUB(NOW(), INTERVAL 10 DAY), 'THANH_TOAN_THANH_CONG'),
@@ -228,12 +230,12 @@ INSERT INTO payment (payment_id, order_id, amount, payment_method, payment_date,
 ('P004', 'ORD006', 600000, 'THE_TIN_DUNG', DATE_SUB(NOW(), INTERVAL 2 DAY), 'THANH_TOAN_THANH_CONG'),
 ('P005', 'ORD010', 2000000, 'CHUYEN_KHOAN', DATE_SUB(NOW(), INTERVAL 1 DAY), 'THANH_TOAN_THANH_CONG');
 
--- Lịch Chăm Sóc (Sử dụng batch_id)
-INSERT INTO careschedule (care_id, batch_id, employee_id, check_date, freshness_level, water_status, action_taken, note) VALUES
-('CS001', 'L001', 'NV03', '2023-10-21 08:00:00', 'TƯƠI', 'ĐỦ', 'Tỉa lá', 'Bình thường'),
-('CS002', 'L002', 'NV03', DATE_SUB(NOW(), INTERVAL 5 DAY), 'TƯƠI', 'THIẾU', 'Tưới nước', 'Hoa hơi héo'),
-('CS003', 'L003', 'NV05', DATE_SUB(NOW(), INTERVAL 2 DAY), 'HÉO', 'ĐỦ', 'Tỉa cành', 'Hoa đã hỏng, cần thanh lý'),
-('CS004', 'L005', 'NV03', NOW(), 'TƯƠI', 'ĐỦ', 'Bón phân', 'Chăm sóc định kỳ');
+-- 10. Lịch Chăm Sóc (Đã đổi về flower_id - VD: FL01, FL02)
+INSERT INTO careschedule (care_id, flower_id, employee_id, check_date, freshness_level, water_status, action_taken, note) VALUES
+('CS001', 'FL01', 'NV03', '2023-10-21 08:00:00', 'TƯƠI', 'ĐỦ', 'Tỉa lá', 'Bình thường'),
+('CS002', 'FL02', 'NV03', DATE_SUB(NOW(), INTERVAL 5 DAY), 'TƯƠI', 'THIẾU', 'Tưới nước', 'Hoa hơi héo'),
+('CS003', 'FL06', 'NV05', DATE_SUB(NOW(), INTERVAL 2 DAY), 'HÉO', 'ĐỦ', 'Tỉa cành', 'Hoa đã hỏng'),
+('CS004', 'FL10', 'NV03', NOW(), 'TƯƠI', 'ĐỦ', 'Bón phân', 'Chăm sóc định kỳ');
 
 -- BẬT LẠI KIỂM TRA KHÓA NGOẠI
 SET FOREIGN_KEY_CHECKS = 1;

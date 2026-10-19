@@ -7,13 +7,12 @@ import java.util.List;
 
 public class CareScheduleDAO {
 
-    // Lấy tất cả lịch sử chăm sóc (kèm tên hoa và tên nhân viên)
+    // Lấy tất cả lịch sử chăm sóc (JOIN với bảng Flower)
     public List<Object[]> findAll() {
-        String sql = "SELECT cs.care_id, cs.batch_id, f.name AS flower_name, e.name AS employee_name, " +
+        String sql = "SELECT cs.care_id, cs.flower_id, f.name AS flower_name, e.name AS employee_name, " +
                 "cs.check_date, cs.freshness_level, cs.water_status, cs.action_taken, cs.note " +
                 "FROM careschedule cs " +
-                "LEFT JOIN flowerbatch fb ON cs.batch_id = fb.batch_id " +
-                "LEFT JOIN flower f ON fb.flower_id = f.flower_id " +
+                "LEFT JOIN flower f ON cs.flower_id = f.flower_id " +
                 "LEFT JOIN employee e ON cs.employee_id = e.employee_id " +
                 "ORDER BY cs.check_date DESC";
         return DBBase.query(sql);
@@ -24,14 +23,14 @@ public class CareScheduleDAO {
         return DBBase.query(sql, id);
     }
 
-    // Hàm thêm mới (Đã đổi thành batchId)
-    public boolean insert(String id, String batchId, String empId,
+    // Sửa lại tham số thành flowerId
+    public boolean insert(String id, String flowerId, String empId,
                           LocalDateTime date, String fresh, String water,
                           String action, String note) {
         String sql = "INSERT INTO careschedule " +
-                "(care_id, batch_id, employee_id, check_date, freshness_level, " +
+                "(care_id, flower_id, employee_id, check_date, freshness_level, " +
                 "water_status, action_taken, note) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
-        return DBBase.update(sql, id, batchId, empId, date, fresh, water, action, note) > 0;
+        return DBBase.update(sql, id, flowerId, empId, date, fresh, water, action, note) > 0;
     }
 
     public boolean update(String id, String fresh, String water, String action, String note) {
@@ -55,23 +54,22 @@ public class CareScheduleDAO {
     // Lịch chăm sóc của 1 nhân viên
     public List<Object[]> lichChamSocCuaNV(String maNV) {
         String sql = "SELECT cs.check_date, cs.freshness_level, cs.water_status, cs.action_taken, " +
-                "f.name AS flower_name, cs.batch_id " +
+                "f.name AS flower_name " +
                 "FROM careschedule cs " +
-                "LEFT JOIN flowerbatch fb ON cs.batch_id = fb.batch_id " +
-                "LEFT JOIN flower f ON fb.flower_id = f.flower_id " +
+                "LEFT JOIN flower f ON cs.flower_id = f.flower_id " +
                 "WHERE cs.employee_id = ? " +
                 "ORDER BY cs.check_date DESC";
         return DBBase.query(sql, maNV);
     }
 
-    // Lịch sử chăm sóc của 1 Lô hoa cụ thể
-    public List<Object[]> lichChamSocCuaLo(String batchId) {
+    // Lịch sử chăm sóc của 1 Loài hoa cụ thể
+    public List<Object[]> lichChamSocCuaHoa(String flowerId) {
         String sql = "SELECT cs.check_date, cs.freshness_level, cs.water_status, " +
                 "cs.action_taken, cs.note, e.name AS employee_name " +
                 "FROM careschedule cs " +
                 "LEFT JOIN employee e ON cs.employee_id = e.employee_id " +
-                "WHERE cs.batch_id = ? " +
+                "WHERE cs.flower_id = ? " +
                 "ORDER BY cs.check_date DESC";
-        return DBBase.query(sql, batchId);
+        return DBBase.query(sql, flowerId);
     }
 }
