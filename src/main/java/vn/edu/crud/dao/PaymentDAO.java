@@ -59,6 +59,13 @@ public class PaymentDAO {
         return (String) rows.get(0)[0];
     }
 
+    public String layTrangThaiThanhToan(String paymentId) {
+        String sql = "SELECT payment_status FROM Payment WHERE payment_id = ?";
+        List<Object[]> rows = DBBase.query(sql, paymentId);
+        if (rows.isEmpty() || rows.get(0)[0] == null)
+            return null;
+        return (String) rows.get(0)[0];
+    }
 
     public boolean xoaThanhToan(String paymentId) {
         return DBBase.update(
