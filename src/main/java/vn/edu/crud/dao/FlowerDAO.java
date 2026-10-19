@@ -17,7 +17,7 @@ public class FlowerDAO {
 
     public List<Flower> findAll() {
         List<Flower> list = new ArrayList<>();
-        String sql = "SELECT * FROM Flower";
+        String sql = "SELECT * FROM flower";
 
         try (Connection conn = DBConnection.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql);
@@ -28,7 +28,7 @@ public class FlowerDAO {
     }
 
     public Flower timTheoMa(String maHoa) {
-        String sql = "SELECT * FROM Flower WHERE flower_id = ?";
+        String sql = "SELECT * FROM flower WHERE flower_id = ?";
 
         try (Connection conn = DBConnection.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
@@ -42,7 +42,7 @@ public class FlowerDAO {
 
     public boolean insert(String id, String name, String cat, BigDecimal price,
                           int stock, String color, String supId) {
-        String sql = "INSERT INTO Flower " +
+        String sql = "INSERT INTO flower " +
                 "(flower_id, name, category, unit_price, stock_quantity, color, supplier_id) " +
                 "VALUES (?, ?, ?, ?, ?, ?, ?)";
         return DBBase.update(sql, id, name, cat, price, stock, color, supId) > 0;
@@ -50,23 +50,29 @@ public class FlowerDAO {
 
     public boolean update(String id, String name, String cat, BigDecimal price,
                           int stock, String color, String supId) {
-        String sql = "UPDATE Flower SET name=?, category=?, unit_price=?, " +
+        String sql = "UPDATE flower SET name=?, category=?, unit_price=?, " +
                 "stock_quantity=?, color=?, supplier_id=? WHERE flower_id=?";
         return DBBase.update(sql, name, cat, price, stock, color, supId, id) > 0;
     }
 
     public boolean delete(String id) {
-        return DBBase.update(
-                "DELETE FROM Flower WHERE flower_id = ?", id) > 0;
+        return DBBase.update("DELETE FROM flower WHERE flower_id = ?", id) > 0;
     }
 
     public String sinhMaHoaMoi() {
-        List<Object[]> rows = DBBase.query(
-                "SELECT flower_id FROM Flower ORDER BY flower_id DESC LIMIT 1");
+        List<Object[]> rows = DBBase.query("SELECT flower_id FROM flower ORDER BY flower_id DESC LIMIT 1");
         if (rows.isEmpty()) return "FL01";
         String maCu = rows.get(0)[0].toString();
         int so = Integer.parseInt(maCu.substring(2));
         return String.format("FL%02d", so + 1);
+    }
+
+    // =====================================================
+    // HÀM CỘNG TỒN KHO (MỚI THÊM)
+    // =====================================================
+    public boolean congTonKho(String flowerId, int soLuong) {
+        String sql = "UPDATE flower SET stock_quantity = stock_quantity + ? WHERE flower_id = ?";
+        return DBBase.update(sql, soLuong, flowerId) > 0;
     }
 
     // =====================================================
@@ -75,7 +81,7 @@ public class FlowerDAO {
 
     public List<Flower> hoaSapHet(int nguong) {
         List<Flower> list = new ArrayList<>();
-        String sql = "SELECT * FROM Flower WHERE stock_quantity < ?";
+        String sql = "SELECT * FROM flower WHERE stock_quantity < ?";
 
         try (Connection conn = DBConnection.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
@@ -89,7 +95,7 @@ public class FlowerDAO {
 
     public List<Flower> timTheoTen(String tuKhoa) {
         List<Flower> list = new ArrayList<>();
-        String sql = "SELECT * FROM Flower WHERE name LIKE ?";
+        String sql = "SELECT * FROM flower WHERE name LIKE ?";
 
         try (Connection conn = DBConnection.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
@@ -103,7 +109,7 @@ public class FlowerDAO {
 
     public List<Flower> timTheoGia(BigDecimal giaMin, BigDecimal giaMax) {
         List<Flower> list = new ArrayList<>();
-        String sql = "SELECT * FROM Flower WHERE unit_price BETWEEN ? AND ?";
+        String sql = "SELECT * FROM flower WHERE unit_price BETWEEN ? AND ?";
 
         try (Connection conn = DBConnection.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
@@ -118,7 +124,7 @@ public class FlowerDAO {
 
     public List<Flower> timTheoMau(String mau) {
         List<Flower> list = new ArrayList<>();
-        String sql = "SELECT * FROM Flower WHERE color = ?";
+        String sql = "SELECT * FROM flower WHERE color = ?";
 
         try (Connection conn = DBConnection.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
@@ -132,7 +138,7 @@ public class FlowerDAO {
 
     public List<Object[]> hoaBanChay() {
         String sql = "SELECT f.flower_id, f.name, SUM(od.quantity) AS total_sold " +
-                "FROM Flower f JOIN OrderDetail od ON f.flower_id = od.flower_id " +
+                "FROM flower f JOIN orderdetail od ON f.flower_id = od.flower_id " +
                 "GROUP BY f.flower_id, f.name ORDER BY total_sold DESC";
         return DBBase.query(sql);
     }
@@ -140,7 +146,7 @@ public class FlowerDAO {
     public List<Object[]> loHoaTonLau(int soNgay) {
         String sql = "SELECT f.flower_id, f.name, fb.batch_id, fb.import_date, " +
                 "DATEDIFF(NOW(), fb.import_date) AS days_in_stock " +
-                "FROM Flower f JOIN FlowerBatch fb ON f.flower_id = fb.flower_id " +
+                "FROM flower f JOIN flowerbatch fb ON f.flower_id = fb.flower_id " +
                 "WHERE fb.quantity_remaining > 0 " +
                 "AND DATEDIFF(NOW(), fb.import_date) > ?";
         return DBBase.query(sql, soNgay);
@@ -148,7 +154,7 @@ public class FlowerDAO {
 
     public List<Flower> hoaGiaGiamDan() {
         List<Flower> list = new ArrayList<>();
-        String sql = "SELECT * FROM Flower ORDER BY unit_price DESC";
+        String sql = "SELECT * FROM flower ORDER BY unit_price DESC";
 
         try (Connection conn = DBConnection.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql);
@@ -160,22 +166,22 @@ public class FlowerDAO {
 
     public List<Object[]> hoaBanCham() {
         String sql = "SELECT f.flower_id, f.name, COALESCE(SUM(od.quantity),0) AS total_sold " +
-                "FROM Flower f LEFT JOIN OrderDetail od ON f.flower_id = od.flower_id " +
+                "FROM flower f LEFT JOIN orderdetail od ON f.flower_id = od.flower_id " +
                 "GROUP BY f.flower_id, f.name ORDER BY total_sold ASC";
         return DBBase.query(sql);
     }
 
     public List<Object[]> tongBanTheoHoa() {
         String sql = "SELECT f.flower_id, f.name, COALESCE(SUM(od.quantity),0) AS total_sold " +
-                "FROM Flower f LEFT JOIN OrderDetail od ON f.flower_id = od.flower_id " +
+                "FROM flower f LEFT JOIN orderdetail od ON f.flower_id = od.flower_id " +
                 "GROUP BY f.flower_id, f.name";
         return DBBase.query(sql);
     }
 
     public List<Flower> hoaChuaBanDuoc() {
         List<Flower> list = new ArrayList<>();
-        String sql = "SELECT * FROM Flower f WHERE NOT EXISTS (" +
-                "SELECT 1 FROM OrderDetail od WHERE od.flower_id = f.flower_id)";
+        String sql = "SELECT * FROM flower f WHERE NOT EXISTS (" +
+                "SELECT 1 FROM orderdetail od WHERE od.flower_id = f.flower_id)";
 
         try (Connection conn = DBConnection.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql);

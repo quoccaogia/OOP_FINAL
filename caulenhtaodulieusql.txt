@@ -234,3 +234,19 @@ INSERT INTO careschedule (care_id, flower_id, employee_id, check_date, freshness
 
 -- 5. BẬT LẠI KIỂM TRA KHÓA NGOẠI SAU KHI XONG
 SET FOREIGN_KEY_CHECKS = 1;
+
+Bổ XUNG
+
+USE flower_shop;
+
+-- Xóa khóa ngoại cũ (tên khóa ngoại có thể khác, nếu báo lỗi bạn cứ bỏ qua bước DROP này)
+ALTER TABLE careschedule DROP FOREIGN KEY careschedule_ibfk_1; 
+
+-- Đổi tên cột
+ALTER TABLE careschedule CHANGE flower_id batch_id VARCHAR(10);
+
+-- Thêm khóa ngoại mới trỏ đến bảng flowerbatch
+ALTER TABLE careschedule ADD FOREIGN KEY (batch_id) REFERENCES flowerbatch(batch_id);
+
+-- Xóa dữ liệu cũ (nếu có) để tránh lỗi khóa ngoại
+DELETE FROM careschedule;

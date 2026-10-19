@@ -53,7 +53,7 @@ public class PurchaseOrderMenu {
                     System.out.print("Nhập mã: ");
                     inBang(poDAO.findById(sc.nextLine()));
                     break;
-                case 3: taoPhieuNhapMoi(); break; // Gọi hàm tạo mới đã được nâng cấp
+                case 3: taoPhieuNhapMoi(); break;
                 case 4: suaPN(); break;
                 case 5: xoaPN(); break;
                 case 6: inBang(poDAO.tongNhapTheoNCC()); break;
@@ -68,9 +68,6 @@ public class PurchaseOrderMenu {
         } while (chon != 0);
     }
 
-    // =====================================================
-    // QUY TRÌNH CHUẨN: TẠO HÓA ĐƠN -> CHỌN HOA -> SINH LÔ
-    // =====================================================
     private void taoPhieuNhapMoi() {
         System.out.println("\n--- TẠO PHIẾU NHẬP HÀNG MỚI ---");
         String poId = poDAO.sinhMaPNMoi();
@@ -137,12 +134,10 @@ public class PurchaseOrderMenu {
             Flower hoaChon = null;
 
             if (choiceHoa.equals("0")) {
-                // TẠO LOẠI HOA MỚI
                 flowerId = themHoaMoiTuDong(supId);
                 if (flowerId == null) continue;
                 hoaChon = flowerDAO.timTheoMa(flowerId);
             } else {
-                // CHỌN HOA CÓ SẴN
                 try {
                     int chon = Integer.parseInt(choiceHoa);
                     if (chon >= 1 && chon <= dsHoa.size()) {
@@ -175,6 +170,11 @@ public class PurchaseOrderMenu {
 
             if (luuLo) {
                 System.out.println("✅ Đã sinh Lô Hoa " + batchId + " (Hạn SD: " + expiryDate + ")");
+
+                // === ĐIỂM SỬA ĐỔI QUAN TRỌNG: CỘNG TỒN KHO VÀO BẢNG FLOWER ===
+                flowerDAO.congTonKho(flowerId, imported);
+                // =========================================================
+
                 tongTienPhieu = tongTienPhieu.add(cost.multiply(BigDecimal.valueOf(imported)));
             } else {
                 System.out.println("❌ Lỗi khi lưu Lô Hoa!");
@@ -186,9 +186,6 @@ public class PurchaseOrderMenu {
         System.out.println("\n🎉 TẠO PHIẾU NHẬP THÀNH CÔNG! Tổng tiền: " + tongTienPhieu + " VNĐ");
     }
 
-    // =====================================================
-    // HÀM PHỤ TRỢ: THÊM HOA MỚI TỰ ĐỘNG
-    // =====================================================
     private String themHoaMoiTuDong(String supplierId) {
         String newId = flowerDAO.sinhMaHoaMoi();
         System.out.println("\n--- THÊM LOẠI HOA MỚI ---");
@@ -208,7 +205,7 @@ public class PurchaseOrderMenu {
         System.out.print("Màu sắc (VD: Đỏ, Trắng...): ");
         String color = sc.nextLine();
 
-        // Tồn kho ban đầu = 0 (vì tồn kho thực tế sẽ do Lô Hoa cộng vào)
+        // Tồn kho ban đầu = 0
         boolean ok = flowerDAO.insert(newId, name, category, price, 0, color, supplierId);
 
         if (ok) {
@@ -220,9 +217,6 @@ public class PurchaseOrderMenu {
         }
     }
 
-    // =====================================================
-    // CÁC HÀM CŨ (SỬA / XÓA / IN BẢNG)
-    // =====================================================
     private void suaPN() {
         System.out.print("Mã phiếu nhập cần sửa: ");
         String id = sc.nextLine();
