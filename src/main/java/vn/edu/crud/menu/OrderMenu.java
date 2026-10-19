@@ -230,6 +230,7 @@ public class OrderMenu {
             System.out.println("\n--- THÊM HOA VÀO ĐƠN ---");
 
             List<Order> dsDon = orderDAO.findAll();
+
             if (dsDon.isEmpty()) {
                 System.out.println("⚠️ Chưa có đơn hàng nào!");
                 return;
@@ -261,6 +262,27 @@ public class OrderMenu {
             Order donChon = dsDon.get(chonDon - 1);
             String orderId = donChon.getOrderId();
 
+            // THÊM TRIM() ĐỂ XÓA DẤU CÁCH THỪA NẾU CÓ
+            String trangThaiDon = donChon.getOrderStatus() != null ? donChon.getOrderStatus().trim() : "";
+
+            // =====================================================
+            // CHỐT CHẶN LOGIC NGHIỆP VỤ (BỌC THÉP)
+            // =====================================================
+            boolean isHopLe = trangThaiDon.equalsIgnoreCase("DANG_CHUAN_BI")
+                    || trangThaiDon.equalsIgnoreCase("CHO_XU_LY")
+                    || trangThaiDon.equalsIgnoreCase("CHO_XAC_NHAN");
+
+            if (!isHopLe) {
+                System.out.println("\n❌ TỪ CHỐI THÊM HOA!");
+                // In ra để Debug xem Database đang lưu chính xác chữ gì
+                System.out.println("👉 Trạng thái gốc trong Database: [" + trangThaiDon + "]");
+                System.out.println("👉 Đơn hàng " + orderId + " đang ở trạng thái: [" + dichTrangThai(trangThaiDon) + "]");
+                System.out.println("👉 Chỉ được phép thêm/sửa hoa khi đơn hàng đang ở trạng thái 'Đang chuẩn bị hoa'.");
+                return; // Chặn đứng
+            }
+            // =====================================================
+
+            // Nếu vượt qua được chốt chặn trên, bắt đầu vòng lặp chọn hoa
             while (true) {
                 List<Flower> dsHoa = new ArrayList<>();
                 for (Flower f : flowerDAO.findAll()) {
