@@ -51,9 +51,26 @@ public class PaymentDAO {
                 p.getPaymentStatus()) > 0;
     }
 
+    public String layMaDon(String paymentId) {
+        String sql = "SELECT order_id FROM Payment WHERE payment_id = ?";
+        List<Object[]> rows = DBBase.query(sql, paymentId);
+        if (rows.isEmpty() || rows.get(0)[0] == null)
+            return null;
+        return (String) rows.get(0)[0];
+    }
+
+    public String layMaDon(String paymentId) {
+        String sql = "SELECT order_id FROM Payment WHERE payment_id = ?";
+        List<Object[]> rows = DBBase.query(sql, paymentId);
+        if (rows.isEmpty() || rows.get(0)[0] == null)
+            return null;
+        return (String) rows.get(0)[0];
+    }
+
     public boolean xoaThanhToan(String paymentId) {
         return DBBase.update(
-                "DELETE FROM Payment WHERE payment_id = ?", paymentId) > 0;
+                "UPDATE Payment SET payment_status = 'DA_HUY' WHERE payment_id = ?",
+                paymentId) > 0;
     }
 
     // =====================================================
