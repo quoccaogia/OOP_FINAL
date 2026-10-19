@@ -4,6 +4,7 @@ import vn.edu.crud.model.Payment;
 import vn.edu.crud.util.DBBase;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.List;
 
 public class PaymentDAO {
@@ -65,6 +66,12 @@ public class PaymentDAO {
         if (rows.isEmpty() || rows.get(0)[0] == null)
             return null;
         return (String) rows.get(0)[0];
+    }
+
+    public BigDecimal tinhTienCoc(String orderId) {
+        return tinhTongTienDon(orderId)
+                .multiply(new BigDecimal("0.2"))
+                .setScale(0, RoundingMode.CEILING);
     }
 
     public boolean xoaThanhToan(String paymentId) {

@@ -395,8 +395,7 @@ public class OrderMenu {
 
             BigDecimal daTra = paymentDAO.tinhDaTra(orderId);
             BigDecimal conLai = tongTien.subtract(daTra);
-            BigDecimal tienCoc = tongTien.multiply(new BigDecimal("0.2"))
-                    .setScale(0, RoundingMode.CEILING);
+            BigDecimal tienCoc = paymentDAO.tinhTienCoc(orderId);
 
             System.out.println("Tổng tiền đơn: " + tongTien + " VND");
             System.out.println("Đã trả:        " + daTra + " VND");
@@ -552,11 +551,49 @@ public class OrderMenu {
                 System.out.println("⚠️ Chọn sai!");
                 return;
             }
-            if (orderDAO.capNhatTrangThai(orderId, dsTiep.get(chon - 1))) {
+            String trangThaiMoi = dsTiep.get(chon - 1);
+            if ("DA_HUY".equals(trangThaiMoi)) {
+                huyDon(orderId);
+                return;
+            }
+            if (orderDAO.capNhatTrangThai(orderId, trangThaiMoi)) {
                 System.out.println("✅ Cập nhật thành công!");
             }
         } catch (NumberFormatException e) {
             System.out.println("❌ Phải nhập số!");
+        }
+    }
+
+    // Hủy đơn: chỉ khi khách trả tối đa bằng tiền cọc; trả hoa về kho
+    private void huyDon(String orderId) {
+        BigDecimal daTra = paymentDAO.tinhDaTra(orderId);
+        BigDecimal tienCoc = paymentDAO.tinhTienCoc(orderId);
+
+        if (daTra.compareTo(tienCoc) > 0) {
+            System.out.println("❌ Khách đã trả " + daTra + " VND, nhiều hơn tiền cọc ("
+                    + tienCoc + " VND). Không thể hủy đơn!");
+            return;
+        }
+        if (daTra.compareTo(BigDecimal.ZERO) > 0) {
+            System.out.println("⚠️ Khách đã trả cọc " + daTra
+                    + " VND. Hủy đơn thì khách mất khoản cọc này.");
+        }
+
+        System.out.print("Xác nhận hủy đơn " + orderId + " (y/n): ");
+        if (!sc.nextLine().equalsIgnoreCase("y"))
+            return;
+
+        // đọc danh sách hoa trước, rồi mới đổi trạng thái
+        List<Object[]> dsHoa = orderDAO.layHoaTrongDon(orderId);
+        if (orderDAO.capNhatTrangThai(orderId, "DA_HUY")) {
+            for (Object[] dong : dsHoa) {
+                String maHoa = (String) dong[0];
+                int soLuong = (Integer) dong[1];
+                orderDAO.congTonKho(maHoa, soLuong);
+            }
+            System.out.println("✅ Đã hủy đơn và trả hoa về kho!");
+        } else {
+            System.out.println("❌ Hủy đơn thất bại!");
         }
     }
 
