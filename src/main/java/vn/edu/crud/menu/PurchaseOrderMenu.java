@@ -17,6 +17,11 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Scanner;
 
+import vn.edu.crud.model.PurchaseOrder;
+import java.util.Map;
+import java.util.TreeMap;
+import java.util.stream.Collectors;
+
 public class PurchaseOrderMenu {
     private final Scanner sc = new Scanner(System.in);
     private final PurchaseOrderDAO poDAO = new PurchaseOrderDAO();
@@ -59,7 +64,7 @@ public class PurchaseOrderMenu {
                     break;
                 case 2:
                     System.out.print("Nhập mã: ");
-                    inBang(poDAO.findById(sc.nextLine().trim().toUpperCase()));
+                    timPhieuTheoMa(sc.nextLine().trim().toUpperCase());
                     break;
                 case 3:
                     taoPhieuNhapMoi();
@@ -71,11 +76,11 @@ public class PurchaseOrderMenu {
                     xoaPN();
                     break;
                 case 6:
-                    inBang(poDAO.tongNhapTheoNCC());
+                    tongNhapTheoNCC();
                     break;
                 case 7:
                     System.out.print("Mã NCC: ");
-                    inBang(poDAO.phieuNhapCuaNCC(sc.nextLine().trim().toUpperCase()));
+                    phieuCuaNCC(sc.nextLine().trim().toUpperCase());
                     break;
                 case 8:
                     inBang(poDAO.tatCaPhieuNhap());
@@ -386,6 +391,60 @@ public class PurchaseOrderMenu {
             for (Object o : row)
                 sb.append(o).append(" | ");
             System.out.println(sb);
+        }
+
+    }
+
+    // Lambda: tìm 1 phiếu nhập theo mã
+    private void timPhieuTheoMa(String maPN) {
+        List<PurchaseOrder> kq = poDAO.layDanhSachPhieuNhap().stream()
+                .filter(po -> maPN.equals(po.getPurchaseOrderId()))
+                .collect(Collectors.toList());
+        inDanhSachPhieu(kq);
+    }
+
+    // Lambda: các phiếu nhập của 1 nhà cung cấp
+    private void phieuCuaNCC(String maNCC) {
+        List<PurchaseOrder> kq = poDAO.layDanhSachPhieuNhap().stream()
+                .filter(po -> maNCC.equals(po.getSupplierId()))
+                .collect(Collectors.toList());
+        inDanhSachPhieu(kq);
+    }
+
+    // Lambda: tổng tiền nhập theo từng nhà cung cấp
+    private void tongNhapTheoNCC() {
+        Map<String, BigDecimal> tong = poDAO.layDanhSachPhieuNhap().stream()
+                .filter(po -> po.getSupplierId() != null && po.getTotalAmount() != null)
+                .collect(Collectors.groupingBy(
+                        PurchaseOrder::getSupplierId,
+                        TreeMap::new,
+                        Collectors.reducing(BigDecimal.ZERO, PurchaseOrder::getTotalAmount, BigDecimal::add)));
+
+        System.out.println("\n--- TỔNG TIỀN NHẬP THEO NHÀ CUNG CẤP ---");
+        if (tong.isEmpty()) {
+            System.out.println("Không có dữ liệu.");
+            return;
+        }
+        System.out.printf("%-8s | %-15s%n", "Mã NCC", "Tổng nhập");
+        System.out.println("-".repeat(28));
+        tong.forEach((ncc, tien) -> System.out.printf("%-8s | %-15s%n", ncc, tien));
+    }
+
+    // In danh sách phiếu nhập (dùng chung cho các truy vấn lambda)
+    private void inDanhSachPhieu(List<PurchaseOrder> ds) {
+        if (ds.isEmpty()) {
+            System.out.println("Không có dữ liệu.");
+            return;
+        }
+        System.out.printf("%-7s | %-7s | %-6s | %-12s | %-14s | %-11s | %s%n",
+                "Mã PN", "Mã NCC", "Mã NV", "Ngày nhập", "Tổng tiền", "Trạng thái", "Ghi chú");
+        System.out.println("-".repeat(85));
+        for (PurchaseOrder po : ds) {
+            System.out.printf("%-7s | %-7s | %-6s | %-12s | %-14s | %-11s | %s%n",
+                    po.getPurchaseOrderId(), po.getSupplierId(), po.getEmployeeId(),
+                    po.getImportDate() == null ? "" : po.getImportDate().toLocalDate(),
+                    po.getTotalAmount(), po.getStatus(),
+                    po.getNote() == null ? "" : po.getNote());
         }
     }
 }

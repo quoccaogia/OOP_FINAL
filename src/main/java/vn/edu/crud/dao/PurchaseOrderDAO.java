@@ -1,9 +1,13 @@
 package vn.edu.crud.dao;
 
+import vn.edu.crud.model.PurchaseOrder;
 import vn.edu.crud.util.DBBase;
+import vn.edu.crud.util.DBConnection;
 
 import java.math.BigDecimal;
+import java.sql.*;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 public class PurchaseOrderDAO {
@@ -24,8 +28,8 @@ public class PurchaseOrderDAO {
     }
 
     public boolean insert(String id, String supId, String empId,
-                          LocalDateTime date, BigDecimal total,
-                          String status, String note) {
+            LocalDateTime date, BigDecimal total,
+            String status, String note) {
         String sql = "INSERT INTO PurchaseOrder " +
                 "(purchase_order_id, supplier_id, employee_id, import_date, " +
                 "total_amount, status, note) VALUES (?, ?, ?, ?, ?, ?, ?)";
@@ -47,7 +51,8 @@ public class PurchaseOrderDAO {
         List<Object[]> rows = DBBase.query(
                 "SELECT purchase_order_id FROM PurchaseOrder " +
                         "ORDER BY purchase_order_id DESC LIMIT 1");
-        if (rows.isEmpty()) return "PN001";
+        if (rows.isEmpty())
+            return "PN001";
         String maCu = rows.get(0)[0].toString();
         int so = Integer.parseInt(maCu.substring(2));
         return String.format("PN%03d", so + 1);
@@ -57,7 +62,8 @@ public class PurchaseOrderDAO {
     // NHÓM XỬ LÝ PHIẾU NHẬP DỞ DANG
     // =====================================================
 
-    // Các phiếu còn treo ở CHO_XU_LY (tạo xong nhưng chưa nhập hết / bị ngắt giữa chừng)
+    // Các phiếu còn treo ở CHO_XU_LY (tạo xong nhưng chưa nhập hết / bị ngắt giữa
+    // chừng)
     public List<Object[]> phieuChoXuLy() {
         String sql = "SELECT po.purchase_order_id, po.import_date, s.name, COUNT(fb.batch_id) " +
                 "FROM PurchaseOrder po " +
@@ -129,5 +135,32 @@ public class PurchaseOrderDAO {
                 "JOIN Employee e ON po.employee_id = e.employee_id " +
                 "ORDER BY po.import_date DESC";
         return DBBase.query(sql);
+    }
+
+    // Lấy tất cả phiếu nhập dưới dạng đối tượng PurchaseOrder 
+    public List<PurchaseOrder> layDanhSachPhieuNhap() {
+        List<PurchaseOrder> list = new ArrayList<>();
+        String sql = "SELECT * FROM purchaseorder";
+        try (Connection conn = DBConnection.getConnection();
+                PreparedStatement ps = conn.prepareStatement(sql);
+                ResultSet rs = ps.executeQuery()) {
+            while (rs.next())
+                list.add(mapRow(rs));
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return list;
+    }
+
+    private PurchaseOrder mapRow(ResultSet rs) throws SQLException {
+        PurchaseOrder po = new PurchaseOrder();
+        po.setPurchaseOrderId(rs.getString("purchase_order_id"));
+        po.setSupplierId(rs.getString("supplier_id"));
+        po.setEmployeeId(rs.getString("employee_id"));
+        po.setImportDate(rs.getObject("import_date", LocalDateTime.class));
+        po.setTotalAmount(rs.getBigDecimal("total_amount"));
+        po.setStatus(rs.getString("status"));
+        po.setNote(rs.getString("note"));
+        return po;
     }
 }
