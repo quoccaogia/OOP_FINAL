@@ -36,8 +36,24 @@ public class PaymentMenu {
                     inBang(dao.tatCaThanhToan());
                     break;
                 case 2:
-                    System.out.print("Phương thức (TIEN_MAT/CHUYEN_KHOAN/MOMO/THE_TIN_DUNG, VD: TIEN_MAT): ");
-                    inBang(dao.thanhToanTheoPhuongThuc(sc.nextLine()));
+                    String[] dsPhuongThuc = { "TIEN_MAT", "CHUYEN_KHOAN", "MOMO", "THE_TIN_DUNG" };
+                    System.out.println("Chọn phương thức thanh toán:");
+                    for (int i = 0; i < dsPhuongThuc.length; i++) {
+                        System.out.println("  " + (i + 1) + ". " + dsPhuongThuc[i]);
+                    }
+                    System.out.print("Nhập số chọn (1-" + dsPhuongThuc.length + "): ");
+                    int soPT;
+                    try {
+                        soPT = Integer.parseInt(sc.nextLine().trim());
+                    } catch (NumberFormatException e) {
+                        System.out.println("❌ Phải nhập số!");
+                        break;
+                    }
+                    if (soPT < 1 || soPT > dsPhuongThuc.length) {
+                        System.out.println("❌ Chỉ được chọn từ 1 đến " + dsPhuongThuc.length + "!");
+                        break;
+                    }
+                    inBang(dao.thanhToanTheoPhuongThuc(dsPhuongThuc[soPT - 1]));
                     break;
                 case 3:
                     inBang(dao.doanhThuHomNay());
