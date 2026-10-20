@@ -154,7 +154,7 @@ Không cần tạo đơn.
 
 **1.** Vào `5 → 4. Cập nhật trạng thái` → `Nhập Mã đơn cần cập nhật (VD: ORD001)`.
 
-**2.** **Hệ thống** hiện trạng thái + danh sách trạng thái được phép.
+**2.** **Hệ thống** in khối thông tin đơn (**khách hàng + SĐT**, nhân viên, ngày giao, tiền đã trả) rồi mới hiện trạng thái + danh sách trạng thái được phép — để bạn chắc chắn đang đổi đúng đơn.
 
 **3.** Chọn `Đang giao`.
 
@@ -465,3 +465,21 @@ Sau bước E2, nếu chọn `HÉO` hoặc `HỎNG`, hệ thống tự hỏi:
 8. `5 → 3` → trả hết → `5 → 4` → `Hoàn thành`: OK.
 9. `7 → 1` xem bảng → `7 → 2` ghi `HÉO` → thanh lý lô → `4 → 1` thấy tồn giảm.
 10. `6 → 3`: doanh thu hôm nay.
+
+---
+
+# J. GIỚI HẠN HIỆN TẠI — nói trước khi bị hỏi
+
+| # | Giới hạn | Cách nói / xử lý |
+|---|---|---|
+| 1 | Chưa có **đăng nhập / phân quyền** | Phạm vi đồ án tập trung vào nghiệp vụ + CRUD |
+| 2 | **Không transaction** — app tắt giữa chừng có thể lệch kho | Chữa bằng `9 → 6` đồng bộ tồn kho |
+| 3 | **Hạn dùng chưa chặn bán theo ngày** (chỉ theo trạng thái lô) | Thanh lý lô khi sắp hết hạn (`9 → 3`) |
+| 4 | Sửa **tồn kho tay** ở menu Hoa sẽ lệch với lô | Hạn chế sửa tay; dùng nhập hàng / thanh lý |
+| 5 | **Hoàn tiền không có phiếu riêng** (chỉ đổi trạng thái giao dịch) | Ghi chú thủ công nếu cần đối soát |
+| 6 | Chưa có **đổi/trả hàng** sau khi đơn Hoàn thành | Tạo đơn mới |
+| 7 | **Mã tự sinh** dạng `ORD001` vượt 999 sẽ trùng khóa | Giới hạn dùng dưới 999 đơn/phiếu |
+| 8 | Tìm khách theo SĐT là tìm **gần đúng** (`LIKE`) | Nhập đủ 10 số |
+| 9 | Xóa nhân viên / hoa còn dữ liệu con thì **bị chặn** | Đúng thiết kế — xử lý dữ liệu con trước |
+
+> Khi bảo vệ: nên chủ động nêu 2–3 giới hạn (transaction, phân quyền, hạn dùng theo ngày) kèm hướng khắc phục — sẽ được đánh giá cao hơn là để giảng viên phát hiện.

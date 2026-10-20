@@ -14,11 +14,13 @@ import vn.edu.crud.model.Payment;
 import vn.edu.crud.util.NhapLieu;
 
 import java.math.BigDecimal;
+import java.text.NumberFormat;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 import java.util.Scanner;
 
 public class OrderMenu {
@@ -32,6 +34,7 @@ public class OrderMenu {
     private final FlowerBatchDAO batchDAO = new FlowerBatchDAO();
 
     private static final DateTimeFormatter FMT = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+    private final NumberFormat VND = NumberFormat.getCurrencyInstance(new Locale("vi", "VN"));
 
     public void hienThi() {
         int chon = -1;
@@ -585,8 +588,9 @@ public class OrderMenu {
             return;
         }
 
+        inThongTinDon(orderId);
         String hienTai = orderDAO.layTrangThaiDon(orderId);
-        System.out.println("Trạng thái hiện tại: " + dichTrangThai(hienTai));
+        System.out.println("  Trạng thái: " + dichTrangThai(hienTai));
 
         List<String> dsTiep = trangThaiTiepTheo(hienTai);
         if (dsTiep.isEmpty()) {
@@ -661,6 +665,22 @@ public class OrderMenu {
         } catch (NumberFormatException e) {
             System.out.println("❌ Phải nhập số!");
         }
+    }
+
+    // In nhanh thông tin đơn (khách, nhân viên, ngày giao, tiền) để tránh nhầm khi nhập mã
+    private void inThongTinDon(String orderId) {
+        List<Object[]> tt = orderDAO.thongTinDayDuDonHang(orderId);
+        if (tt.isEmpty()) return;
+
+        Object[] o = tt.get(0);
+        String ngayGiao = o[5] == null ? "—" : String.valueOf(o[5]).replace("T", " ");
+
+        System.out.println("\n--- ĐƠN " + orderId + " ---");
+        System.out.println("  Khách hàng: " + o[1] + " (SĐT: " + o[2] + ")");
+        System.out.println("  Nhân viên : " + o[3]);
+        System.out.println("  Ngày giao : " + ngayGiao);
+        System.out.println("  Tiền      : " + VND.format(paymentDAO.tinhTongTienDon(orderId))
+                + " / đã trả " + VND.format(paymentDAO.tinhDaTra(orderId)));
     }
 
     private void huyDon(String orderId) {
@@ -826,6 +846,7 @@ public class OrderMenu {
                 System.out.println("❌ Đơn không tồn tại!");
                 return;
             }
+            inThongTinDon(orderId);
             if (orderDAO.donDaCoThanhToan(orderId)) {
                 System.out.println("❌ Đơn đã thanh toán, không thể xóa!");
                 return;
@@ -871,6 +892,7 @@ public class OrderMenu {
             return;
         }
 
+        inThongTinDon(orderId);
         String trangThai = orderDAO.layTrangThaiDon(orderId);
         boolean daHuy = "DA_HUY".equals(trangThai);
         boolean giaoThatBai = "GIAO_THAT_BAI".equals(trangThai);
