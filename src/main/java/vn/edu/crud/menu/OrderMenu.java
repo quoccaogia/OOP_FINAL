@@ -2,6 +2,7 @@ package vn.edu.crud.menu;
 
 import vn.edu.crud.dao.CustomerDAO;
 import vn.edu.crud.dao.EmployeeDAO;
+import vn.edu.crud.dao.FlowerBatchDAO;
 import vn.edu.crud.dao.FlowerDAO;
 import vn.edu.crud.dao.OrderDAO;
 import vn.edu.crud.dao.PaymentDAO;
@@ -27,6 +28,7 @@ public class OrderMenu {
     private final CustomerDAO customerDAO = new CustomerDAO();
     private final EmployeeDAO employeeDAO = new EmployeeDAO();
     private final FlowerDAO flowerDAO = new FlowerDAO();
+    private final FlowerBatchDAO batchDAO = new FlowerBatchDAO();
 
     private static final DateTimeFormatter FMT = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
@@ -349,8 +351,14 @@ public class OrderMenu {
                         : orderDAO.themChiTiet(orderId, flowerId, quantity, hoaChon.getUnitPrice());
 
                 if (ok) {
+                    // Trừ lô trước (FEFO: lô hạn gần nhất trừ trước), rồi trừ tồn kho.
+                    int daTruTheoLo = batchDAO.xuatKho(flowerId, quantity);
                     orderDAO.truSoLuong(flowerId, quantity);
                     System.out.println("✅ Đã thêm " + hoaChon.getName() + " x" + quantity + " vào đơn!");
+                    if (daTruTheoLo < quantity && batchDAO.coLo(flowerId)) {
+                        System.out.println("⚠️ Tồn kho và lô đang lệch (chỉ trừ được " + daTruTheoLo + "/"
+                                + quantity + " bông từ lô). Vào Lô hoa → [6] Đồng bộ tồn kho để sửa.");
+                    }
                 } else {
                     System.out.println("❌ Thêm thất bại!");
                 }
@@ -614,7 +622,7 @@ public class OrderMenu {
             for (Object[] dong : dsHoa) {
                 String maHoa = (String) dong[0];
                 int soLuong = (Integer) dong[1];
-                orderDAO.congTonKho(maHoa, soLuong);
+                traHoaVeKho(maHoa, soLuong);
             }
             System.out.println("✅ Đã hủy đơn và trả hoa về kho!");
         } else {
@@ -678,7 +686,7 @@ public class OrderMenu {
         for (Object[] dong : dsHoa) {
             String maHoa = (String) dong[0];
             int soLuong = (Integer) dong[1];
-            orderDAO.congTonKho(maHoa, soLuong);
+            traHoaVeKho(maHoa, soLuong);
         }
 
         // 3. Chốt trạng thái
@@ -770,7 +778,7 @@ public class OrderMenu {
             if (sc.nextLine().equalsIgnoreCase("y")) {
                 int soLuong = orderDAO.laySoLuongTrongDon(orderId, flowerId);
                 if (orderDAO.xoaChiTiet(orderId, flowerId)) {
-                    orderDAO.congTonKho(flowerId, soLuong);
+                    traHoaVeKho(flowerId, soLuong);
                     System.out.println("✅ Đã xóa chi tiết hoa khỏi đơn!");
                 } else {
                     System.out.println("❌ Xóa thất bại!");
@@ -828,7 +836,7 @@ public class OrderMenu {
                 for (Object[] dong : dsHoa) {
                     String maHoa = (String) dong[0];
                     int soLuong = (Integer) dong[1];
-                    orderDAO.congTonKho(maHoa, soLuong);
+                    traHoaVeKho(maHoa, soLuong);
                 }
                 System.out.println("✅ Đã xóa đơn và trả hoa về kho!");
             }
@@ -890,6 +898,13 @@ public class OrderMenu {
             if (c != null && c.getName() != null) return c.getName();
         } catch (Exception ignored) { }
         return customerId;
+    }
+
+    // Trả hoa về kho: cộng lại tồn kho VÀ cộng lại vào lô (nếu còn lô AVAILABLE/SOLD_OUT)
+    // để flower.stock_quantity và quantity_remaining không bị lệch.
+    private void traHoaVeKho(String flowerId, int soLuong) {
+        orderDAO.congTonKho(flowerId, soLuong);
+        batchDAO.nhapLaiKho(flowerId, soLuong);
     }
 
     private int demSoLoaiHoaTrongDon(String orderId) {

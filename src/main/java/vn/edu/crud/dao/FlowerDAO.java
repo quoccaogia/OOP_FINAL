@@ -75,6 +75,22 @@ public class FlowerDAO {
         return DBBase.update(sql, soLuong, flowerId) > 0;
     }
 
+    /**
+     * Đồng bộ lại tồn kho từ lô: stock_quantity = tổng quantity_remaining của các lô AVAILABLE.
+     *
+     * Chỉ áp dụng cho hoa ĐÃ CÓ lô. Hoa chưa có lô nào (nhập tay) thì giữ nguyên số hiện tại.
+     * Dùng để chữa dữ liệu cũ bị lệch giữa 2 nơi.
+     *
+     * @return số dòng thực sự bị thay đổi
+     */
+    public int dongBoTonKhoTuLo() {
+        String sql = "UPDATE flower f SET stock_quantity = " +
+                "(SELECT COALESCE(SUM(fb.quantity_remaining), 0) FROM flowerbatch fb " +
+                " WHERE fb.flower_id = f.flower_id AND fb.status = 'AVAILABLE') " +
+                "WHERE EXISTS (SELECT 1 FROM flowerbatch fb2 WHERE fb2.flower_id = f.flower_id)";
+        return DBBase.update(sql);
+    }
+
     // =====================================================
     // NHÓM BÁO CÁO
     // =====================================================

@@ -2,6 +2,7 @@ package vn.edu.crud.menu;
 
 
 import java.util.ArrayList;
+import vn.edu.crud.dao.FlowerBatchDAO;
 import vn.edu.crud.dao.FlowerDAO;
 import vn.edu.crud.model.Flower;
 
@@ -12,6 +13,7 @@ import java.util.Scanner;
 public class FlowerMenu {
     private final Scanner sc = new Scanner(System.in);
     private final FlowerDAO dao = new FlowerDAO();
+    private final FlowerBatchDAO batchDAO = new FlowerBatchDAO();
 
     public void hienThi() {
         int chon;
@@ -106,6 +108,10 @@ public class FlowerMenu {
         System.out.print("Mã hoa cần sửa: ");
         String id = sc.nextLine();
         if (dao.timTheoMa(id) == null) { System.out.println("❌ Không tìm thấy!"); return; }
+        if (batchDAO.coLo(id)) {
+            System.out.println("⚠️ Hoa này đang có lô — tồn kho được tính theo số còn trong lô.");
+            System.out.println("   Sửa 'Tồn kho' ở đây sẽ làm lệch với lô (nên sửa qua nhập hàng / thanh lý lô).");
+        }
         System.out.print("Tên mới: ");      String name  = sc.nextLine();
         System.out.print("Danh mục mới: "); String cat   = sc.nextLine();
         System.out.print("Đơn giá mới: ");  BigDecimal price = new BigDecimal(sc.nextLine());

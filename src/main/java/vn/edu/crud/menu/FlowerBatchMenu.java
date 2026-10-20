@@ -1,6 +1,7 @@
 package vn.edu.crud.menu;
 
 import vn.edu.crud.dao.FlowerBatchDAO;
+import vn.edu.crud.dao.FlowerDAO;
 
 import java.time.format.DateTimeFormatter;
 import java.util.List;
@@ -9,6 +10,7 @@ import java.util.Scanner;
 public class FlowerBatchMenu {
     private final Scanner sc = new Scanner(System.in);
     private final FlowerBatchDAO dao = new FlowerBatchDAO();
+    private final FlowerDAO flowerDAO = new FlowerDAO();
 
     public void hienThi() {
         int chon;
@@ -19,6 +21,7 @@ public class FlowerBatchMenu {
             System.out.println("║  1. Xem tất cả lô hoa                ║");
             System.out.println("║  2. Cập nhật trạng thái lô           ║");
             System.out.println("║  3. Thanh lý/Hủy lô hoa (Hết hạn)    ║");
+            System.out.println("║  6. Đồng bộ tồn kho từ lô hoa        ║");
             System.out.println("║  ── BÁO CÁO ──                       ║");
             System.out.println("║  4. Lô hoa còn hàng                  ║");
             System.out.println("║  5. Lô hoa sắp hết hạn (<= 3 ngày)   ║");
@@ -35,6 +38,7 @@ public class FlowerBatchMenu {
                 case 3: thanhLyLoHoa(); break;
                 case 4: inBangRutGon(dao.loHoaConHang(), "LÔ HOA CÒN HÀNG"); break;
                 case 5: inBangRutGon(dao.loHoaSapHetHan(3), "LÔ HOA SẮP HẾT HẠN"); break;
+                case 6: dongBoTonKho(); break;
                 case 0: break;
                 default: System.out.println("Chọn sai!");
             }
@@ -111,12 +115,21 @@ public class FlowerBatchMenu {
         System.out.println("  3. SOLD_OUT (Đã bán hết)");
         System.out.print("Nhập số chọn (1-3): ");
 
-        String status = "AVAILABLE";
-        String choice = sc.nextLine();
-        if (choice.equals("2")) status = "EXPIRED";
-        else if (choice.equals("3")) status = "SOLD_OUT";
+        String status;
+        switch (sc.nextLine().trim()) {
+            case "1": status = "AVAILABLE"; break;
+            case "2": status = "EXPIRED"; break;
+            case "3": status = "SOLD_OUT"; break;
+            default:
+                System.out.println("❌ Chỉ được chọn 1, 2 hoặc 3 — không đổi gì cả!");
+                return;
+        }
 
-        System.out.println(dao.updateStatus(id, status) ? "✅ Cập nhật thành công!" : "❌ Thất bại!");
+        if (dao.doiTrangThaiLo(id, status)) {
+            System.out.println("✅ Cập nhật thành công! Tồn kho của hoa đã được cộng/trừ tương ứng.");
+        } else {
+            System.out.println("❌ Thất bại!");
+        }
     }
 
     private void thanhLyLoHoa() {
@@ -124,14 +137,29 @@ public class FlowerBatchMenu {
         String id = chonLoHoa();
         if (id == null) return;
 
+        System.out.println("⚠️ Thanh lý sẽ: chuyển lô sang EXPIRED, đưa số lượng còn về 0");
+        System.out.println("   và TRỪ số hoa đó khỏi tồn kho (không bán được nữa).");
         System.out.print("Bạn có chắc chắn muốn thanh lý lô hoa này? (y/n): ");
         if (sc.nextLine().equalsIgnoreCase("y")) {
-            if (dao.updateStatus(id, "EXPIRED")) {
-                System.out.println("✅ Đã thanh lý lô hoa thành công! (Trạng thái: EXPIRED)");
+            if (dao.thanhLyLo(id)) {
+                System.out.println("✅ Đã thanh lý lô hoa và trừ tồn kho tương ứng!");
             } else {
                 System.out.println("❌ Thất bại!");
             }
         }
+    }
+
+    // Đồng bộ lại tồn kho của mọi loại hoa theo số lượng còn trong lô.
+    private void dongBoTonKho() {
+        System.out.println("\n--- ĐỒNG BỘ TỒN KHO TỪ LÔ HOA ---");
+        System.out.println("Tồn kho sẽ được đặt lại = tổng số còn trong các lô AVAILABLE.");
+        System.out.println("⚠️ Hoa nào chưa có lô (nhập tay) thì giữ nguyên.");
+        System.out.println("⚠️ Phần tồn kho không ứng với lô nào sẽ bị bỏ.");
+        System.out.print("Xác nhận đồng bộ? (y/n): ");
+        if (!sc.nextLine().equalsIgnoreCase("y")) return;
+
+        int soDong = flowerDAO.dongBoTonKhoTuLo();
+        System.out.println("✅ Đã đồng bộ " + soDong + " loại hoa theo lô.");
     }
 
     private void inBangRutGon(List<Object[]> list, String title) {
