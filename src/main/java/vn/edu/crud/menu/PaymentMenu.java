@@ -55,9 +55,18 @@ public class PaymentMenu {
                         break;
                     }
                     String trangThai = orderDAO.layTrangThaiDon(maDon);
-                    if (!"CHO_XAC_NHAN".equals(trangThai)) {
-                        System.out.println("❌ Đơn " + maDon + " đang " + trangThai
-                                + ", chỉ được hủy giao dịch khi đơn còn CHO_XAC_NHAN!");
+                    if (trangThai == null) {
+                        System.out.println("❌ Không đọc được trạng thái của đơn " + maDon + "!");
+                        break;
+                    }
+                    // Chỉ hủy giao dịch khi đơn CHƯA GIAO (còn ở khâu chuẩn bị).
+                    // Đơn đã giao / đã hoàn thành / đã hủy thì không được hủy giao dịch.
+                    boolean conSuaDuoc = "DANG_CHUAN_BI".equals(trangThai)
+                            || "CHO_XU_LY".equals(trangThai)
+                            || "CHO_XAC_NHAN".equals(trangThai);
+                    if (!conSuaDuoc) {
+                        System.out.println("❌ Đơn " + maDon + " đang ở trạng thái " + trangThai
+                                + " — chỉ hủy được giao dịch khi đơn CHƯA GIAO.");
                         break;
                     }
                     System.out.print("Xác nhận hủy giao dịch " + id + " (y/n): ");

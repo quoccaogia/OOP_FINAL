@@ -114,6 +114,19 @@ public class OrderMenu {
         }
     }
 
+    // Tình trạng thanh toán của đơn: chỉ có 2 mức sau khi đã thu tiền
+    //   - Đã trả đủ cọc (20%)
+    //   - Đã trả hết đơn
+    private String dichTrangThaiThanhToan(BigDecimal tongTien, BigDecimal daTra) {
+        if (tongTien == null || tongTien.compareTo(BigDecimal.ZERO) <= 0)
+            return "Chưa có gì để thu";
+        if (daTra == null || daTra.compareTo(BigDecimal.ZERO) <= 0)
+            return "Chưa đặt cọc";
+        if (daTra.compareTo(tongTien) < 0)
+            return "Đã trả đủ cọc";
+        return "Đã trả hết đơn";
+    }
+
     // =====================================================
     // 1. TẠO ĐƠN HÀNG
     // =====================================================
@@ -363,14 +376,15 @@ public class OrderMenu {
             }
 
             System.out.println("DANH SÁCH ĐƠN HÀNG CHƯA THU ĐỦ TIỀN:");
-            System.out.printf("%-5s | %-10s | %-20s | %-20s | %-15s | %-15s%n",
-                    "STT", "Mã Đơn", "Khách Hàng", "Trạng Thái", "Tổng Tiền", "Đã Trả");
-            System.out.println("-".repeat(100));
+            System.out.printf("%-5s | %-10s | %-20s | %-20s | %-15s | %-15s | %-18s%n",
+                    "STT", "Mã Đơn", "Khách Hàng", "Trạng Thái", "Tổng Tiền", "Đã Trả", "Thanh Toán");
+            System.out.println("-".repeat(122));
 
             for (int i = 0; i < dsChuaTT.size(); i++) {
                 Object[] row = dsChuaTT.get(i);
-                System.out.printf("%-5d | %-10s | %-20s | %-20s | %-15s | %-15s%n",
-                        (i + 1), row[0], row[2], dichTrangThai(row[1].toString()), row[3], row[4]);
+                System.out.printf("%-5d | %-10s | %-20s | %-20s | %-15s | %-15s | %-18s%n",
+                        (i + 1), row[0], row[2], dichTrangThai(row[1].toString()), row[3], row[4],
+                        dichTrangThaiThanhToan((BigDecimal) row[3], (BigDecimal) row[4]));
             }
 
             System.out.print("\n👉 Nhập STT đơn hàng cần thanh toán (hoặc 0 để hủy): ");
@@ -393,33 +407,58 @@ public class OrderMenu {
             System.out.println("Tổng tiền đơn: " + tongTien + " VND");
             System.out.println("Đã trả:        " + daTra + " VND");
             System.out.println("Còn lại:       " + conLai + " VND");
+            System.out.println("Tình trạng:    " + dichTrangThaiThanhToan(tongTien, daTra));
 
-            boolean lanDau = daTra.compareTo(BigDecimal.ZERO) == 0;
-            if (lanDau) {
-                System.out.println("Lần đầu phải trả ít nhất tiền cọc (20%): " + tienCoc + " VND");
+            if (conLai.compareTo(BigDecimal.ZERO) <= 0) {
+                System.out.println("✅ Đơn này đã thanh toán đủ, không còn gì để thu.");
+                return;
             }
 
-            System.out.print("Số tiền thanh toán (Enter = trả hết phần còn lại): ");
-            String s = sc.nextLine().trim();
+            // =====================================================
+            // CHỈ CÓ 2 MỨC THANH TOÁN HỢP LỆ:
+            //   - Chưa trả gì  -> trả ĐỦ TIỀN CỌC (20%) hoặc TRẢ HẾT CẢ ĐƠN
+            //   - Đã trả cọc   -> chỉ còn TRẢ HẾT PHẦN CÒN LẠI
+            // Không cho nhập số tiền lẻ ở giữa, nhờ vậy đơn không bao giờ
+            // rơi vào trạng thái "trả nhiều hơn cọc nhưng chưa hết đơn"
+            // (chính là trạng thái trước đây bị kẹt: không hủy được mà
+            //  cũng không xóa được).
+            // =====================================================
             BigDecimal amount;
-            try {
-                amount = s.isEmpty() ? conLai : new BigDecimal(s);
-            } catch (NumberFormatException e) {
-                System.out.println("❌ Số tiền phải là số!");
-                return;
-            }
+            if (daTra.compareTo(BigDecimal.ZERO) == 0) {
+                System.out.println("\nChọn hình thức thanh toán:");
+                System.out.println("  1. Trả đủ tiền cọc (20%) : " + tienCoc + " VND");
+                System.out.println("  2. Trả hết cả tiền đơn   : " + tongTien + " VND");
+                System.out.println("  0. Hủy thao tác");
+                System.out.print("Nhập số chọn: ");
 
-            if (amount.compareTo(BigDecimal.ZERO) <= 0) {
-                System.out.println("❌ Số tiền phải lớn hơn 0!");
-                return;
-            }
-            if (amount.compareTo(conLai) > 0) {
-                System.out.println("❌ Không được trả quá số còn lại (" + conLai + " VND)!");
-                return;
-            }
-            if (lanDau && amount.compareTo(tienCoc) < 0) {
-                System.out.println("❌ Lần đầu phải trả ít nhất tiền cọc (" + tienCoc + " VND)!");
-                return;
+                int hinhThuc;
+                try {
+                    hinhThuc = Integer.parseInt(sc.nextLine().trim());
+                } catch (NumberFormatException e) {
+                    System.out.println("❌ Phải nhập số!");
+                    return;
+                }
+                if (hinhThuc == 0) {
+                    System.out.println("Đã hủy thao tác.");
+                    return;
+                }
+                if (hinhThuc == 1) {
+                    amount = tienCoc;
+                } else if (hinhThuc == 2) {
+                    amount = tongTien;
+                } else {
+                    System.out.println("❌ Chỉ được chọn 0, 1 hoặc 2!");
+                    return;
+                }
+            } else {
+                System.out.println("\nĐơn đang ở mức '" + dichTrangThaiThanhToan(tongTien, daTra)
+                        + "', chỉ còn thanh toán nốt phần còn lại.");
+                System.out.print("Xác nhận khách trả hết " + conLai + " VND? (y/n): ");
+                if (!sc.nextLine().equalsIgnoreCase("y")) {
+                    System.out.println("Đã hủy thao tác.");
+                    return;
+                }
+                amount = conLai;
             }
 
             List<String> phuongThucHopLe = List.of("TIEN_MAT", "CHUYEN_KHOAN", "MOMO", "THE_TIN_DUNG");
@@ -440,11 +479,17 @@ public class OrderMenu {
             p.setPaymentStatus("THANH_TOAN_THANH_CONG");
 
             if (paymentDAO.taoThanhToan(p)) {
+                BigDecimal daTraSau = daTra.add(amount);
                 System.out.println("✅ Thanh toán thành công! Mã GD: " + p.getPaymentId());
-                System.out.println("Còn lại: " + conLai.subtract(amount) + " VND");
+                System.out.println("Đã trả: " + daTraSau + " / " + tongTien + " VND - "
+                        + dichTrangThaiThanhToan(tongTien, daTraSau));
 
-                if (conLai.subtract(amount).compareTo(BigDecimal.ZERO) == 0) {
-                    System.out.println("🎉 Khách đã trả đủ tiền. Đừng quên cập nhật trạng thái đơn sang HOÀN THÀNH nhé!");
+                if (daTraSau.compareTo(tongTien) >= 0) {
+                    System.out.println("🎉 Khách đã trả hết đơn. Khi giao hoa xong hãy cập nhật trạng thái sang HOÀN THÀNH.");
+                } else {
+                    System.out.println("👉 Đơn đang ở mức '" + dichTrangThaiThanhToan(tongTien, daTraSau)
+                            + "'. Khi khách trả nốt, vào lại chức năng này "
+                            + "và chọn trả hết phần còn lại (" + conLai.subtract(amount) + " VND).");
                 }
             } else {
                 System.out.println("❌ Thanh toán thất bại!");
@@ -533,15 +578,24 @@ public class OrderMenu {
     }
 
     private void huyDon(String orderId) {
+        BigDecimal tongTien = paymentDAO.tinhTongTienDon(orderId);
         BigDecimal daTra = paymentDAO.tinhDaTra(orderId);
-        BigDecimal tienCoc = paymentDAO.tinhTienCoc(orderId);
 
-        if (daTra.compareTo(tienCoc) > 0) {
-            System.out.println("❌ Khách đã trả " + daTra + " VND, nhiều hơn tiền cọc (" + tienCoc + " VND). Không thể hủy đơn!");
+        // Đơn đã trả HẾT thì không cho hủy trực tiếp nữa.
+        // Muốn hủy phải hoàn khoản đã thu trước (menu Thanh toán -> Hủy giao dịch),
+        // sau đó đơn quay về mức 'Đã trả đủ cọc' và hủy được bình thường.
+        if (tongTien.compareTo(BigDecimal.ZERO) > 0 && daTra.compareTo(tongTien) >= 0) {
+            System.out.println("❌ Đơn đã thanh toán ĐỦ (" + daTra + " / " + tongTien + " VND) nên không thể hủy.");
+            System.out.println("👉 Nếu thu nhầm, vào menu Thanh toán → [4] Hủy giao dịch để hoàn khoản đã thu, "
+                    + "rồi quay lại hủy đơn.");
             return;
         }
+
+        // Còn lại chỉ có 2 khả năng: chưa trả gì, hoặc đã trả đủ tiền cọc.
         if (daTra.compareTo(BigDecimal.ZERO) > 0) {
-            System.out.println("⚠️ Khách đã trả cọc " + daTra + " VND. Hủy đơn thì khách mất khoản cọc này.");
+            System.out.println("⚠️ Đơn đang ở mức '" + dichTrangThaiThanhToan(tongTien, daTra)
+                    + "': khách đã trả " + daTra + " VND.");
+            System.out.println("   Hủy đơn thì khách MẤT toàn bộ số tiền đã trả này (cửa hàng không hoàn lại).");
         }
 
         System.out.print("Xác nhận hủy đơn " + orderId + " (y/n): ");
@@ -582,6 +636,11 @@ public class OrderMenu {
             System.out.println("Ngày giao  : " + o[5]);
             System.out.println("Địa chỉ    : " + o[6]);
             System.out.println("Trạng thái : " + dichTrangThai(o[7].toString()));
+
+            BigDecimal tongTien = paymentDAO.tinhTongTienDon(orderId);
+            BigDecimal daTra = paymentDAO.tinhDaTra(orderId);
+            System.out.println("Thanh toán : " + daTra + " / " + tongTien + " VND - "
+                    + dichTrangThaiThanhToan(tongTien, daTra));
         }
 
         System.out.println("\n--- CHI TIẾT CÁC MẶT HÀNG ---");
