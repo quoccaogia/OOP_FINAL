@@ -74,8 +74,14 @@ public class FlowerMenu {
                     inDsHoa(dao.timTheoTen(sc.nextLine()));
                     break;
                 case 8:
-                    System.out.print("Giá min: "); BigDecimal min = new BigDecimal(sc.nextLine());
-                    System.out.print("Giá max: "); BigDecimal max = new BigDecimal(sc.nextLine());
+                    BigDecimal min = NhapLieu.tien(sc, "Giá min", "VD: 5000", true);
+                    BigDecimal max = NhapLieu.tien(sc, "Giá max", "VD: 150000", true);
+                    if (min.compareTo(max) > 0) {
+                        System.out.println("⚠️ Giá min lớn hơn giá max — mình tự đổi lại cho bạn.");
+                        BigDecimal tam = min;
+                        min = max;
+                        max = tam;
+                    }
                     inDsHoa(dao.timTheoGia(min, max));
                     break;
                 case 9:
