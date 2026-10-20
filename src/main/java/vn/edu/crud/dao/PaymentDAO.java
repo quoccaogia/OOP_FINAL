@@ -8,6 +8,10 @@ import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.List;
 
+import vn.edu.crud.util.DBConnection;
+import java.sql.*;
+import java.time.LocalDateTime;
+
 public class PaymentDAO {
 
     // =====================================================
@@ -88,7 +92,8 @@ public class PaymentDAO {
         return DBBase.update(sql, paymentId) > 0;
     }
 
-    // Hoàn tiền toàn bộ các giao dịch đã thu của 1 đơn (dùng khi giao hàng thất bại).
+    // Hoàn tiền toàn bộ các giao dịch đã thu của 1 đơn (dùng khi giao hàng thất
+    // bại).
     // Không xóa dòng payment, chỉ đổi trạng thái để còn dấu vết đối soát.
     public boolean hoanTienToanBo(String orderId) {
         String sql = "UPDATE payment SET payment_status = 'DA_HOAN_TIEN' " +
@@ -112,8 +117,10 @@ public class PaymentDAO {
     public List<Object[]> layDanhSachDonChuaThanhToan() {
         // Lấy tất cả đơn (trừ đơn đã hủy)
         String sql = "SELECT o.order_id, o.order_status, c.name, " +
-                "(SELECT COALESCE(SUM(quantity * unit_price_at_sale), 0) FROM orderdetail od WHERE od.order_id = o.order_id) as total, " +
-                "(SELECT COALESCE(SUM(amount), 0) FROM payment p WHERE p.order_id = o.order_id AND p.payment_status = 'THANH_TOAN_THANH_CONG') as paid " +
+                "(SELECT COALESCE(SUM(quantity * unit_price_at_sale), 0) FROM orderdetail od WHERE od.order_id = o.order_id) as total, "
+                +
+                "(SELECT COALESCE(SUM(amount), 0) FROM payment p WHERE p.order_id = o.order_id AND p.payment_status = 'THANH_TOAN_THANH_CONG') as paid "
+                +
                 "FROM `order` o " +
                 "JOIN customer c ON o.customer_id = c.customer_id " +
                 "WHERE o.order_status NOT IN ('DA_HUY', 'GIAO_THAT_BAI')";
@@ -153,5 +160,31 @@ public class PaymentDAO {
         String sql = "SELECT payment_id, order_id, amount, payment_method, " +
                 "payment_date, payment_status FROM payment";
         return DBBase.query(sql);
+    }
+
+    // Lấy tất cả giao dịch dưới dạng đối tượng Payment (dùng cho truy vấn lambda)
+    public List<Payment> layDanhSachThanhToan() {
+        List<Payment> list = new ArrayList<>();
+        String sql = "SELECT * FROM payment";
+        try (Connection conn = DBConnection.getConnection();
+                PreparedStatement ps = conn.prepareStatement(sql);
+                ResultSet rs = ps.executeQuery()) {
+            while (rs.next())
+                list.add(mapRow(rs));
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return list;
+    }
+
+    private Payment mapRow(ResultSet rs) throws SQLException {
+        Payment p = new Payment();
+        p.setPaymentId(rs.getString("payment_id"));
+        p.setOrderId(rs.getString("order_id"));
+        p.setAmount(rs.getBigDecimal("amount"));
+        p.setPaymentMethod(rs.getString("payment_method"));
+        p.setPaymentDate(rs.getObject("payment_date", LocalDateTime.class));
+        p.setPaymentStatus(rs.getString("payment_status"));
+        return p;
     }
 }
