@@ -573,9 +573,22 @@ public class OrderMenu {
                 return;
             }
 
+            // Đơn phải có ít nhất 1 mặt hàng mới được chuyển sang giao hàng / hoàn thành.
+            if (orderDAO.demSoMatHang(orderId) == 0) {
+                System.out.println("❌ KHÔNG THỂ CHUYỂN TRẠNG THÁI: đơn hàng chưa có loại hoa nào.");
+                System.out.println("👉 Vào chức năng [2] Thêm hoa vào đơn rồi thử lại (hoặc hủy đơn).");
+                return;
+            }
+
             if ("HOAN_THANH".equals(trangThaiMoi)) {
                 BigDecimal tongTien = paymentDAO.tinhTongTienDon(orderId);
                 BigDecimal daTra = paymentDAO.tinhDaTra(orderId);
+
+                if (!orderDAO.donDaCoThanhToan(orderId)) {
+                    System.out.println("❌ KHÔNG THỂ HOÀN THÀNH ĐƠN HÀNG!");
+                    System.out.println("👉 Đơn chưa có giao dịch thanh toán nào thành công.");
+                    return;
+                }
 
                 if (daTra.compareTo(tongTien) < 0) {
                     System.out.println("❌ KHÔNG THỂ HOÀN THÀNH ĐƠN HÀNG!");

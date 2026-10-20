@@ -56,6 +56,15 @@ public class OrderDAO {
         return !DBBase.query(sql, orderId).isEmpty();
     }
 
+    // Đếm số mặt hàng (dòng chi tiết) của 1 đơn
+    public int demSoMatHang(String orderId) {
+        String sql = "SELECT COUNT(*) FROM OrderDetail WHERE order_id = ?";
+        List<Object[]> rows = DBBase.query(sql, orderId);
+        if (rows.isEmpty() || rows.get(0)[0] == null)
+            return 0;
+        return ((Number) rows.get(0)[0]).intValue();
+    }
+
     public boolean hoaDaCoTrongDon(String orderId, String flowerId) {
         String sql = "SELECT 1 FROM OrderDetail WHERE order_id = ? AND flower_id = ?";
         return !DBBase.query(sql, orderId, flowerId).isEmpty();
