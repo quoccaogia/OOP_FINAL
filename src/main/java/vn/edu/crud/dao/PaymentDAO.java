@@ -81,6 +81,24 @@ public class PaymentDAO {
                 paymentId) > 0;
     }
 
+    // Hoàn tiền toàn bộ các giao dịch đã thu của 1 đơn (dùng khi giao hàng thất bại).
+    // Không xóa dòng payment, chỉ đổi trạng thái để còn dấu vết đối soát.
+    public boolean hoanTienToanBo(String orderId) {
+        String sql = "UPDATE payment SET payment_status = 'DA_HOAN_TIEN' " +
+                "WHERE order_id = ? AND payment_status = 'THANH_TOAN_THANH_CONG'";
+        return DBBase.update(sql, orderId) > 0;
+    }
+
+    // Tổng số tiền đã hoàn của 1 đơn (để hiển thị lại cho người dùng)
+    public BigDecimal tinhDaHoanTien(String orderId) {
+        String sql = "SELECT COALESCE(SUM(amount), 0) FROM payment " +
+                "WHERE order_id = ? AND payment_status = 'DA_HOAN_TIEN'";
+        List<Object[]> rows = DBBase.query(sql, orderId);
+        if (rows.isEmpty() || rows.get(0)[0] == null)
+            return BigDecimal.ZERO;
+        return (BigDecimal) rows.get(0)[0];
+    }
+
     // =====================================================
     // HÀM MỚI: LẤY DANH SÁCH ĐƠN CHƯA THANH TOÁN ĐỦ
     // =====================================================
@@ -91,7 +109,7 @@ public class PaymentDAO {
                 "(SELECT COALESCE(SUM(amount), 0) FROM payment p WHERE p.order_id = o.order_id AND p.payment_status = 'THANH_TOAN_THANH_CONG') as paid " +
                 "FROM `order` o " +
                 "JOIN customer c ON o.customer_id = c.customer_id " +
-                "WHERE o.order_status != 'DA_HUY'";
+                "WHERE o.order_status NOT IN ('DA_HUY', 'GIAO_THAT_BAI')";
 
         List<Object[]> rawList = DBBase.query(sql);
         List<Object[]> ketQua = new ArrayList<>();

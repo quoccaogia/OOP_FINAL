@@ -122,7 +122,17 @@ public class OrderDAO {
         return DBBase.update(sql, status, orderId) > 0;
     }
 
+    /**
+     * Xóa hẳn 1 đơn: xóa các dòng thanh toán của đơn TRƯỚC, rồi mới xóa đơn.
+     *
+     * Lý do: payment.order_id không có ON DELETE CASCADE, nên nếu còn dòng
+     * payment thì lệnh DELETE đơn sẽ vướng khóa ngoại và luôn thất bại.
+     * (OrderDetail thì đã có ON DELETE CASCADE nên tự mất theo.)
+     *
+     * CHỈ gọi sau khi đã kiểm tra đơn được phép xóa — xem OrderMenu.xoaDon().
+     */
     public boolean xoaDon(String orderId) {
+        DBBase.update("DELETE FROM payment WHERE order_id = ?", orderId);
         return DBBase.update(
                 "DELETE FROM `Order` WHERE order_id = ?", orderId) > 0;
     }
@@ -154,7 +164,7 @@ public class OrderDAO {
         List<Order> list = new ArrayList<>();
         String sql = "SELECT * FROM `Order` " +
                 "WHERE DATE(delivery_date) = CURDATE() " +
-                "AND order_status NOT IN ('HOAN_THANH', 'DA_HUY')";
+                "AND order_status NOT IN ('HOAN_THANH', 'DA_HUY', 'GIAO_THAT_BAI')";
 
         try (Connection conn = DBConnection.getConnection();
                 PreparedStatement ps = conn.prepareStatement(sql);

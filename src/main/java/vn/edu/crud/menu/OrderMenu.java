@@ -107,6 +107,8 @@ public class OrderMenu {
                 return "Đang giao hàng";
             case "HOAN_THANH":
                 return "Hoàn thành";
+            case "GIAO_THAT_BAI":
+                return "Giao thất bại";
             case "DA_HUY":
                 return "Đã hủy";
             default:
@@ -515,6 +517,7 @@ public class OrderMenu {
                 break;
             case "DANG_GIAO":
                 ds.add("HOAN_THANH");
+                ds.add("GIAO_THAT_BAI");   // khách không nhận hàng
                 break;
         }
         return ds;
@@ -554,6 +557,11 @@ public class OrderMenu {
 
             if ("DA_HUY".equals(trangThaiMoi)) {
                 huyDon(orderId);
+                return;
+            }
+
+            if ("GIAO_THAT_BAI".equals(trangThaiMoi)) {
+                giaoThatBai(orderId);
                 return;
             }
 
@@ -615,6 +623,80 @@ public class OrderMenu {
     }
 
     // =====================================================
+    // GIAO HÀNG THẤT BẠI
+    // Khách không nhận hàng: trả toàn bộ hoa về kho, rồi chốt đơn ở trạng thái
+    // GIAO_THAT_BAI. Tiền đã thu thì người dùng chọn HOÀN lại hay GIỮ lại.
+    // =====================================================
+    private void giaoThatBai(String orderId) {
+        BigDecimal daTra = paymentDAO.tinhDaTra(orderId);
+        List<Object[]> dsHoa = orderDAO.layHoaTrongDon(orderId);
+
+        System.out.println("\n--- GIAO HÀNG THẤT BẠI ---");
+        System.out.println("Sẽ trả " + dsHoa.size() + " loại hoa trong đơn về kho.");
+
+        boolean hoanTien = false;
+        if (daTra.compareTo(BigDecimal.ZERO) > 0) {
+            System.out.println("Khách đã trả: " + daTra + " VND");
+            System.out.println("Chọn cách xử lý tiền:");
+            System.out.println("  1. Giao thất bại + HOÀN lại " + daTra + " VND cho khách");
+            System.out.println("  2. Giao thất bại + GIỮ lại " + daTra + " VND (khách mất tiền)");
+            System.out.println("  0. Hủy thao tác");
+            System.out.print("Nhập số chọn: ");
+
+            int chon;
+            try {
+                chon = Integer.parseInt(sc.nextLine().trim());
+            } catch (NumberFormatException e) {
+                System.out.println("❌ Phải nhập số!");
+                return;
+            }
+            if (chon == 0) {
+                System.out.println("Đã hủy thao tác.");
+                return;
+            }
+            if (chon != 1 && chon != 2) {
+                System.out.println("❌ Chỉ được chọn 0, 1 hoặc 2!");
+                return;
+            }
+            hoanTien = (chon == 1);
+        } else {
+            System.out.println("Đơn chưa thu tiền → không cần xử lý tiền.");
+            System.out.print("Xác nhận đơn " + orderId + " giao thất bại? (y/n): ");
+            if (!sc.nextLine().equalsIgnoreCase("y")) {
+                System.out.println("Đã hủy thao tác.");
+                return;
+            }
+        }
+
+        // 1. Hoàn tiền (nếu chọn hoàn): đánh dấu giao dịch đã thu sang DA_HOAN_TIEN
+        if (hoanTien && !paymentDAO.hoanTienToanBo(orderId)) {
+            System.out.println("❌ Hoàn tiền thất bại — chưa thay đổi trạng thái đơn.");
+            return;
+        }
+
+        // 2. Trả hoa về kho
+        for (Object[] dong : dsHoa) {
+            String maHoa = (String) dong[0];
+            int soLuong = (Integer) dong[1];
+            orderDAO.congTonKho(maHoa, soLuong);
+        }
+
+        // 3. Chốt trạng thái
+        if (orderDAO.capNhatTrangThai(orderId, "GIAO_THAT_BAI")) {
+            System.out.println("✅ Đã ghi nhận GIAO THẤT BẠI cho đơn " + orderId + ".");
+            if (hoanTien) {
+                System.out.println("💰 Đã hoàn " + daTra + " VND cho khách (giao dịch chuyển sang DA_HOAN_TIEN).");
+            } else if (daTra.compareTo(BigDecimal.ZERO) > 0) {
+                System.out.println("💰 Cửa hàng giữ lại " + daTra + " VND của khách.");
+            }
+            System.out.println("📦 Đã trả toàn bộ hoa về kho.");
+            System.out.println("👉 Đơn đã kết thúc. Nếu muốn giao lại, tạo đơn mới.");
+        } else {
+            System.out.println("❌ Cập nhật trạng thái thất bại!");
+        }
+    }
+
+    // =====================================================
     // 5, 6, 7. XEM/XÓA CHI TIẾT ĐƠN HÀNG
     // =====================================================
     private void xemChiTietDon() {
@@ -639,8 +721,10 @@ public class OrderMenu {
 
             BigDecimal tongTien = paymentDAO.tinhTongTienDon(orderId);
             BigDecimal daTra = paymentDAO.tinhDaTra(orderId);
+            BigDecimal daHoan = paymentDAO.tinhDaHoanTien(orderId);
             System.out.println("Thanh toán : " + daTra + " / " + tongTien + " VND - "
-                    + dichTrangThaiThanhToan(tongTien, daTra));
+                    + dichTrangThaiThanhToan(tongTien, daTra)
+                    + (daHoan.compareTo(BigDecimal.ZERO) > 0 ? " (đã hoàn " + daHoan + " VND)" : ""));
         }
 
         System.out.println("\n--- CHI TIẾT CÁC MẶT HÀNG ---");
@@ -670,8 +754,9 @@ public class OrderMenu {
             }
 
             String trangThai = orderDAO.layTrangThaiDon(orderId);
-            if ("HOAN_THANH".equals(trangThai) || "DA_HUY".equals(trangThai)) {
-                System.out.println("❌ Đơn đã hoàn thành hoặc đã hủy, không thể xóa hoa!");
+            if ("HOAN_THANH".equals(trangThai) || "DA_HUY".equals(trangThai)
+                    || "GIAO_THAT_BAI".equals(trangThai)) {
+                System.out.println("❌ Đơn đã hoàn thành / đã hủy / giao thất bại, không thể xóa hoa!");
                 return;
             }
             System.out.print("Mã hoa cần xóa: ");
@@ -704,23 +789,51 @@ public class OrderMenu {
             System.out.println("❌ Không tìm thấy đơn!");
             return;
         }
-        if (orderDAO.donDaCoThanhToan(orderId)) {
-            System.out.println("❌ KHÔNG THỂ XÓA! Đơn hàng này đã được thanh toán.");
+
+        String trangThai = orderDAO.layTrangThaiDon(orderId);
+        boolean daHuy = "DA_HUY".equals(trangThai);
+        boolean giaoThatBai = "GIAO_THAT_BAI".equals(trangThai);
+        // Đơn đã đóng (hủy hoặc giao thất bại) thì hoa ĐÃ được trả về kho rồi.
+        boolean daDong = daHuy || giaoThatBai;
+        boolean daThuTien = orderDAO.donDaCoThanhToan(orderId);
+
+        // Đơn còn hiệu lực mà đã thu được tiền -> không cho xóa, phải xử lý tiền trước.
+        // Đơn ĐÃ ĐÓNG thì được xóa (kể cả còn khoản cọc giữ lại), nhưng phải cảnh báo.
+        if (daThuTien && !daDong) {
+            System.out.println("❌ KHÔNG THỂ XÓA! Đơn hàng này còn đang giữ "
+                    + paymentDAO.tinhDaTra(orderId) + " VND tiền khách đã trả.");
+            System.out.println("👉 Hãy hủy đơn nếu khách bỏ, hoặc vào Thanh toán → [4] Hủy giao dịch "
+                    + "để hoàn HẾT số tiền đã thu trước khi xóa.");
             return;
         }
 
+        if (daDong) {
+            System.out.println("ℹ️ Đơn đã " + (daHuy ? "hủy" : "giao thất bại")
+                    + " trước đó — hoa đã được trả về kho, nên xóa đơn sẽ KHÔNG cộng kho lần nữa.");
+        }
+        if (daThuTien) {
+            System.out.println("⚠️ Đơn đã thu " + paymentDAO.tinhDaTra(orderId)
+                    + " VND. Xóa đơn sẽ xóa luôn chứng từ khoản này (không hoàn tiền).");
+        }
+
         System.out.print("Bạn có chắc chắn muốn xóa đơn hàng này? (y/n): ");
-        if (sc.nextLine().equalsIgnoreCase("y")) {
-            List<Object[]> dsHoa = orderDAO.layHoaTrongDon(orderId);
-            if (orderDAO.xoaDon(orderId)) {
+        if (!sc.nextLine().equalsIgnoreCase("y")) return;
+
+        List<Object[]> dsHoa = orderDAO.layHoaTrongDon(orderId);
+        if (orderDAO.xoaDon(orderId)) {
+            if (daDong) {
+                // Kho đã được trả lúc hủy / giao thất bại -> không cộng lại lần 2.
+                System.out.println("✅ Đã xóa đơn (kho không thay đổi vì hoa đã về kho trước đó).");
+            } else {
                 for (Object[] dong : dsHoa) {
                     String maHoa = (String) dong[0];
                     int soLuong = (Integer) dong[1];
                     orderDAO.congTonKho(maHoa, soLuong);
                 }
-                System.out.println("✅ Đã xóa đơn!");
-            } else
-                System.out.println("❌ Xóa thất bại!");
+                System.out.println("✅ Đã xóa đơn và trả hoa về kho!");
+            }
+        } else {
+            System.out.println("❌ Xóa thất bại!");
         }
     }
 
