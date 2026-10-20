@@ -4,7 +4,9 @@ package vn.edu.crud.menu;
 import java.util.ArrayList;
 import vn.edu.crud.dao.FlowerBatchDAO;
 import vn.edu.crud.dao.FlowerDAO;
+import vn.edu.crud.dao.SupplierDAO;
 import vn.edu.crud.model.Flower;
+import vn.edu.crud.util.NhapLieu;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -14,6 +16,7 @@ public class FlowerMenu {
     private final Scanner sc = new Scanner(System.in);
     private final FlowerDAO dao = new FlowerDAO();
     private final FlowerBatchDAO batchDAO = new FlowerBatchDAO();
+    private final SupplierDAO supplierDAO = new SupplierDAO();
 
     public void hienThi() {
         int chon;
@@ -67,7 +70,7 @@ public class FlowerMenu {
                 case 5: xoaHoa(); break;
                 case 6: inDsHoa(dao.hoaSapHet(10)); break;
                 case 7:
-                    System.out.print("Từ khóa: ");
+                    System.out.print("Từ khóa (VD: Hồng): ");
                     inDsHoa(dao.timTheoTen(sc.nextLine()));
                     break;
                 case 8:
@@ -76,7 +79,7 @@ public class FlowerMenu {
                     inDsHoa(dao.timTheoGia(min, max));
                     break;
                 case 9:
-                    System.out.print("Màu: ");
+                    System.out.print("Màu (VD: Đỏ): ");
                     inDsHoa(dao.timTheoMau(sc.nextLine()));
                     break;
                 case 10: inBang(dao.hoaBanChay()); break;
@@ -94,32 +97,47 @@ public class FlowerMenu {
     private void themHoa() {
         String id = dao.sinhMaHoaMoi();
         System.out.println("Mã tự sinh: " + id);
-        System.out.print("Tên: ");      String name  = sc.nextLine();
-        System.out.print("Danh mục: "); String cat   = sc.nextLine();
-        System.out.print("Đơn giá: ");  BigDecimal price = new BigDecimal(sc.nextLine());
-        System.out.print("Tồn kho: ");  int stock = Integer.parseInt(sc.nextLine());
-        System.out.print("Màu: ");      String color = sc.nextLine();
-        System.out.print("Mã NCC: ");   String supId = sc.nextLine();
+        String name = NhapLieu.batBuoc(sc, "Tên hoa", "VD: Hồng Đỏ Đà Lạt");
+        String cat = NhapLieu.batBuoc(sc, "Danh mục", "VD: Hồng");
+        BigDecimal price = NhapLieu.tien(sc, "Đơn giá bán", "VD: 5000", false);
+        int stock = NhapLieu.soNguyen(sc, "Tồn kho ban đầu", "VD: 100", 0, 1_000_000);
+        String color = NhapLieu.batBuoc(sc, "Màu sắc", "VD: Đỏ");
+        String supId = nhapMaNCC(null);
         System.out.println(dao.insert(id, name, cat, price, stock, color, supId)
                 ? "✅ Thêm thành công!" : "❌ Thất bại!");
     }
 
     private void suaHoa() {
-        System.out.print("Mã hoa cần sửa: ");
-        String id = sc.nextLine();
-        if (dao.timTheoMa(id) == null) { System.out.println("❌ Không tìm thấy!"); return; }
+        System.out.print("Mã hoa cần sửa (VD: FL01): ");
+        String id = sc.nextLine().trim().toUpperCase();
+        Flower cu = dao.timTheoMa(id);
+        if (cu == null) { System.out.println("❌ Không tìm thấy!"); return; }
         if (batchDAO.coLo(id)) {
             System.out.println("⚠️ Hoa này đang có lô — tồn kho được tính theo số còn trong lô.");
             System.out.println("   Sửa 'Tồn kho' ở đây sẽ làm lệch với lô (nên sửa qua nhập hàng / thanh lý lô).");
         }
-        System.out.print("Tên mới: ");      String name  = sc.nextLine();
-        System.out.print("Danh mục mới: "); String cat   = sc.nextLine();
-        System.out.print("Đơn giá mới: ");  BigDecimal price = new BigDecimal(sc.nextLine());
-        System.out.print("Tồn kho mới: ");  int stock = Integer.parseInt(sc.nextLine());
-        System.out.print("Màu mới: ");      String color = sc.nextLine();
-        System.out.print("Mã NCC mới: ");   String supId = sc.nextLine();
+        String name = NhapLieu.batBuoc(sc, "Tên mới", "VD: Hồng Đỏ Đà Lạt");
+        String cat = NhapLieu.batBuoc(sc, "Danh mục mới", "VD: Hồng");
+        BigDecimal price = NhapLieu.tien(sc, "Đơn giá mới", "VD: 5000", false);
+        int stock = NhapLieu.soNguyen(sc, "Tồn kho mới", "VD: 100", 0, 1_000_000);
+        String color = NhapLieu.batBuoc(sc, "Màu mới", "VD: Đỏ");
+        String supId = nhapMaNCC(cu.getSupplierId());
         System.out.println(dao.update(id, name, cat, price, stock, color, supId)
                 ? "✅ Sửa thành công!" : "❌ Thất bại!");
+    }
+
+    // Nhập mã NCC: Enter = giữ nguyên (khi sửa) / chưa có (khi thêm); nếu nhập thì mã phải tồn tại
+    private String nhapMaNCC(String hienTai) {
+        while (true) {
+            String goiY = (hienTai == null || hienTai.isEmpty())
+                    ? "VD: NCC01, Enter = chưa có"
+                    : "Enter = giữ nguyên " + hienTai + ", VD: NCC01";
+            System.out.print("Mã NCC (" + goiY + "): ");
+            String ma = sc.nextLine().trim().toUpperCase();
+            if (ma.isEmpty()) return hienTai;
+            if (supplierDAO.findById(ma) != null) return ma;
+            System.out.println("⚠️ Không có NCC mã " + ma + ". Xem danh sách ở menu Nhà cung cấp.");
+        }
     }
 
     private void xoaHoa() {

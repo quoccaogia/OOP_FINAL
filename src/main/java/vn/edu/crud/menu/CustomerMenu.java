@@ -4,6 +4,7 @@ import vn.edu.crud.dao.CustomerDAO;
 import vn.edu.crud.dao.OrderDAO;
 import vn.edu.crud.model.Customer;
 import vn.edu.crud.model.Order;
+import vn.edu.crud.util.NhapLieu;
 
 import java.util.List;
 import java.util.Scanner;
@@ -53,7 +54,7 @@ public class CustomerMenu {
     // =====================================================
     private void tiepDonKhachHang() {
         System.out.println("\n--- TIẾP ĐÓN KHÁCH HÀNG ---");
-        System.out.print("Nhập SĐT khách hàng: ");
+        System.out.print("Nhập SĐT khách hàng (VD: 0901234567, có thể nhập một phần): ");
         String sdt = dao.chuanHoaSdt(sc.nextLine());
 
         List<Customer> ketQua = dao.timTheoSdt(sdt);
@@ -82,7 +83,7 @@ public class CustomerMenu {
     // =====================================================
     private void xemDonHangBangSdt() {
         System.out.println("\n--- XEM ĐƠN HÀNG THEO SĐT ---");
-        System.out.print("Nhập SĐT khách hàng: ");
+        System.out.print("Nhập SĐT khách hàng (VD: 0901234567, có thể nhập một phần): ");
         String sdt = dao.chuanHoaSdt(sc.nextLine());
 
         List<Customer> ds = dao.timTheoSdt(sdt);
@@ -114,30 +115,38 @@ public class CustomerMenu {
         String id = dao.sinhMaKhachMoi();
         System.out.println("Mã KH tự sinh: " + id);
 
-        System.out.print("Tên KH: ");
-        String ten = sc.nextLine();
-        System.out.print("Địa chỉ: ");
-        String diaChi = sc.nextLine();
-        System.out.print("Email: ");
-        String email = sc.nextLine();
+        String sdt = sdtDaNhap;
+        if (sdt == null || sdt.isEmpty() || !NhapLieu.laSdtKhach(sdt)) {
+            sdt = NhapLieu.sdtKhach(sc, "SĐT khách hàng", true);
+        }
+        String ten = NhapLieu.batBuoc(sc, "Tên KH", "VD: Nguyễn Văn A");
+        String diaChi = NhapLieu.tuyChon(sc, "Địa chỉ", "VD: Quận 1, TP.HCM");
+        String email = NhapLieu.email(sc, "Email", false);
 
-        Customer kh = new Customer(id, ten, sdtDaNhap, diaChi, email);
+        Customer kh = new Customer(id, ten, sdt, diaChi, email);
         if (dao.insert(kh)) System.out.println("✅ Thêm khách hàng thành công!");
     }
 
     private void suaKhach(Customer kh) {
         System.out.println("\n--- SỬA THÔNG TIN KHÁCH HÀNG ---");
-        System.out.print("Tên mới (bỏ trống để giữ nguyên): ");
-        String ten = sc.nextLine();
+        System.out.print("Tên mới (Enter = giữ nguyên, VD: Nguyễn Văn A): ");
+        String ten = sc.nextLine().trim();
         if (!ten.isEmpty()) kh.setName(ten);
 
-        System.out.print("Địa chỉ mới (bỏ trống để giữ nguyên): ");
-        String diaChi = sc.nextLine();
+        System.out.print("Địa chỉ mới (Enter = giữ nguyên, VD: Quận 1, TP.HCM): ");
+        String diaChi = sc.nextLine().trim();
         if (!diaChi.isEmpty()) kh.setAddress(diaChi);
 
-        System.out.print("Email mới (bỏ trống để giữ nguyên): ");
-        String email = sc.nextLine();
-        if (!email.isEmpty()) kh.setEmail(email);
+        while (true) {
+            System.out.print("Email mới (Enter = giữ nguyên, VD: ten@gmail.com): ");
+            String email = sc.nextLine().trim();
+            if (email.isEmpty()) break;
+            if (NhapLieu.laEmail(email)) {
+                kh.setEmail(email);
+                break;
+            }
+            System.out.println("⚠️ Email không hợp lệ, phải có dạng ten@domain.com.");
+        }
 
         if (dao.update(kh)) System.out.println("✅ Sửa thành công!");
         else System.out.println("❌ Sửa thất bại!");

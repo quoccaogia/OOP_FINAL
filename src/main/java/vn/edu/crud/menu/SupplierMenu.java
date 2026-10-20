@@ -3,6 +3,7 @@ package vn.edu.crud.menu;
 import vn.edu.crud.dao.SupplierDAO;
 import vn.edu.crud.dao.PurchaseOrderDAO;
 import vn.edu.crud.model.Supplier;
+import vn.edu.crud.util.NhapLieu;
 
 import java.util.List;
 import java.util.Scanner;
@@ -52,7 +53,7 @@ public class SupplierMenu {
     // =====================================================
     private void tiepNhanNhaCungCap() {
         System.out.println("\n--- TIẾP NHẬN NHÀ CUNG CẤP ---");
-        System.out.print("Nhập SĐT nhà cung cấp: ");
+        System.out.print("Nhập SĐT nhà cung cấp (VD: 0263388899, có thể nhập một phần): ");
         String sdt = dao.chuanHoaSdt(sc.nextLine());
 
         List<Supplier> ketQua = dao.timTheoSdt(sdt);
@@ -121,29 +122,29 @@ public class SupplierMenu {
         String id = dao.sinhMaNCCMoi();
         System.out.println("Mã NCC tự sinh: " + id);
 
-        System.out.print("Tên NCC: ");
-        String ten = sc.nextLine();
-        System.out.print("Địa chỉ: ");
-        String diaChi = sc.nextLine();
-        System.out.print("Người đại diện: ");
-        String daiDien = sc.nextLine();
+        String sdt = (sdtDaNhap == null || sdtDaNhap.isEmpty() || !NhapLieu.laSdtNhaCungCap(sdtDaNhap))
+                ? NhapLieu.sdtNhaCungCap(sc, "SĐT NCC")
+                : sdtDaNhap;
+        String ten = NhapLieu.batBuoc(sc, "Tên NCC", "VD: Vựa Hoa Đà Lạt");
+        String diaChi = NhapLieu.tuyChon(sc, "Địa chỉ", "VD: Đà Lạt, Lâm Đồng");
+        String daiDien = NhapLieu.tuyChon(sc, "Người đại diện", "VD: Ông Bảy");
 
-        Supplier ncc = new Supplier(id, ten, sdtDaNhap, diaChi, daiDien);
+        Supplier ncc = new Supplier(id, ten, sdt, diaChi, daiDien);
         if (dao.insert(ncc)) System.out.println("✅ Thêm nhà cung cấp thành công!");
     }
 
     private void suaNhaCungCap(Supplier ncc) {
         System.out.println("\n--- SỬA THÔNG TIN NHÀ CUNG CẤP ---");
-        System.out.print("Tên mới (bỏ trống để giữ nguyên): ");
-        String ten = sc.nextLine();
+        System.out.print("Tên mới (Enter = giữ nguyên, VD: Vựa Hoa Đà Lạt): ");
+        String ten = sc.nextLine().trim();
         if (!ten.isEmpty()) ncc.setName(ten);
 
-        System.out.print("Địa chỉ mới (bỏ trống để giữ nguyên): ");
-        String diaChi = sc.nextLine();
+        System.out.print("Địa chỉ mới (Enter = giữ nguyên, VD: Đà Lạt, Lâm Đồng): ");
+        String diaChi = sc.nextLine().trim();
         if (!diaChi.isEmpty()) ncc.setAddress(diaChi);
 
-        System.out.print("Người đại diện mới (bỏ trống để giữ nguyên): ");
-        String daiDien = sc.nextLine();
+        System.out.print("Người đại diện mới (Enter = giữ nguyên, VD: Ông Bảy): ");
+        String daiDien = sc.nextLine().trim();
         if (!daiDien.isEmpty()) ncc.setRepresentative(daiDien);
 
         if (dao.update(ncc)) System.out.println("✅ Sửa thành công!");

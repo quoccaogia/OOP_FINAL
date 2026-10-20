@@ -3,6 +3,7 @@ package vn.edu.crud.menu;
 import vn.edu.crud.dao.EmployeeDAO;
 import vn.edu.crud.model.Employee;
 import vn.edu.crud.model.EmployeeRole;
+import vn.edu.crud.util.NhapLieu;
 
 import java.math.BigDecimal;
 import java.text.NumberFormat;
@@ -58,8 +59,7 @@ public class EmployeeMenu {
         String id = dao.sinhMaNVMoi();
         System.out.println("Mã NV tự sinh: " + id);
 
-        System.out.print("Tên NV: ");
-        String ten = sc.nextLine();
+        String ten = NhapLieu.batBuoc(sc, "Tên NV", "VD: Nguyễn Văn A");
 
         // --- CHỌN CHỨC VỤ ---
         EmployeeRole[] dsRole = EmployeeRole.values();
@@ -82,20 +82,25 @@ public class EmployeeMenu {
             } catch (NumberFormatException e) { System.out.println("Vui lòng nhập số!"); }
         }
 
-        System.out.print("SĐT: ");
-        String sdt = sc.nextLine();
+        String sdt = NhapLieu.tuyChon(sc, "SĐT", "VD: 0901234567");
 
-        // --- GỢI Ý LƯƠNG ---
-        System.out.printf("Lương tháng (Enter để nhận mức mặc định %s): ", VND.format(roleChon.getLuongCoBan()));
-        String luongStr = sc.nextLine();
-        BigDecimal luong;
-        if (luongStr.trim().isEmpty()) {
-            luong = roleChon.getLuongCoBan();
-        } else {
-            try { luong = new BigDecimal(luongStr); }
-            catch (NumberFormatException e) {
-                System.out.println("⚠️ Lỗi định dạng, tự động lấy lương mặc định.");
-                luong = roleChon.getLuongCoBan();
+        // --- GỢI Ý LƯƠNG (phải > 0) ---
+        BigDecimal luong = roleChon.getLuongCoBan();
+        while (true) {
+            System.out.printf("Lương tháng (Enter = mặc định %s, VD: 6000000): ",
+                    VND.format(roleChon.getLuongCoBan()));
+            String s = sc.nextLine().trim();
+            if (s.isEmpty()) break;
+            try {
+                BigDecimal v = new BigDecimal(s);
+                if (v.compareTo(BigDecimal.ZERO) <= 0) {
+                    System.out.println("⚠️ Lương phải lớn hơn 0.");
+                    continue;
+                }
+                luong = v;
+                break;
+            } catch (NumberFormatException e) {
+                System.out.println("⚠️ Phải nhập số. VD: 6000000");
             }
         }
 
@@ -158,8 +163,8 @@ public class EmployeeMenu {
         System.out.println("\n--- THÔNG TIN HIỆN TẠI ---");
         System.out.println("Tên: " + nv.getName() + " | Chức vụ: " + EmployeeRole.getLabelFromString(nv.getRole()) + " | Lương: " + VND.format(nv.getSalary()));
 
-        System.out.print("Tên mới (bỏ trống để giữ nguyên): ");
-        String ten = sc.nextLine();
+        System.out.print("Tên mới (Enter = giữ nguyên, VD: Nguyễn Văn A): ");
+        String ten = sc.nextLine().trim();
         if (!ten.isEmpty()) nv.setName(ten);
 
         System.out.print("Bạn có muốn đổi chức vụ không? (y/n): ");
@@ -177,15 +182,25 @@ public class EmployeeMenu {
             } catch (Exception e) { System.out.println("Giữ nguyên chức vụ cũ."); }
         }
 
-        System.out.print("SĐT mới (bỏ trống để giữ nguyên): ");
-        String sdt = sc.nextLine();
+        System.out.print("SĐT mới (Enter = giữ nguyên, VD: 0901234567): ");
+        String sdt = sc.nextLine().trim();
         if (!sdt.isEmpty()) nv.setPhone(sdt);
 
-        System.out.print("Lương mới (bỏ trống để giữ nguyên): ");
-        String luongStr = sc.nextLine();
-        if (!luongStr.isEmpty()) {
-            try { nv.setSalary(new BigDecimal(luongStr)); }
-            catch (Exception e) { System.out.println("Lỗi định dạng lương, giữ nguyên mức cũ."); }
+        while (true) {
+            System.out.print("Lương mới (Enter = giữ nguyên, VD: 6000000): ");
+            String luongStr = sc.nextLine().trim();
+            if (luongStr.isEmpty()) break;
+            try {
+                BigDecimal v = new BigDecimal(luongStr);
+                if (v.compareTo(BigDecimal.ZERO) <= 0) {
+                    System.out.println("⚠️ Lương phải lớn hơn 0.");
+                    continue;
+                }
+                nv.setSalary(v);
+                break;
+            } catch (NumberFormatException e) {
+                System.out.println("⚠️ Phải nhập số. VD: 6000000");
+            }
         }
 
         if (dao.update(nv)) System.out.println("✅ Sửa thành công!");

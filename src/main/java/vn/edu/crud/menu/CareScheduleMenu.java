@@ -69,19 +69,27 @@ public class CareScheduleMenu {
         System.out.println("Mã lịch tự sinh: " + id);
 
         System.out.print("Mã nhân viên thực hiện (VD: NV03): ");
-        String empId = sc.nextLine().toUpperCase();
+        String empId = sc.nextLine().trim().toUpperCase();
 
-        System.out.print("Độ tươi (VD: TƯƠI / HƠI HÉO / HÉO): ");
-        String fresh = sc.nextLine().toUpperCase();
+        String fresh;
+        while (true) {
+            System.out.print("Độ tươi (TƯƠI / HƠI HÉO / HÉO / HỎNG): ");
+            fresh = chuanHoa(sc.nextLine());
+            if (fresh.equals("TƯƠI") || fresh.equals("HƠI HÉO")
+                    || fresh.equals("HÉO") || fresh.equals("HỎNG")) {
+                break;
+            }
+            System.out.println("⚠️ Chỉ nhận: TƯƠI, HƠI HÉO, HÉO, HỎNG.");
+        }
 
-        System.out.print("Tình trạng nước (VD: ĐỦ / THIẾU): ");
-        String water = sc.nextLine();
+        System.out.print("Tình trạng nước (ĐỦ / THIẾU, VD: ĐỦ): ");
+        String water = sc.nextLine().trim();
 
         System.out.print("Hành động đã làm (VD: Tưới nước, Tỉa lá): ");
-        String action = sc.nextLine();
+        String action = sc.nextLine().trim();
 
-        System.out.print("Ghi chú thêm: ");
-        String note = sc.nextLine();
+        System.out.print("Ghi chú thêm (VD: Hoa hơi héo, Enter để bỏ trống): ");
+        String note = sc.nextLine().trim();
 
         LocalDateTime date = LocalDateTime.now();
 
@@ -94,6 +102,13 @@ public class CareScheduleMenu {
         } else {
             System.out.println("❌ Thất bại! Kiểm tra lại Mã NV xem có đúng không.");
         }
+    }
+
+    // Chuẩn hoá chữ tiếng Việt: bỏ khoảng trắng thừa, in hoa, đưa về dạng NFC
+    // để so sánh được cả khi bàn phím gõ dạng tổ hợp (NFD).
+    private String chuanHoa(String s) {
+        return java.text.Normalizer.normalize(
+                s.trim().toUpperCase(), java.text.Normalizer.Form.NFC);
     }
 
     // Sau khi ghi nhận hoa hỏng: cho thanh lý luôn lô tương ứng (trừ tồn kho)
@@ -164,14 +179,24 @@ public class CareScheduleMenu {
         String id = sc.nextLine().toUpperCase();
         if (dao.findById(id).isEmpty()) { System.out.println("❌ Không tìm thấy!"); return; }
 
-        System.out.print("Độ tươi mới (Enter để giữ nguyên): ");
-        String fresh = sc.nextLine();
-        System.out.print("Tình trạng nước mới (Enter để giữ nguyên): ");
-        String water = sc.nextLine();
-        System.out.print("Hành động mới (Enter để giữ nguyên): ");
-        String action = sc.nextLine();
+        String fresh;
+        while (true) {
+            System.out.print("Độ tươi mới (Enter = giữ nguyên: TƯƠI / HƠI HÉO / HÉO / HỎNG): ");
+            fresh = sc.nextLine().trim();
+            if (fresh.isEmpty()) break;
+            String f = chuanHoa(fresh);
+            if (f.equals("TƯƠI") || f.equals("HƠI HÉO") || f.equals("HÉO") || f.equals("HỎNG")) {
+                fresh = f;
+                break;
+            }
+            System.out.println("⚠️ Chỉ nhận: TƯƠI, HƠI HÉO, HÉO, HỎNG.");
+        }
+        System.out.print("Tình trạng nước mới (Enter để giữ nguyên, VD: ĐỦ): ");
+        String water = sc.nextLine().trim();
+        System.out.print("Hành động mới (Enter để giữ nguyên, VD: Tưới nước): ");
+        String action = sc.nextLine().trim();
         System.out.print("Ghi chú mới (Enter để giữ nguyên): ");
-        String note = sc.nextLine();
+        String note = sc.nextLine().trim();
 
         List<Object[]> cu = dao.findById(id);
         Object[] row = cu.get(0);

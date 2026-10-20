@@ -8,6 +8,7 @@ import vn.edu.crud.dao.SupplierDAO;
 import vn.edu.crud.model.Employee;
 import vn.edu.crud.model.Flower;
 import vn.edu.crud.model.Supplier;
+import vn.edu.crud.util.NhapLieu;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
@@ -151,14 +152,14 @@ public class PurchaseOrderMenu {
             }
 
             System.out.println("👉 Đã chọn: " + hoaChon.getName());
-            System.out.print("Số lượng nhập: ");
+            System.out.print("Số lượng nhập (VD: 100): ");
             int imported = 0;
             try {
                 imported = Integer.parseInt(sc.nextLine());
                 if (imported <= 0) throw new Exception();
             } catch (Exception e) { System.out.println("⚠️ Số lượng phải > 0!"); continue; }
 
-            System.out.print("Đơn giá nhập: ");
+            System.out.print("Đơn giá nhập (VD: 3000): ");
             BigDecimal cost = BigDecimal.ZERO;
             try {
                 cost = new BigDecimal(sc.nextLine());
@@ -201,19 +202,10 @@ public class PurchaseOrderMenu {
         System.out.println("\n--- THÊM LOẠI HOA MỚI ---");
         System.out.println("Mã hoa tự sinh: " + newId);
 
-        System.out.print("Tên hoa (VD: Hồng Đỏ Đà Lạt): ");
-        String name = sc.nextLine();
-        System.out.print("Danh mục (VD: Hồng, Lan, Cúc...): ");
-        String category = sc.nextLine();
-
-        BigDecimal price = BigDecimal.ZERO;
-        while (price.compareTo(BigDecimal.ZERO) <= 0) {
-            System.out.print("Giá bán niêm yết: ");
-            try { price = new BigDecimal(sc.nextLine()); } catch (Exception e) { System.out.println("⚠️ Lỗi định dạng!"); }
-        }
-
-        System.out.print("Màu sắc (VD: Đỏ, Trắng...): ");
-        String color = sc.nextLine();
+        String name = NhapLieu.batBuoc(sc, "Tên hoa", "VD: Hồng Đỏ Đà Lạt");
+        String category = NhapLieu.batBuoc(sc, "Danh mục", "VD: Hồng, Lan, Cúc");
+        BigDecimal price = NhapLieu.tien(sc, "Giá bán niêm yết", "VD: 5000", false);
+        String color = NhapLieu.batBuoc(sc, "Màu sắc", "VD: Đỏ, Trắng");
 
         // Tồn kho ban đầu = 0
         boolean ok = flowerDAO.insert(newId, name, category, price, 0, color, supplierId);
@@ -228,7 +220,7 @@ public class PurchaseOrderMenu {
     }
 
     private void suaPN() {
-        System.out.print("Mã phiếu nhập cần sửa: ");
+        System.out.print("Mã phiếu nhập cần sửa (VD: PN001): ");
         String id = sc.nextLine();
         List<Object[]> cu = poDAO.findById(id);
         if (cu.isEmpty()) { System.out.println("❌ Không tìm thấy!"); return; }
@@ -249,7 +241,7 @@ public class PurchaseOrderMenu {
             System.out.println("👉 Phiếu này CHƯA CHỐT (dở dang) — dùng chức năng [9] Chốt phiếu nhập.");
         }
 
-        System.out.print("Ghi chú mới (Enter = giữ nguyên): ");
+        System.out.print("Ghi chú mới (Enter = giữ nguyên, VD: Nhập đợt 1 tháng 10): ");
         String note = sc.nextLine();
         if (note.isEmpty()) note = noteCu;
 
@@ -257,7 +249,7 @@ public class PurchaseOrderMenu {
     }
 
     private void xoaPN() {
-        System.out.print("Mã phiếu nhập cần xóa: ");
+        System.out.print("Mã phiếu nhập cần xóa (VD: PN001): ");
         String id = sc.nextLine();
 
         int soLo = poDAO.demLoCuaPhieu(id);

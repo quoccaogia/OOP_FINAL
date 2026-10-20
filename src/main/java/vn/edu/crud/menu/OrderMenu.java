@@ -11,6 +11,7 @@ import vn.edu.crud.model.Employee;
 import vn.edu.crud.model.Flower;
 import vn.edu.crud.model.Order;
 import vn.edu.crud.model.Payment;
+import vn.edu.crud.util.NhapLieu;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -144,9 +145,8 @@ public class OrderMenu {
             o.setOrderId(orderDAO.sinhMaDonMoi());
             System.out.println("Mã đơn tự sinh: " + o.getOrderId());
 
-            System.out.print("Nhập SĐT khách hàng (Bấm Enter để tạo khách mới): ");
-            String sdtTho = sc.nextLine().trim();
-            String sdt = customerDAO.chuanHoaSdt(sdtTho);
+            System.out.println("(Bấm Enter nếu là khách mới, chưa có SĐT)");
+            String sdt = NhapLieu.sdtKhach(sc, "SĐT khách hàng", false);
 
             if (!sdt.isEmpty()) {
                 List<Customer> dsKH = customerDAO.timTheoSdt(sdt);
@@ -227,7 +227,7 @@ public class OrderMenu {
                 }
             }
 
-            System.out.print("Địa chỉ giao (Enter = lấy địa chỉ khách): ");
+            System.out.print("Địa chỉ giao (Enter = lấy địa chỉ khách, VD: 123 Lê Lợi, Quận 1): ");
             String addr = sc.nextLine().trim();
             if (addr.isEmpty()) {
                 addr = layDiaChiKhach(o.getCustomerId());
@@ -366,16 +366,26 @@ public class OrderMenu {
 
                 Flower hoaChon = dsHoa.get(chonHoa - 1);
                 int quantity = -1;
-                while (true) {
-                    System.out.print("Số lượng (tối đa " + hoaChon.getStockQuantity() + ", 0 để hủy): ");
-                    int sl = Integer.parseInt(sc.nextLine().trim());
+                while (quantity < 0) {
+                    System.out.print("Số lượng (1-" + hoaChon.getStockQuantity()
+                            + ", VD: 10, 0 để hủy): ");
+                    int sl;
+                    try {
+                        sl = Integer.parseInt(sc.nextLine().trim());
+                    } catch (NumberFormatException e) {
+                        System.out.println("⚠️ Phải nhập số. VD: 10");
+                        continue;
+                    }
                     if (sl == 0) break;
+                    if (sl < 0) {
+                        System.out.println("⚠️ Số lượng phải lớn hơn 0.");
+                        continue;
+                    }
                     if (sl > hoaChon.getStockQuantity()) {
-                        System.out.println("❌ Vượt tồn kho!");
+                        System.out.println("❌ Vượt tồn kho (chỉ còn " + hoaChon.getStockQuantity() + ").");
                         continue;
                     }
                     quantity = sl;
-                    break;
                 }
 
                 if (quantity <= 0) continue;
@@ -567,7 +577,7 @@ public class OrderMenu {
     }
 
     private void capNhatTrangThai() {
-        System.out.print("Nhập Mã đơn cần cập nhật: ");
+        System.out.print("Nhập Mã đơn cần cập nhật (VD: ORD001): ");
         String orderId = sc.nextLine().toUpperCase();
 
         if (!orderDAO.donTonTai(orderId)) {
@@ -810,7 +820,7 @@ public class OrderMenu {
 
     private void xoaChiTiet() {
         try {
-            System.out.print("Mã đơn: ");
+            System.out.print("Mã đơn (VD: ORD001): ");
             String orderId = sc.nextLine().trim();
             if (!orderDAO.donTonTai(orderId)) {
                 System.out.println("❌ Đơn không tồn tại!");
@@ -830,7 +840,7 @@ public class OrderMenu {
                         + dichTrangThai(trangThai));
                 return;
             }
-            System.out.print("Mã hoa cần xóa: ");
+            System.out.print("Mã hoa cần xóa (VD: FL01): ");
             String flowerId = sc.nextLine().trim();
             if (!orderDAO.hoaDaCoTrongDon(orderId, flowerId)) {
                 System.out.println("⚠️ Hoa này không có trong đơn!");
@@ -853,7 +863,7 @@ public class OrderMenu {
     }
 
     private void xoaDon() {
-        System.out.print("Nhập Mã đơn cần xóa: ");
+        System.out.print("Nhập Mã đơn cần xóa (VD: ORD001): ");
         String orderId = sc.nextLine().toUpperCase();
 
         if (!orderDAO.donTonTai(orderId)) {
@@ -939,7 +949,7 @@ public class OrderMenu {
         System.out.println("Ngày giao hiện tại: " + don.getDeliveryDate().format(FMT));
         System.out.println("Nhân viên hiện tại: " + layTenNV(don.getEmployeeId()));
 
-        System.out.print("Địa chỉ mới (Enter = giữ nguyên): ");
+        System.out.print("Địa chỉ mới (Enter = giữ nguyên, VD: 123 Lê Lợi, Quận 1): ");
         String diaChi = sc.nextLine().trim();
         if (diaChi.isEmpty()) diaChi = don.getDeliveryAddress();
 
@@ -1012,23 +1022,19 @@ public class OrderMenu {
 
         String sdt = sdtDaNhap;
         if (sdt == null || sdt.isEmpty()) {
-            System.out.print("SĐT khách hàng: ");
-            sdt = customerDAO.chuanHoaSdt(sc.nextLine());
+            sdt = NhapLieu.sdtKhach(sc, "SĐT khách hàng", true);
         }
 
-        System.out.print("Tên khách hàng: ");
-        String ten = sc.nextLine();
-        System.out.print("Địa chỉ: ");
-        String diaChi = sc.nextLine();
-        System.out.print("Email: ");
-        String email = sc.nextLine();
+        String ten = NhapLieu.batBuoc(sc, "Tên khách hàng", "VD: Nguyễn Văn A");
+        String diaChi = NhapLieu.tuyChon(sc, "Địa chỉ", "VD: Quận 1, TP.HCM");
+        String email = NhapLieu.email(sc, "Email", false);
 
         Customer khMoi = new Customer(id, ten, sdt, diaChi, email);
         return customerDAO.insert(khMoi) ? id : null;
     }
 
     private void xemDonCuaKhach() {
-        System.out.print("Nhập SĐT khách hàng: ");
+        System.out.print("Nhập SĐT khách hàng (VD: 0901234567): ");
         String sdt = customerDAO.chuanHoaSdt(sc.nextLine());
 
         List<Customer> dsKH = customerDAO.timTheoSdt(sdt);

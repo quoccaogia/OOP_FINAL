@@ -36,14 +36,14 @@ public class PaymentMenu {
                     inBang(dao.tatCaThanhToan());
                     break;
                 case 2:
-                    System.out.print("Phương thức (TIEN_MAT/CHUYEN_KHOAN/MOMO/VNPAY): ");
+                    System.out.print("Phương thức (TIEN_MAT/CHUYEN_KHOAN/MOMO/THE_TIN_DUNG, VD: TIEN_MAT): ");
                     inBang(dao.thanhToanTheoPhuongThuc(sc.nextLine()));
                     break;
                 case 3:
                     inBang(dao.doanhThuHomNay());
                     break;
                 case 4:
-                    System.out.print("Mã thanh toán cần hủy: ");
+                    System.out.print("Mã thanh toán cần hủy (VD: P001): ");
                     String id = sc.nextLine().trim().toUpperCase();
                     String maDon = dao.layMaDon(id);
                     if (maDon == null) {
