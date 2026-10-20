@@ -6,6 +6,7 @@ import vn.edu.crud.dao.FlowerDAO;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Scanner;
+import java.util.Comparator;
 
 import vn.edu.crud.model.FlowerBatch;
 import java.time.LocalDate;
@@ -55,7 +56,7 @@ public class FlowerBatchMenu {
                     loConHang();
                     break;
                 case 5:
-                    inBangRutGon(dao.loHoaSapHetHan(3), "LÔ HOA SẮP HẾT HẠN");
+                    loSapHetHan(3);
                     break;
                 case 6:
                     dongBoTonKho();
@@ -268,6 +269,35 @@ public class FlowerBatchMenu {
                     b.getImportDate() == null ? "" : b.getImportDate().toLocalDate(),
                     b.getQuantityRemaining(),
                     b.getExpiryDate() == null ? "" : b.getExpiryDate());
+        }
+    }
+
+    // Lambda: lô hoa sắp hết hạn trong soNgay ngày tới (còn hàng, đang bán)
+    private void loSapHetHan(int soNgay) {
+        List<FlowerBatch> dsLo = dao.layDanhSachLo();
+        LocalDate homNay = LocalDate.now();
+
+        List<FlowerBatch> kq = dsLo.stream()
+                .filter(b -> "AVAILABLE".equals(b.getStatus())
+                        && b.getQuantityRemaining() > 0
+                        && b.getExpiryDate() != null
+                        && ChronoUnit.DAYS.between(homNay, b.getExpiryDate()) >= 0
+                        && ChronoUnit.DAYS.between(homNay, b.getExpiryDate()) <= soNgay)
+                .sorted(Comparator.comparing(FlowerBatch::getExpiryDate))
+                .collect(Collectors.toList());
+
+        System.out.println("\n--- LÔ HOA SẮP HẾT HẠN (<= " + soNgay + " NGÀY) ---");
+        if (kq.isEmpty()) {
+            System.out.println("Không có lô nào sắp hết hạn.");
+            return;
+        }
+        System.out.printf("%-8s | %-8s | %-8s | %-12s | %-8s%n",
+                "Mã Lô", "Mã Hoa", "SL Còn", "Hạn SD", "Còn Ngày");
+        System.out.println("-".repeat(56));
+        for (FlowerBatch b : kq) {
+            System.out.printf("%-8s | %-8s | %-8d | %-12s | %-8d%n",
+                    b.getBatchId(), b.getFlowerId(), b.getQuantityRemaining(),
+                    b.getExpiryDate(), ChronoUnit.DAYS.between(homNay, b.getExpiryDate()));
         }
     }
 }
