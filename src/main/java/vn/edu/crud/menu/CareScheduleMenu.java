@@ -35,6 +35,7 @@ public class CareScheduleMenu {
     private final EmployeeDAO employeeDAO = new EmployeeDAO();
 
     private static final DateTimeFormatter FMT = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
+    private static final DateTimeFormatter FMT_NGAN = DateTimeFormatter.ofPattern("dd/MM HH:mm");
 
     /** Quá số ngày này mà chưa kiểm tra thì coi là "lâu chưa chăm". */
     private static final int SO_NGAY_CANH_BAO = 3;
@@ -96,24 +97,84 @@ public class CareScheduleMenu {
             return;
         }
 
-        System.out.println("\n--- TÌNH TRẠNG CHĂM SÓC CỦA TẤT CẢ LOÀI HOA ---");
-        System.out.printf("%-4s | %-7s | %-24s | %-7s | %-6s | %-16s | %-9s | %-6s | %-24s%n",
-                "STT", "Mã", "Tên hoa", "Màu", "Tồn", "Lần cuối", "Độ tươi", "Nước", "Trạng thái");
-        System.out.println("-".repeat(134));
+        String[] tieuDe = {"STT", "Mã", "Tên hoa", "Tồn", "Lần cuối",
+                "Độ tươi", "Nước", "Trạng thái", "Ghi chú"};
+        List<String[]> dong = new ArrayList<>();
 
         for (int i = 0; i < ds.size(); i++) {
             Object[] r = ds.get(i);
-            System.out.printf("%-4d | %-7s | %-24s | %-7s | %-6s | %-16s | %-9s | %-6s | %-24s%n",
-                    (i + 1),
+            dong.add(new String[]{
+                    String.valueOf(i + 1),
                     chuoi(r[0]),
-                    cat(chuoi(r[1]), 24),
-                    cat(chuoi(r[2]), 7),
+                    cat(chuoi(r[1]), 22),
                     chuoi(r[3]),
-                    thoiGian(r[5]),
-                    chuoi(r[6]),
-                    chuoi(r[7]),
-                    nhanTrangThai(r));
+                    thoiGianNgan(r[5]),
+                    cat(chuoi(r[6]), 15),
+                    cat(chuoi(r[7]), 9),
+                    cat(nhanTrangThai(r), 22),
+                    cat(chuoi(r[8]), 26)
+            });
         }
+
+        // Bề rộng mỗi cột = max(độ rộng hiển thị của tiêu đề, của dữ liệu)
+        int[] rong = new int[tieuDe.length];
+        for (int c = 0; c < tieuDe.length; c++) {
+            rong[c] = doRong(tieuDe[c]);
+            for (String[] d : dong) {
+                rong[c] = Math.max(rong[c], doRong(d[c]));
+            }
+        }
+
+        System.out.println("\n--- TÌNH TRẠNG CHĂM SÓC CỦA TẤT CẢ LOÀI HOA ---");
+        inDongBang(tieuDe, rong);
+
+        StringBuilder gach = new StringBuilder();
+        for (int c = 0; c < rong.length; c++) {
+            gach.append("-".repeat(rong[c]));
+            if (c < rong.length - 1) gach.append("-+-");
+        }
+        System.out.println(gach);
+
+        for (String[] d : dong) {
+            inDongBang(d, rong);
+        }
+    }
+
+    private void inDongBang(String[] o, int[] rong) {
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < o.length; i++) {
+            sb.append(o[i]).append(" ".repeat(Math.max(0, rong[i] - doRong(o[i]))));
+            if (i < o.length - 1) {
+                sb.append(" | ");
+            }
+        }
+        System.out.println(sb);
+    }
+
+    /** Độ rộng hiển thị: emoji/ký hiệu rộng 2 cột, bỏ qua variation selector. */
+    private int doRong(String s) {
+        if (s == null) return 0;
+        int w = 0;
+        for (int i = 0; i < s.length(); ) {
+            int cp = s.codePointAt(i);
+            i += Character.charCount(cp);
+            if (cp == 0xFE0F || cp == 0xFE0E) continue;
+            boolean rongDoi = (cp >= 0x1F300 && cp <= 0x1FAFF)
+                    || (cp >= 0x2600 && cp <= 0x27BF);
+            w += rongDoi ? 2 : 1;
+        }
+        return w;
+    }
+
+    private String thoiGianNgan(Object o) {
+        if (o == null) return "—";
+        if (o instanceof LocalDateTime) {
+            return ((LocalDateTime) o).format(FMT_NGAN);
+        }
+        if (o instanceof java.sql.Timestamp) {
+            return ((java.sql.Timestamp) o).toLocalDateTime().format(FMT_NGAN);
+        }
+        return thoiGian(o);
     }
 
     private String nhanTrangThai(Object[] r) {
@@ -163,6 +224,8 @@ public class CareScheduleMenu {
 
         System.out.println("\nLoài hoa : " + chuoi(r[1]) + " (" + flowerId + ")");
         System.out.println("Hiện tại : " + nhanTrangThai(r));
+        System.out.println("Ghi chú lần trước: "
+                + (r[8] == null || r[8].toString().isBlank() ? "(trống)" : r[8]));
 
         String empId = chonNhanVien();
         if (empId == null) {
@@ -184,6 +247,9 @@ public class CareScheduleMenu {
         String id = dao.sinhMaCSMoi();
         if (dao.insert(id, flowerId, empId, LocalDateTime.now(), fresh, water, action, note)) {
             System.out.println("✅ Đã ghi nhận " + id + " cho " + flowerId + " — " + fresh + " / " + water);
+            if (!note.isEmpty()) {
+                System.out.println("📝 Ghi chú: " + note);
+            }
             if (fresh.contains("HÉO") || fresh.contains("HỎNG")) {
                 System.out.println("⚠️ Hoa đã héo/hỏng — cần thanh lý lô để không bán nhầm.");
                 thanhLyLoHoaHong(flowerId);
@@ -450,7 +516,9 @@ public class CareScheduleMenu {
 
     private String cat(String s, int max) {
         if (s == null) return "";
-        return s.length() <= max ? s : s.substring(0, max - 1) + "…";
+        if (s.codePointCount(0, s.length()) <= max) return s;
+        int end = s.offsetByCodePoints(0, max - 1);
+        return s.substring(0, end) + "…";
     }
 
     private String thoiGian(Object o) {
