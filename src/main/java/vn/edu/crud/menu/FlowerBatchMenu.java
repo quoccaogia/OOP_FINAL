@@ -6,6 +6,12 @@ import vn.edu.crud.dao.FlowerDAO;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Scanner;
+import java.util.Comparator;
+
+import vn.edu.crud.model.FlowerBatch;
+import java.time.LocalDate;
+import java.time.temporal.ChronoUnit;
+import java.util.stream.Collectors;
 
 public class FlowerBatchMenu {
     private final Scanner sc = new Scanner(System.in);
@@ -25,22 +31,43 @@ public class FlowerBatchMenu {
             System.out.println("║  ── BÁO CÁO ──                       ║");
             System.out.println("║  4. Lô hoa còn hàng                  ║");
             System.out.println("║  5. Lô hoa sắp hết hạn (<= 3 ngày)   ║");
+            System.out.println("║  7. Lô nhập quá 7 ngày               ║");
             System.out.println("║  0. Quay lại                         ║");
             System.out.println("╚══════════════════════════════════════╝");
             System.out.print("Chọn: ");
 
-            try { chon = Integer.parseInt(sc.nextLine()); }
-            catch (NumberFormatException e) { chon = -1; }
+            try {
+                chon = Integer.parseInt(sc.nextLine());
+            } catch (NumberFormatException e) {
+                chon = -1;
+            }
 
             switch (chon) {
-                case 1: inDanhSach(dao.findAll()); break;
-                case 2: capNhatTrangThai(); break;
-                case 3: thanhLyLoHoa(); break;
-                case 4: inBangRutGon(dao.loHoaConHang(), "LÔ HOA CÒN HÀNG"); break;
-                case 5: inBangRutGon(dao.loHoaSapHetHan(3), "LÔ HOA SẮP HẾT HẠN"); break;
-                case 6: dongBoTonKho(); break;
-                case 0: break;
-                default: System.out.println("Chọn sai!");
+                case 1:
+                    inDanhSach(dao.findAll());
+                    break;
+                case 2:
+                    capNhatTrangThai();
+                    break;
+                case 3:
+                    thanhLyLoHoa();
+                    break;
+                case 4:
+                    loConHang();
+                    break;
+                case 5:
+                    loSapHetHan(3);
+                    break;
+                case 6:
+                    dongBoTonKho();
+                    break;
+                case 7:
+                    loNhapQua7Ngay();
+                    break;
+                case 0:
+                    break;
+                default:
+                    System.out.println("Chọn sai!");
             }
         } while (chon != 0);
     }
@@ -49,10 +76,14 @@ public class FlowerBatchMenu {
     // HÀM IN BẢNG
     // =====================================================
     private void inDanhSach(List<Object[]> list) {
-        if (list.isEmpty()) { System.out.println("Không có dữ liệu."); return; }
+        if (list.isEmpty()) {
+            System.out.println("Không có dữ liệu.");
+            return;
+        }
 
         System.out.printf("%-7s | %-8s | %-18s | %-7s | %-20s | %-8s | %-8s | %-10s | %-12s | %-10s%n",
-                "Mã Lô", "Mã PN", "Nhà Cung Cấp", "Mã Hoa", "Tên Hoa", "SL Nhập", "SL Còn", "Đơn Giá", "Hạn SD", "Trạng Thái");
+                "Mã Lô", "Mã PN", "Nhà Cung Cấp", "Mã Hoa", "Tên Hoa", "SL Nhập", "SL Còn", "Đơn Giá", "Hạn SD",
+                "Trạng Thái");
         System.out.println("-".repeat(135));
 
         DateTimeFormatter df = DateTimeFormatter.ofPattern("dd/MM/yyyy");
@@ -93,7 +124,8 @@ public class FlowerBatchMenu {
             System.out.print("👉 Nhập STT lô hoa cần chọn (hoặc 0 để hủy): ");
             try {
                 int chon = Integer.parseInt(sc.nextLine());
-                if (chon == 0) return null;
+                if (chon == 0)
+                    return null;
                 if (chon >= 1 && chon <= list.size()) {
                     return list.get(chon - 1)[0].toString();
                 }
@@ -107,7 +139,8 @@ public class FlowerBatchMenu {
     private void capNhatTrangThai() {
         System.out.println("\n--- CẬP NHẬT TRẠNG THÁI LÔ HOA ---");
         String id = chonLoHoa();
-        if (id == null) return;
+        if (id == null)
+            return;
 
         System.out.println("Chọn trạng thái mới:");
         System.out.println("  1. AVAILABLE (Đang bán)");
@@ -117,9 +150,15 @@ public class FlowerBatchMenu {
 
         String status;
         switch (sc.nextLine().trim()) {
-            case "1": status = "AVAILABLE"; break;
-            case "2": status = "EXPIRED"; break;
-            case "3": status = "SOLD_OUT"; break;
+            case "1":
+                status = "AVAILABLE";
+                break;
+            case "2":
+                status = "EXPIRED";
+                break;
+            case "3":
+                status = "SOLD_OUT";
+                break;
             default:
                 System.out.println("❌ Chỉ được chọn 1, 2 hoặc 3 — không đổi gì cả!");
                 return;
@@ -135,7 +174,8 @@ public class FlowerBatchMenu {
     private void thanhLyLoHoa() {
         System.out.println("\n--- THANH LÝ / HỦY LÔ HOA ---");
         String id = chonLoHoa();
-        if (id == null) return;
+        if (id == null)
+            return;
 
         System.out.println("⚠️ Thanh lý sẽ: chuyển lô sang EXPIRED, đưa số lượng còn về 0");
         System.out.println("   và TRỪ số hoa đó khỏi tồn kho (không bán được nữa).");
@@ -156,7 +196,8 @@ public class FlowerBatchMenu {
         System.out.println("⚠️ Hoa nào chưa có lô (nhập tay) thì giữ nguyên.");
         System.out.println("⚠️ Phần tồn kho không ứng với lô nào sẽ bị bỏ.");
         System.out.print("Xác nhận đồng bộ? (y/n): ");
-        if (!sc.nextLine().equalsIgnoreCase("y")) return;
+        if (!sc.nextLine().equalsIgnoreCase("y"))
+            return;
 
         int soDong = flowerDAO.dongBoTonKhoTuLo();
         System.out.println("✅ Đã đồng bộ " + soDong + " loại hoa theo lô.");
@@ -164,7 +205,10 @@ public class FlowerBatchMenu {
 
     private void inBangRutGon(List<Object[]> list, String title) {
         System.out.println("\n--- " + title + " ---");
-        if (list.isEmpty()) { System.out.println("Không có dữ liệu."); return; }
+        if (list.isEmpty()) {
+            System.out.println("Không có dữ liệu.");
+            return;
+        }
 
         System.out.printf("%-8s | %-20s | %-18s | %-10s | %-12s%n",
                 "Mã Lô", "Tên Hoa", "Nhà Cung Cấp", "SL Còn", "Hạn SD");
@@ -174,6 +218,86 @@ public class FlowerBatchMenu {
             String expiry = row.length > 4 && row[4] != null ? row[4].toString() : "";
             System.out.printf("%-8s | %-20s | %-18s | %-10s | %-12s%n",
                     row[0], row[1], row[2], row[3], expiry);
+        }
+    }
+
+    // Câu 09 (lambda): lô hoa nhập quá 7 ngày
+    private void loNhapQua7Ngay() {
+        List<FlowerBatch> dsLo = dao.layDanhSachLo();
+
+        List<FlowerBatch> kq = dsLo.stream()
+                .filter(b -> b.getImportDate() != null
+                        && b.getQuantityRemaining() > 0
+                        && ChronoUnit.DAYS.between(b.getImportDate().toLocalDate(), LocalDate.now()) > 7)
+                .collect(Collectors.toList());
+
+        System.out.println("\n--- LÔ HOA NHẬP QUÁ 7 NGÀY ---");
+        if (kq.isEmpty()) {
+            System.out.println("Không có lô nào nhập quá 7 ngày.");
+            return;
+        }
+        System.out.printf("%-8s | %-8s | %-12s | %-8s | %-10s%n",
+                "Mã Lô", "Mã Hoa", "Ngày Nhập", "SL Còn", "Trạng Thái");
+        System.out.println("-".repeat(58));
+        for (FlowerBatch b : kq) {
+            System.out.printf("%-8s | %-8s | %-12s | %-8d | %-10s%n",
+                    b.getBatchId(), b.getFlowerId(), b.getImportDate().toLocalDate(),
+                    b.getQuantityRemaining(), b.getStatus());
+        }
+    }
+
+    // Lambda: lô hoa còn hàng (đang bán và còn hoa)
+    private void loConHang() {
+        List<FlowerBatch> dsLo = dao.layDanhSachLo();
+
+        List<FlowerBatch> kq = dsLo.stream()
+                .filter(b -> "AVAILABLE".equals(b.getStatus())
+                        && b.getQuantityRemaining() > 0)
+                .collect(Collectors.toList());
+
+        System.out.println("\n--- LÔ HOA CÒN HÀNG ---");
+        if (kq.isEmpty()) {
+            System.out.println("Không có lô nào còn hàng.");
+            return;
+        }
+        System.out.printf("%-8s | %-8s | %-12s | %-8s | %-12s%n",
+                "Mã Lô", "Mã Hoa", "Ngày Nhập", "SL Còn", "Hạn SD");
+        System.out.println("-".repeat(60));
+        for (FlowerBatch b : kq) {
+            System.out.printf("%-8s | %-8s | %-12s | %-8d | %-12s%n",
+                    b.getBatchId(), b.getFlowerId(),
+                    b.getImportDate() == null ? "" : b.getImportDate().toLocalDate(),
+                    b.getQuantityRemaining(),
+                    b.getExpiryDate() == null ? "" : b.getExpiryDate());
+        }
+    }
+
+    // Lambda: lô hoa sắp hết hạn trong soNgay ngày tới (còn hàng, đang bán)
+    private void loSapHetHan(int soNgay) {
+        List<FlowerBatch> dsLo = dao.layDanhSachLo();
+        LocalDate homNay = LocalDate.now();
+
+        List<FlowerBatch> kq = dsLo.stream()
+                .filter(b -> "AVAILABLE".equals(b.getStatus())
+                        && b.getQuantityRemaining() > 0
+                        && b.getExpiryDate() != null
+                        && ChronoUnit.DAYS.between(homNay, b.getExpiryDate()) >= 0
+                        && ChronoUnit.DAYS.between(homNay, b.getExpiryDate()) <= soNgay)
+                .sorted(Comparator.comparing(FlowerBatch::getExpiryDate))
+                .collect(Collectors.toList());
+
+        System.out.println("\n--- LÔ HOA SẮP HẾT HẠN (<= " + soNgay + " NGÀY) ---");
+        if (kq.isEmpty()) {
+            System.out.println("Không có lô nào sắp hết hạn.");
+            return;
+        }
+        System.out.printf("%-8s | %-8s | %-8s | %-12s | %-8s%n",
+                "Mã Lô", "Mã Hoa", "SL Còn", "Hạn SD", "Còn Ngày");
+        System.out.println("-".repeat(56));
+        for (FlowerBatch b : kq) {
+            System.out.printf("%-8s | %-8s | %-8d | %-12s | %-8d%n",
+                    b.getBatchId(), b.getFlowerId(), b.getQuantityRemaining(),
+                    b.getExpiryDate(), ChronoUnit.DAYS.between(homNay, b.getExpiryDate()));
         }
     }
 }
