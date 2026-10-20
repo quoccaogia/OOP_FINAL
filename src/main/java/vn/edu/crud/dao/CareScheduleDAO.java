@@ -1,8 +1,12 @@
 package vn.edu.crud.dao;
 
+import vn.edu.crud.model.CareSchedule;
 import vn.edu.crud.util.DBBase;
+import vn.edu.crud.util.DBConnection;
 
+import java.sql.*;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 public class CareScheduleDAO {
@@ -19,7 +23,8 @@ public class CareScheduleDAO {
     }
 
     /**
-     * Bảng tình trạng chăm sóc: TẤT CẢ loài hoa + bản ghi chăm sóc MỚI NHẤT của mỗi loài.
+     * Bảng tình trạng chăm sóc: TẤT CẢ loài hoa + bản ghi chăm sóc MỚI NHẤT của mỗi
+     * loài.
      * Hoa chưa từng chăm vẫn xuất hiện (các cột chăm sóc = null).
      *
      * Cột trả về:
@@ -51,8 +56,8 @@ public class CareScheduleDAO {
 
     // Sửa lại tham số thành flowerId
     public boolean insert(String id, String flowerId, String empId,
-                          LocalDateTime date, String fresh, String water,
-                          String action, String note) {
+            LocalDateTime date, String fresh, String water,
+            String action, String note) {
         String sql = "INSERT INTO careschedule " +
                 "(care_id, flower_id, employee_id, check_date, freshness_level, " +
                 "water_status, action_taken, note) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
@@ -71,7 +76,8 @@ public class CareScheduleDAO {
 
     public String sinhMaCSMoi() {
         List<Object[]> rows = DBBase.query("SELECT care_id FROM careschedule ORDER BY care_id DESC LIMIT 1");
-        if (rows.isEmpty()) return "CS001";
+        if (rows.isEmpty())
+            return "CS001";
         String maCu = rows.get(0)[0].toString();
         int so = Integer.parseInt(maCu.substring(2));
         return String.format("CS%03d", so + 1);
@@ -97,5 +103,33 @@ public class CareScheduleDAO {
                 "WHERE cs.flower_id = ? " +
                 "ORDER BY cs.check_date DESC";
         return DBBase.query(sql, flowerId);
+    }
+
+    // Lấy tất cả bản ghi chăm sóc dưới dạng đối tượng CareSchedule 
+    public List<CareSchedule> layDanhSachChamSoc() {
+        List<CareSchedule> list = new ArrayList<>();
+        String sql = "SELECT * FROM careschedule";
+        try (Connection conn = DBConnection.getConnection();
+                PreparedStatement ps = conn.prepareStatement(sql);
+                ResultSet rs = ps.executeQuery()) {
+            while (rs.next())
+                list.add(mapRow(rs));
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return list;
+    }
+
+    private CareSchedule mapRow(ResultSet rs) throws SQLException {
+        CareSchedule c = new CareSchedule();
+        c.setCareId(rs.getString("care_id"));
+        c.setFlowerId(rs.getString("flower_id"));
+        c.setEmployeeId(rs.getString("employee_id"));
+        c.setCheckDate(rs.getObject("check_date", LocalDateTime.class));
+        c.setFreshnessLevel(rs.getString("freshness_level"));
+        c.setWaterStatus(rs.getString("water_status"));
+        c.setActionTaken(rs.getString("action_taken"));
+        c.setNote(rs.getString("note"));
+        return c;
     }
 }
