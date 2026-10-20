@@ -6,6 +6,11 @@ import vn.edu.crud.dao.OrderDAO;
 import java.util.List;
 import java.util.Scanner;
 
+import vn.edu.crud.model.Payment;
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.util.stream.Collectors;
+
 public class PaymentMenu {
     private final Scanner sc = new Scanner(System.in);
     private final PaymentDAO dao = new PaymentDAO();
@@ -23,7 +28,7 @@ public class PaymentMenu {
             System.out.println("║  4. Hủy giao dịch / Hoàn tiền        ║");
             System.out.println("║  0. Quay lại                         ║");
             System.out.println("╚══════════════════════════════════════╝");
-            System.out.print("Chọn: ");
+            System.out.print("Chọns: ");
 
             try {
                 chon = Integer.parseInt(sc.nextLine());
@@ -53,10 +58,10 @@ public class PaymentMenu {
                         System.out.println("❌ Chỉ được chọn từ 1 đến " + dsPhuongThuc.length + "!");
                         break;
                     }
-                    inBang(dao.thanhToanTheoPhuongThuc(dsPhuongThuc[soPT - 1]));
+                    inTheoPhuongThuc(dsPhuongThuc[soPT - 1]);
                     break;
                 case 3:
-                    inBang(dao.doanhThuHomNay());
+                    doanhThuHomNay();
                     break;
                 case 4:
                     System.out.print("Mã thanh toán cần hủy (VD: P001): ");
@@ -119,5 +124,45 @@ public class PaymentMenu {
                 sb.append(o).append(" | ");
             System.out.println(sb);
         }
+    }
+
+    // Lambda: các giao dịch theo một phương thức thanh toán
+    private void inTheoPhuongThuc(String phuongThuc) {
+        List<Payment> ds = dao.layDanhSachThanhToan();
+
+        List<Payment> kq = ds.stream()
+                .filter(p -> phuongThuc.equals(p.getPaymentMethod()))
+                .collect(Collectors.toList());
+
+        System.out.println("\n--- GIAO DỊCH " + phuongThuc + " ---");
+        if (kq.isEmpty()) {
+            System.out.println("Không có giao dịch nào.");
+            return;
+        }
+        System.out.printf("%-8s | %-8s | %-14s | %-20s | %-22s%n",
+                "Mã TT", "Mã Đơn", "Số Tiền", "Ngày TT", "Trạng Thái");
+        System.out.println("-".repeat(84));
+        for (Payment p : kq) {
+            System.out.printf("%-8s | %-8s | %-14s | %-20s | %-22s%n",
+                    p.getPaymentId(), p.getOrderId(), p.getAmount(),
+                    p.getPaymentDate() == null ? "" : p.getPaymentDate().toLocalDate(),
+                    p.getPaymentStatus());
+        }
+    }
+
+    // Lambda: tổng doanh thu hôm nay (chỉ tính giao dịch thành công)
+    private void doanhThuHomNay() {
+        List<Payment> ds = dao.layDanhSachThanhToan();
+        LocalDate homNay = LocalDate.now();
+
+        BigDecimal tong = ds.stream()
+                .filter(p -> "THANH_TOAN_THANH_CONG".equals(p.getPaymentStatus())
+                        && p.getPaymentDate() != null
+                        && p.getPaymentDate().toLocalDate().equals(homNay)
+                        && p.getAmount() != null)
+                .map(Payment::getAmount)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+        System.out.println("Doanh thu hôm nay (" + homNay + "): " + tong + " VND");
     }
 }
