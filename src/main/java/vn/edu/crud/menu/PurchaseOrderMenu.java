@@ -47,27 +47,46 @@ public class PurchaseOrderMenu {
             System.out.println("╚══════════════════════════════════════╝");
             System.out.print("Chọn: ");
 
-            try { chon = Integer.parseInt(sc.nextLine()); }
-            catch (NumberFormatException e) { chon = -1; }
+            try {
+                chon = Integer.parseInt(sc.nextLine());
+            } catch (NumberFormatException e) {
+                chon = -1;
+            }
 
             switch (chon) {
-                case 1: inBang(poDAO.findAll()); break;
+                case 1:
+                    inBang(poDAO.findAll());
+                    break;
                 case 2:
                     System.out.print("Nhập mã: ");
-                    inBang(poDAO.findById(sc.nextLine()));
+                    inBang(poDAO.findById(sc.nextLine().trim().toUpperCase()));
                     break;
-                case 3: taoPhieuNhapMoi(); break;
-                case 4: suaPN(); break;
-                case 5: xoaPN(); break;
-                case 6: inBang(poDAO.tongNhapTheoNCC()); break;
+                case 3:
+                    taoPhieuNhapMoi();
+                    break;
+                case 4:
+                    suaPN();
+                    break;
+                case 5:
+                    xoaPN();
+                    break;
+                case 6:
+                    inBang(poDAO.tongNhapTheoNCC());
+                    break;
                 case 7:
                     System.out.print("Mã NCC: ");
-                    inBang(poDAO.phieuNhapCuaNCC(sc.nextLine()));
+                    inBang(poDAO.phieuNhapCuaNCC(sc.nextLine().trim().toUpperCase()));
                     break;
-                case 8: inBang(poDAO.tatCaPhieuNhap()); break;
-                case 9: chotPhieuNhap(); break;
-                case 0: break;
-                default: System.out.println("Chọn sai!");
+                case 8:
+                    inBang(poDAO.tatCaPhieuNhap());
+                    break;
+                case 9:
+                    chotPhieuNhap();
+                    break;
+                case 0:
+                    break;
+                default:
+                    System.out.println("Chọn sai!");
             }
         } while (chon != 0);
     }
@@ -79,7 +98,10 @@ public class PurchaseOrderMenu {
 
         // 1. Chọn Nhà Cung Cấp
         List<Supplier> dsNCC = supplierDAO.findAll();
-        if (dsNCC.isEmpty()) { System.out.println("❌ Chưa có NCC nào!"); return; }
+        if (dsNCC.isEmpty()) {
+            System.out.println("❌ Chưa có NCC nào!");
+            return;
+        }
 
         System.out.println("--- CHỌN NHÀ CUNG CẤP ---");
         for (int i = 0; i < dsNCC.size(); i++) {
@@ -90,14 +112,21 @@ public class PurchaseOrderMenu {
             System.out.print("Chọn NCC (1-" + dsNCC.size() + "): ");
             try {
                 int chonNCC = Integer.parseInt(sc.nextLine());
-                if (chonNCC >= 1 && chonNCC <= dsNCC.size()) supId = dsNCC.get(chonNCC - 1).getSupplierId();
-                else System.out.println("⚠️ Chọn sai số!");
-            } catch (Exception e) { System.out.println("⚠️ Vui lòng nhập số!"); }
+                if (chonNCC >= 1 && chonNCC <= dsNCC.size())
+                    supId = dsNCC.get(chonNCC - 1).getSupplierId();
+                else
+                    System.out.println("⚠️ Chọn sai số!");
+            } catch (Exception e) {
+                System.out.println("⚠️ Vui lòng nhập số!");
+            }
         }
 
         // 2. Chọn Nhân Viên Nhập Hàng
         List<Employee> dsNV = employeeDAO.findAll();
-        if (dsNV.isEmpty()) { System.out.println("❌ Chưa có Nhân viên nào!"); return; }
+        if (dsNV.isEmpty()) {
+            System.out.println("❌ Chưa có Nhân viên nào!");
+            return;
+        }
 
         System.out.println("--- CHỌN NHÂN VIÊN NHẬP HÀNG ---");
         for (int i = 0; i < dsNV.size(); i++) {
@@ -108,9 +137,13 @@ public class PurchaseOrderMenu {
             System.out.print("Chọn NV (1-" + dsNV.size() + "): ");
             try {
                 int chonNV = Integer.parseInt(sc.nextLine());
-                if (chonNV >= 1 && chonNV <= dsNV.size()) empId = dsNV.get(chonNV - 1).getEmployeeId();
-                else System.out.println("⚠️ Chọn sai số!");
-            } catch (Exception e) { System.out.println("⚠️ Vui lòng nhập số!"); }
+                if (chonNV >= 1 && chonNV <= dsNV.size())
+                    empId = dsNV.get(chonNV - 1).getEmployeeId();
+                else
+                    System.out.println("⚠️ Chọn sai số!");
+            } catch (Exception e) {
+                System.out.println("⚠️ Vui lòng nhập số!");
+            }
         }
 
         // 3. Tạo Phiếu Nhập Gốc
@@ -124,7 +157,8 @@ public class PurchaseOrderMenu {
             List<Flower> dsHoa = flowerDAO.findAll();
             System.out.println("\n--- CHỌN LOẠI HOA NHẬP ---");
             for (int i = 0; i < dsHoa.size(); i++) {
-                System.out.printf("  %d. %-20s (Mã: %s)\n", (i + 1), dsHoa.get(i).getName(), dsHoa.get(i).getFlowerId());
+                System.out.printf("  %d. %-20s (Mã: %s)\n", (i + 1), dsHoa.get(i).getName(),
+                        dsHoa.get(i).getFlowerId());
             }
             System.out.println("  0. Thêm loại Hoa mới (Nếu chưa có trong danh sách)");
             System.out.println("  Enter. Kết thúc nhập hoa");
@@ -132,14 +166,16 @@ public class PurchaseOrderMenu {
             System.out.print("Chọn số (1-" + dsHoa.size() + " hoặc 0): ");
             String choiceHoa = sc.nextLine().trim();
 
-            if (choiceHoa.isEmpty()) break; // Kết thúc vòng lặp
+            if (choiceHoa.isEmpty())
+                break; // Kết thúc vòng lặp
 
             String flowerId = null;
             Flower hoaChon = null;
 
             if (choiceHoa.equals("0")) {
                 flowerId = themHoaMoiTuDong(supId);
-                if (flowerId == null) continue;
+                if (flowerId == null)
+                    continue;
                 hoaChon = flowerDAO.timTheoMa(flowerId);
             } else {
                 try {
@@ -147,8 +183,14 @@ public class PurchaseOrderMenu {
                     if (chon >= 1 && chon <= dsHoa.size()) {
                         hoaChon = dsHoa.get(chon - 1);
                         flowerId = hoaChon.getFlowerId();
-                    } else { System.out.println("⚠️ Chọn sai số!"); continue; }
-                } catch (Exception e) { System.out.println("⚠️ Vui lòng nhập số!"); continue; }
+                    } else {
+                        System.out.println("⚠️ Chọn sai số!");
+                        continue;
+                    }
+                } catch (Exception e) {
+                    System.out.println("⚠️ Vui lòng nhập số!");
+                    continue;
+                }
             }
 
             System.out.println("👉 Đã chọn: " + hoaChon.getName());
@@ -156,21 +198,30 @@ public class PurchaseOrderMenu {
             int imported = 0;
             try {
                 imported = Integer.parseInt(sc.nextLine());
-                if (imported <= 0) throw new Exception();
-            } catch (Exception e) { System.out.println("⚠️ Số lượng phải > 0!"); continue; }
+                if (imported <= 0)
+                    throw new Exception();
+            } catch (Exception e) {
+                System.out.println("⚠️ Số lượng phải > 0!");
+                continue;
+            }
 
             System.out.print("Đơn giá nhập (VD: 3000): ");
             BigDecimal cost = BigDecimal.ZERO;
             try {
                 cost = new BigDecimal(sc.nextLine());
-                if (cost.compareTo(BigDecimal.ZERO) <= 0) throw new Exception();
-            } catch (Exception e) { System.out.println("⚠️ Giá phải > 0!"); continue; }
+                if (cost.compareTo(BigDecimal.ZERO) <= 0)
+                    throw new Exception();
+            } catch (Exception e) {
+                System.out.println("⚠️ Giá phải > 0!");
+                continue;
+            }
 
             LocalDateTime importDate = LocalDateTime.now();
             LocalDate expiryDate = importDate.toLocalDate().plusDays(7);
 
             String batchId = batchDAO.sinhMaLoMoi();
-            boolean luuLo = batchDAO.insert(batchId, poId, flowerId, imported, imported, cost, importDate, expiryDate, "AVAILABLE", "Tự động sinh từ PN " + poId);
+            boolean luuLo = batchDAO.insert(batchId, poId, flowerId, imported, imported, cost, importDate, expiryDate,
+                    "AVAILABLE", "Tự động sinh từ PN " + poId);
 
             if (luuLo) {
                 System.out.println("✅ Đã sinh Lô Hoa " + batchId + " (Hạn SD: " + expiryDate + ")");
@@ -221,11 +272,15 @@ public class PurchaseOrderMenu {
 
     private void suaPN() {
         System.out.print("Mã phiếu nhập cần sửa (VD: PN001): ");
-        String id = sc.nextLine();
+        String id = sc.nextLine().trim().toUpperCase();
         List<Object[]> cu = poDAO.findById(id);
-        if (cu.isEmpty()) { System.out.println("❌ Không tìm thấy!"); return; }
+        if (cu.isEmpty()) {
+            System.out.println("❌ Không tìm thấy!");
+            return;
+        }
 
-        // Cột: 0 mã PN, 1 mã NCC, 2 mã NV, 3 ngày nhập, 4 tổng tiền, 5 trạng thái, 6 ghi chú
+        // Cột: 0 mã PN, 1 mã NCC, 2 mã NV, 3 ngày nhập, 4 tổng tiền, 5 trạng thái, 6
+        // ghi chú
         Object[] row = cu.get(0);
         BigDecimal total = row[4] == null ? BigDecimal.ZERO : new BigDecimal(row[4].toString());
         String status = row[5] == null ? "CHO_XU_LY" : row[5].toString();
@@ -243,14 +298,20 @@ public class PurchaseOrderMenu {
 
         System.out.print("Ghi chú mới (Enter = giữ nguyên, VD: Nhập đợt 1 tháng 10): ");
         String note = sc.nextLine();
-        if (note.isEmpty()) note = noteCu;
+        if (note.isEmpty())
+            note = noteCu;
 
         System.out.println(poDAO.update(id, total, status, note) ? "✅ Sửa thành công!" : "❌ Thất bại!");
     }
 
     private void xoaPN() {
         System.out.print("Mã phiếu nhập cần xóa (VD: PN001): ");
-        String id = sc.nextLine();
+        String id = sc.nextLine().trim().toUpperCase();
+
+        if (poDAO.findById(id).isEmpty()) {
+            System.out.println("❌ Không tìm thấy phiếu nhập " + id + "!");
+            return;
+        }
 
         int soLo = poDAO.demLoCuaPhieu(id);
         if (soLo > 0) {
@@ -291,7 +352,8 @@ public class PurchaseOrderMenu {
             System.out.println("❌ Phải nhập số!");
             return;
         }
-        if (chon == 0) return;
+        if (chon == 0)
+            return;
         if (chon < 1 || chon > ds.size()) {
             System.out.println("❌ STT không hợp lệ!");
             return;
@@ -315,10 +377,14 @@ public class PurchaseOrderMenu {
     }
 
     private void inBang(List<Object[]> list) {
-        if (list.isEmpty()) { System.out.println("Không có dữ liệu."); return; }
+        if (list.isEmpty()) {
+            System.out.println("Không có dữ liệu.");
+            return;
+        }
         for (Object[] row : list) {
             StringBuilder sb = new StringBuilder();
-            for (Object o : row) sb.append(o).append(" | ");
+            for (Object o : row)
+                sb.append(o).append(" | ");
             System.out.println(sb);
         }
     }
