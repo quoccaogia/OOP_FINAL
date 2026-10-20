@@ -88,6 +88,12 @@ public class SupplierDAO {
         return DBBase.update("DELETE FROM Supplier WHERE supplier_id = ?", id) > 0;
     }
 
+    // NCC còn đang cung cấp loại hoa nào không (để chặn xóa theo đúng quy tắc RESTRICT)
+    public boolean coHoa(String supplierId) {
+        String sql = "SELECT 1 FROM Flower WHERE supplier_id = ? LIMIT 1";
+        return !DBBase.query(sql, supplierId).isEmpty();
+    }
+
     public String sinhMaNCCMoi() {
         List<Object[]> rows = DBBase.query("SELECT supplier_id FROM Supplier ORDER BY supplier_id DESC LIMIT 1");
         if (rows.isEmpty()) return "NCC01";

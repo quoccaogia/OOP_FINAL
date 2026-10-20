@@ -181,7 +181,14 @@ public class PurchaseOrderMenu {
             }
         }
 
-        // 5. Cập nhật lại tổng tiền cho Phiếu Nhập
+        // 5. Chưa nhập được lô nào -> phiếu rỗng, hủy luôn thay vì để HOAN_THANH 0 đồng
+        if (tongTienPhieu.compareTo(BigDecimal.ZERO) <= 0) {
+            poDAO.delete(poId);
+            System.out.println("\n⚠️ Chưa nhập loại hoa nào — phiếu nhập rỗng đã được hủy (không tạo phiếu 0 đồng).");
+            return;
+        }
+
+        // 6. Cập nhật lại tổng tiền cho Phiếu Nhập
         poDAO.update(poId, tongTienPhieu, "HOAN_THANH", "Nhập hàng thành công");
         System.out.println("\n🎉 TẠO PHIẾU NHẬP THÀNH CÔNG! Tổng tiền: " + tongTienPhieu + " VNĐ");
     }
@@ -220,10 +227,26 @@ public class PurchaseOrderMenu {
     private void suaPN() {
         System.out.print("Mã phiếu nhập cần sửa: ");
         String id = sc.nextLine();
-        if (poDAO.findById(id).isEmpty()) { System.out.println("❌ Không tìm thấy!"); return; }
-        System.out.print("Tổng tiền mới: "); BigDecimal total = new BigDecimal(sc.nextLine());
-        System.out.print("Trạng thái mới: "); String status = sc.nextLine();
-        System.out.print("Ghi chú mới: ");    String note = sc.nextLine();
+        List<Object[]> cu = poDAO.findById(id);
+        if (cu.isEmpty()) { System.out.println("❌ Không tìm thấy!"); return; }
+
+        // Cột: 0 mã PN, 1 mã NCC, 2 mã NV, 3 ngày nhập, 4 tổng tiền, 5 trạng thái, 6 ghi chú
+        Object[] row = cu.get(0);
+        BigDecimal total = row[4] == null ? BigDecimal.ZERO : new BigDecimal(row[4].toString());
+        String status = row[5] == null ? "CHO_XU_LY" : row[5].toString();
+        String noteCu = row[6] == null ? "" : row[6].toString();
+
+        System.out.println("\n--- PHIẾU NHẬP " + id + " ---");
+        System.out.println("Tổng tiền (theo lô) : " + total + " VND");
+        System.out.println("Trạng thái          : " + status);
+        System.out.println("Ghi chú hiện tại    : " + noteCu);
+        System.out.println("⚠️ Tổng tiền và trạng thái do hệ thống tính từ các lô — chỉ được sửa ghi chú.");
+        System.out.println("   (Muốn đổi số lượng/giá nhập thì lập phiếu nhập mới.)");
+
+        System.out.print("Ghi chú mới (Enter = giữ nguyên): ");
+        String note = sc.nextLine();
+        if (note.isEmpty()) note = noteCu;
+
         System.out.println(poDAO.update(id, total, status, note) ? "✅ Sửa thành công!" : "❌ Thất bại!");
     }
 

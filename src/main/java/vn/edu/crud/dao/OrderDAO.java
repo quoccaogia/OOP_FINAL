@@ -65,6 +65,30 @@ public class OrderDAO {
         return ((Number) rows.get(0)[0]).intValue();
     }
 
+    // Lấy 1 đơn theo mã
+    public Order timTheoMa(String orderId) {
+        String sql = "SELECT * FROM `Order` WHERE order_id = ?";
+        try (Connection conn = DBConnection.getConnection();
+                PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, orderId);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next())
+                    return docMotDon(rs);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    // Sửa thông tin giao hàng của đơn (địa chỉ / ngày giao / nhân viên phụ trách)
+    public boolean capNhatThongTin(String orderId, String diaChi,
+            java.time.LocalDateTime ngayGiao, String employeeId) {
+        String sql = "UPDATE `Order` SET delivery_address = ?, delivery_date = ?, employee_id = ? " +
+                "WHERE order_id = ?";
+        return DBBase.update(sql, diaChi, ngayGiao, employeeId, orderId) > 0;
+    }
+
     public boolean hoaDaCoTrongDon(String orderId, String flowerId) {
         String sql = "SELECT 1 FROM OrderDetail WHERE order_id = ? AND flower_id = ?";
         return !DBBase.query(sql, orderId, flowerId).isEmpty();
@@ -164,6 +188,7 @@ public class OrderDAO {
         String sql = "SELECT o.order_id, o.customer_id, o.employee_id, o.order_date, " +
                 "SUM(od.quantity * od.unit_price_at_sale) AS total " +
                 "FROM `Order` o JOIN OrderDetail od ON o.order_id = od.order_id " +
+                "WHERE o.order_status NOT IN ('DA_HUY', 'GIAO_THAT_BAI') " +
                 "GROUP BY o.order_id, o.customer_id, o.employee_id, o.order_date " +
                 "HAVING total > ?";
         return DBBase.query(sql, min);
@@ -212,6 +237,7 @@ public class OrderDAO {
     public List<Object[]> khachNhieuDonNhat() {
         String sql = "SELECT c.customer_id, c.name, COUNT(o.order_id) AS order_count " +
                 "FROM Customer c JOIN `Order` o ON c.customer_id = o.customer_id " +
+                "WHERE o.order_status NOT IN ('DA_HUY', 'GIAO_THAT_BAI') " +
                 "GROUP BY c.customer_id, c.name " +
                 "ORDER BY order_count DESC LIMIT 1";
         return DBBase.query(sql);
@@ -226,6 +252,7 @@ public class OrderDAO {
     public List<Object[]> nhanVienNhieuDonNhat() {
         String sql = "SELECT e.employee_id, e.name, COUNT(o.order_id) AS order_count " +
                 "FROM Employee e JOIN `Order` o ON e.employee_id = o.employee_id " +
+                "WHERE o.order_status NOT IN ('DA_HUY', 'GIAO_THAT_BAI') " +
                 "GROUP BY e.employee_id, e.name " +
                 "ORDER BY order_count DESC LIMIT 1";
         return DBBase.query(sql);
@@ -236,6 +263,7 @@ public class OrderDAO {
                 "COALESCE(SUM(od.quantity * od.unit_price_at_sale),0) AS total_spent " +
                 "FROM Customer c " +
                 "LEFT JOIN `Order` o ON c.customer_id = o.customer_id " +
+                "    AND o.order_status NOT IN ('DA_HUY', 'GIAO_THAT_BAI') " +
                 "LEFT JOIN OrderDetail od ON o.order_id = od.order_id " +
                 "GROUP BY c.customer_id, c.name";
         return DBBase.query(sql);

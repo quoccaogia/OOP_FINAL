@@ -99,6 +99,12 @@ public class SupplierMenu {
             System.out.println("\n❌ KHÔNG THỂ XÓA! NCC này đã có Phiếu Nhập Hàng trong hệ thống.");
             return;
         }
+        // Còn loại hoa nào đang dùng NCC này không (báo cáo quy định RESTRICT)
+        if (dao.coHoa(id)) {
+            System.out.println("\n❌ KHÔNG THỂ XÓA! NCC này đang cung cấp loại hoa trong danh mục.");
+            System.out.println("👉 Chuyển các loại hoa đó sang NCC khác (menu Hoa → [4] Sửa) rồi hãy xóa.");
+            return;
+        }
 
         System.out.print("\nBạn có chắc chắn muốn xóa NCC này? (y/n): ");
         if (sc.nextLine().equalsIgnoreCase("y")) {

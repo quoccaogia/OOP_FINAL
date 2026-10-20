@@ -63,6 +63,15 @@ public class FlowerBatchDAO {
                 "SELECT 1 FROM flowerbatch WHERE flower_id = ? LIMIT 1", flowerId).isEmpty();
     }
 
+    /** Các lô còn bán được của 1 loài hoa (dùng khi chăm sóc phát hiện hoa hỏng). */
+    public List<Object[]> loAvailableCuaHoa(String flowerId) {
+        return DBBase.query(
+                "SELECT batch_id, quantity_remaining, expiry_date FROM flowerbatch " +
+                        "WHERE flower_id = ? AND status = 'AVAILABLE' AND quantity_remaining > 0 " +
+                        "ORDER BY expiry_date",
+                flowerId);
+    }
+
     /**
      * Xuất kho theo lô: trừ dần các lô AVAILABLE, lô hạn gần nhất trừ trước (FEFO).
      * Lô nào hết hàng thì chuyển SOLD_OUT.

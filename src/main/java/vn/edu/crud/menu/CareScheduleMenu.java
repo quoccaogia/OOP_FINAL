@@ -1,6 +1,7 @@
 package vn.edu.crud.menu;
 
 import vn.edu.crud.dao.CareScheduleDAO;
+import vn.edu.crud.dao.FlowerBatchDAO;
 import vn.edu.crud.dao.FlowerDAO;
 import vn.edu.crud.model.Flower;
 
@@ -13,6 +14,7 @@ public class CareScheduleMenu {
     private final Scanner sc = new Scanner(System.in);
     private final CareScheduleDAO dao = new CareScheduleDAO();
     private final FlowerDAO flowerDAO = new FlowerDAO();
+    private final FlowerBatchDAO batchDAO = new FlowerBatchDAO();
 
     private static final DateTimeFormatter FMT = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
 
@@ -85,11 +87,46 @@ public class CareScheduleMenu {
 
         if (dao.insert(id, flowerId, empId, date, fresh, water, action, note)) {
             System.out.println("✅ Đã ghi nhận lịch chăm sóc cho hoa " + flowerId);
-            if (fresh.contains("HÉO")) {
-                System.out.println("⚠️ LƯU Ý: Hoa đã héo. Bạn nên vào Menu 'Quản lý Hoa' để cập nhật lại tình trạng!");
+            if (fresh.contains("HÉO") || fresh.contains("HỎNG")) {
+                System.out.println("⚠️ Hoa đã héo/hỏng — cần thanh lý lô để không bán nhầm.");
+                thanhLyLoHoaHong(flowerId);
             }
         } else {
             System.out.println("❌ Thất bại! Kiểm tra lại Mã NV xem có đúng không.");
+        }
+    }
+
+    // Sau khi ghi nhận hoa hỏng: cho thanh lý luôn lô tương ứng (trừ tồn kho)
+    private void thanhLyLoHoaHong(String flowerId) {
+        List<Object[]> dsLo = batchDAO.loAvailableCuaHoa(flowerId);
+        if (dsLo.isEmpty()) {
+            System.out.println("(Loài hoa này không còn lô AVAILABLE nào để thanh lý.)");
+            return;
+        }
+
+        System.out.println("\nCác lô còn hàng của " + flowerId + ":");
+        for (int i = 0; i < dsLo.size(); i++) {
+            Object[] r = dsLo.get(i);
+            System.out.printf("  %d. Lô %-6s còn %-5s hạn %s%n",
+                    (i + 1), r[0], r[1], r[2]);
+        }
+        System.out.print("Thanh lý lô nào? (0 = bỏ qua): ");
+
+        int chon;
+        try {
+            chon = Integer.parseInt(sc.nextLine().trim());
+        } catch (NumberFormatException e) {
+            System.out.println("⚠️ Bỏ qua thanh lý.");
+            return;
+        }
+        if (chon < 1 || chon > dsLo.size()) return;
+
+        String batchId = (String) dsLo.get(chon - 1)[0];
+        System.out.print("Xác nhận thanh lý lô " + batchId + "? (y/n): ");
+        if (sc.nextLine().equalsIgnoreCase("y")) {
+            System.out.println(batchDAO.thanhLyLo(batchId)
+                    ? "✅ Đã thanh lý lô và trừ tồn kho tương ứng."
+                    : "❌ Thanh lý thất bại!");
         }
     }
 

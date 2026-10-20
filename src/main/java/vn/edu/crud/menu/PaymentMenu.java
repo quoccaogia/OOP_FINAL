@@ -20,7 +20,7 @@ public class PaymentMenu {
             System.out.println("║  1. Xem tất cả                       ║");
             System.out.println("║  2. Theo phương thức                 ║");
             System.out.println("║  3. Doanh thu hôm nay                ║");
-            System.out.println("║  4. Hủy giao dịch                   ║");
+            System.out.println("║  4. Hủy giao dịch / Hoàn tiền        ║");
             System.out.println("║  0. Quay lại                         ║");
             System.out.println("╚══════════════════════════════════════╝");
             System.out.print("Chọn: ");
@@ -50,8 +50,9 @@ public class PaymentMenu {
                         System.out.println("❌ Không tìm thấy giao dịch!");
                         break;
                     }
-                    if ("DA_HUY".equals(dao.layTrangThaiThanhToan(id))) {
-                        System.out.println("⚠️ Giao dịch " + id + " đã bị hủy trước đó!");
+                    if ("DA_HUY".equals(dao.layTrangThaiThanhToan(id))
+                            || "DA_HOAN_TIEN".equals(dao.layTrangThaiThanhToan(id))) {
+                        System.out.println("⚠️ Giao dịch " + id + " đã bị hủy/hoàn trước đó!");
                         break;
                     }
                     String trangThai = orderDAO.layTrangThaiDon(maDon);
@@ -59,19 +60,29 @@ public class PaymentMenu {
                         System.out.println("❌ Không đọc được trạng thái của đơn " + maDon + "!");
                         break;
                     }
-                    // Chỉ hủy giao dịch khi đơn CHƯA GIAO (còn ở khâu chuẩn bị).
-                    // Đơn đã giao / đã hoàn thành / đã hủy thì không được hủy giao dịch.
-                    boolean conSuaDuoc = "DANG_CHUAN_BI".equals(trangThai)
+
+                    boolean chuaGiao = "DANG_CHUAN_BI".equals(trangThai)
                             || "CHO_XU_LY".equals(trangThai)
                             || "CHO_XAC_NHAN".equals(trangThai);
-                    if (!conSuaDuoc) {
+                    // Đơn đã đóng (hủy / giao thất bại) mà còn giữ tiền -> cho HOÀN TIỀN
+                    boolean donDaDong = "DA_HUY".equals(trangThai) || "GIAO_THAT_BAI".equals(trangThai);
+
+                    if (!chuaGiao && !donDaDong) {
                         System.out.println("❌ Đơn " + maDon + " đang ở trạng thái " + trangThai
-                                + " — chỉ hủy được giao dịch khi đơn CHƯA GIAO.");
+                                + " — không thể hủy/hoàn giao dịch.");
                         break;
                     }
-                    System.out.print("Xác nhận hủy giao dịch " + id + " (y/n): ");
-                    if (sc.nextLine().equalsIgnoreCase("y"))
-                        System.out.println(dao.xoaThanhToan(id) ? "✅ Đã hủy giao dịch!" : "❌ Thất bại!");
+
+                    if (donDaDong) {
+                        System.out.println("ℹ️ Đơn đã đóng nhưng còn giữ tiền — thao tác này là HOÀN TIỀN cho khách.");
+                        System.out.print("Xác nhận hoàn tiền giao dịch " + id + " (y/n): ");
+                        if (sc.nextLine().equalsIgnoreCase("y"))
+                            System.out.println(dao.hoanTien(id) ? "✅ Đã hoàn tiền!" : "❌ Thất bại!");
+                    } else {
+                        System.out.print("Xác nhận hủy giao dịch " + id + " (y/n): ");
+                        if (sc.nextLine().equalsIgnoreCase("y"))
+                            System.out.println(dao.xoaThanhToan(id) ? "✅ Đã hủy giao dịch!" : "❌ Thất bại!");
+                    }
                     break;
                 case 0:
                     break;

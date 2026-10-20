@@ -81,6 +81,13 @@ public class PaymentDAO {
                 paymentId) > 0;
     }
 
+    // Hoàn tiền 1 giao dịch đã thu (dùng khi đơn đã đóng mà vẫn còn giữ tiền khách)
+    public boolean hoanTien(String paymentId) {
+        String sql = "UPDATE payment SET payment_status = 'DA_HOAN_TIEN' " +
+                "WHERE payment_id = ? AND payment_status = 'THANH_TOAN_THANH_CONG'";
+        return DBBase.update(sql, paymentId) > 0;
+    }
+
     // Hoàn tiền toàn bộ các giao dịch đã thu của 1 đơn (dùng khi giao hàng thất bại).
     // Không xóa dòng payment, chỉ đổi trạng thái để còn dấu vết đối soát.
     public boolean hoanTienToanBo(String orderId) {

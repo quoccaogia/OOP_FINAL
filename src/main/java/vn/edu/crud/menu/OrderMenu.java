@@ -59,6 +59,7 @@ public class OrderMenu {
                 System.out.println("║ 16. Khách nhiều đơn nhất             ║");
                 System.out.println("║ 17. NV nhiều đơn nhất                ║");
                 System.out.println("║ 18. Tổng chi tiêu theo khách         ║");
+                System.out.println("║ 19. Sửa thông tin đơn (địa chỉ/ngày) ║");
                 System.out.println("║  0. Quay lại                         ║");
                 System.out.println("╚══════════════════════════════════════╝");
                 System.out.print("Chọn: ");
@@ -84,6 +85,7 @@ public class OrderMenu {
                     case 16: inBang(orderDAO.khachNhieuDonNhat()); break;
                     case 17: inBang(orderDAO.nhanVienNhieuDonNhat()); break;
                     case 18: inBang(orderDAO.tongChiTieuTheoKhach()); break;
+                    case 19: suaThongTinDon(); break;
                     case 0: System.out.println("Quay lại menu chính."); break;
                     default: System.out.println("⚠️ Chọn sai, vui lòng chọn lại!");
                 }
@@ -296,6 +298,16 @@ public class OrderMenu {
                 System.out.println("👉 Đơn hàng " + orderId + " đang ở trạng thái: [" + dichTrangThai(trangThaiDon) + "]");
                 System.out.println("👉 Chỉ được phép thêm/sửa hoa khi đơn hàng đang ở trạng thái 'Đang chuẩn bị hoa'.");
                 return; // Chặn đứng
+            }
+
+            // Đã thu tiền (cọc/tạm ứng) thì khóa chi tiết đơn: thêm hoa sẽ làm
+            // tiền cọc không còn đủ 20% và tổng tiền lệch với số đã thu.
+            if (paymentDAO.tinhDaTra(orderId).compareTo(BigDecimal.ZERO) > 0) {
+                System.out.println("\n❌ TỪ CHỐI THÊM HOA!");
+                System.out.println("👉 Đơn đã thu " + paymentDAO.tinhDaTra(orderId)
+                        + " VND nên không thể thêm/sửa hoa.");
+                System.out.println("👉 Nếu cần sửa: vào Thanh toán → [4] Hủy giao dịch để hoàn khoản đã thu trước.");
+                return;
             }
             // =====================================================
 
@@ -580,6 +592,18 @@ public class OrderMenu {
                 return;
             }
 
+            // Muốn giao hàng thì phải thu ít nhất tiền cọc (20%)
+            if ("DANG_GIAO".equals(trangThaiMoi)) {
+                BigDecimal daTra = paymentDAO.tinhDaTra(orderId);
+                BigDecimal tienCoc = paymentDAO.tinhTienCoc(orderId);
+                if (daTra.compareTo(tienCoc) < 0) {
+                    System.out.println("❌ CHƯA THU ĐỦ TIỀN CỌC, KHÔNG THỂ GIAO HÀNG!");
+                    System.out.println("👉 Cần cọc " + tienCoc + " VND (20% đơn), mới thu: " + daTra + " VND.");
+                    System.out.println("👉 Vào chức năng [3] Thanh toán để thu cọc trước.");
+                    return;
+                }
+            }
+
             if ("HOAN_THANH".equals(trangThaiMoi)) {
                 BigDecimal tongTien = paymentDAO.tinhTongTienDon(orderId);
                 BigDecimal daTra = paymentDAO.tinhDaTra(orderId);
@@ -775,9 +799,12 @@ public class OrderMenu {
             }
 
             String trangThai = orderDAO.layTrangThaiDon(orderId);
-            if ("HOAN_THANH".equals(trangThai) || "DA_HUY".equals(trangThai)
-                    || "GIAO_THAT_BAI".equals(trangThai)) {
-                System.out.println("❌ Đơn đã hoàn thành / đã hủy / giao thất bại, không thể xóa hoa!");
+            boolean chuaGiao = "DANG_CHUAN_BI".equals(trangThai)
+                    || "CHO_XU_LY".equals(trangThai)
+                    || "CHO_XAC_NHAN".equals(trangThai);
+            if (!chuaGiao) {
+                System.out.println("❌ Chỉ xóa hoa được khi đơn CHƯA GIAO — đơn này đang: "
+                        + dichTrangThai(trangThai));
                 return;
             }
             System.out.print("Mã hoa cần xóa: ");
@@ -856,6 +883,101 @@ public class OrderMenu {
         } else {
             System.out.println("❌ Xóa thất bại!");
         }
+    }
+
+    // =====================================================
+    // 19. SỬA THÔNG TIN ĐƠN (địa chỉ / ngày giao / nhân viên)
+    // =====================================================
+    private void suaThongTinDon() {
+        System.out.print("Nhập Mã đơn cần sửa: ");
+        String orderId = sc.nextLine().toUpperCase();
+
+        Order don = orderDAO.timTheoMa(orderId);
+        if (don == null) {
+            System.out.println("❌ Không tìm thấy đơn!");
+            return;
+        }
+
+        String trangThai = don.getOrderStatus();
+        boolean chuaGiao = "DANG_CHUAN_BI".equals(trangThai)
+                || "CHO_XU_LY".equals(trangThai)
+                || "CHO_XAC_NHAN".equals(trangThai);
+        if (!chuaGiao) {
+            System.out.println("❌ Chỉ sửa được đơn CHƯA GIAO — đơn này đang: " + dichTrangThai(trangThai));
+            return;
+        }
+        if (don.getOrderDate() == null || don.getDeliveryDate() == null) {
+            System.out.println("❌ Đơn thiếu ngày đặt / ngày giao, không sửa được!");
+            return;
+        }
+
+        System.out.println("\n--- SỬA THÔNG TIN ĐƠN " + orderId + " ---");
+        System.out.println("Địa chỉ hiện tại  : " + don.getDeliveryAddress());
+        System.out.println("Ngày giao hiện tại: " + don.getDeliveryDate().format(FMT));
+        System.out.println("Nhân viên hiện tại: " + layTenNV(don.getEmployeeId()));
+
+        System.out.print("Địa chỉ mới (Enter = giữ nguyên): ");
+        String diaChi = sc.nextLine().trim();
+        if (diaChi.isEmpty()) diaChi = don.getDeliveryAddress();
+
+        LocalDateTime ngayGiao = don.getDeliveryDate();
+        while (true) {
+            System.out.print("Ngày giao mới (yyyy-MM-dd HH:mm:ss, Enter = giữ nguyên): ");
+            String s = sc.nextLine().trim();
+            if (s.isEmpty()) break;
+            try {
+                if (s.length() == 16) s += ":00";
+                LocalDateTime moi = LocalDateTime.parse(s.replace(" ", "T"));
+                if (moi.isBefore(don.getOrderDate())) {
+                    System.out.println("❌ Ngày giao không được trước ngày đặt ("
+                            + don.getOrderDate().format(FMT) + ")!");
+                    continue;
+                }
+                ngayGiao = moi;
+                break;
+            } catch (DateTimeParseException e) {
+                System.out.println("❌ Sai định dạng! Ví dụ: 2026-10-25 15:00:00");
+            }
+        }
+
+        String employeeId = don.getEmployeeId();
+        System.out.print("Đổi nhân viên phụ trách? (y/n): ");
+        if (sc.nextLine().equalsIgnoreCase("y")) {
+            List<Employee> dsNV = employeeDAO.findAll();
+            for (int i = 0; i < dsNV.size(); i++) {
+                System.out.printf("  %d. %-20s (Mã: %s)\n", (i + 1),
+                        dsNV.get(i).getName(), dsNV.get(i).getEmployeeId());
+            }
+            System.out.print("Chọn số (Enter = giữ nguyên): ");
+            String chon = sc.nextLine().trim();
+            if (!chon.isEmpty()) {
+                try {
+                    int so = Integer.parseInt(chon);
+                    if (so >= 1 && so <= dsNV.size()) {
+                        employeeId = dsNV.get(so - 1).getEmployeeId();
+                    } else {
+                        System.out.println("⚠️ Chọn sai — giữ nguyên nhân viên cũ.");
+                    }
+                } catch (NumberFormatException e) {
+                    System.out.println("⚠️ Không phải số — giữ nguyên nhân viên cũ.");
+                }
+            }
+        }
+
+        if (orderDAO.capNhatThongTin(orderId, diaChi, ngayGiao, employeeId)) {
+            System.out.println("✅ Đã cập nhật thông tin đơn.");
+        } else {
+            System.out.println("❌ Cập nhật thất bại!");
+        }
+    }
+
+    private String layTenNV(String employeeId) {
+        try {
+            Employee e = employeeDAO.findById(employeeId);
+            if (e != null && e.getName() != null) return e.getName();
+        } catch (Exception ignored) {
+        }
+        return employeeId;
     }
 
     // =====================================================

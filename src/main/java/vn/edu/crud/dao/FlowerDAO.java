@@ -155,6 +155,8 @@ public class FlowerDAO {
     public List<Object[]> hoaBanChay() {
         String sql = "SELECT f.flower_id, f.name, SUM(od.quantity) AS total_sold " +
                 "FROM flower f JOIN orderdetail od ON f.flower_id = od.flower_id " +
+                "JOIN `Order` o ON od.order_id = o.order_id " +
+                "WHERE o.order_status NOT IN ('DA_HUY', 'GIAO_THAT_BAI') " +
                 "GROUP BY f.flower_id, f.name ORDER BY total_sold DESC";
         return DBBase.query(sql);
     }
@@ -183,6 +185,8 @@ public class FlowerDAO {
     public List<Object[]> hoaBanCham() {
         String sql = "SELECT f.flower_id, f.name, COALESCE(SUM(od.quantity),0) AS total_sold " +
                 "FROM flower f LEFT JOIN orderdetail od ON f.flower_id = od.flower_id " +
+                "    AND od.order_id IN (SELECT order_id FROM `Order` " +
+                "                        WHERE order_status NOT IN ('DA_HUY', 'GIAO_THAT_BAI')) " +
                 "GROUP BY f.flower_id, f.name ORDER BY total_sold ASC";
         return DBBase.query(sql);
     }
@@ -190,6 +194,8 @@ public class FlowerDAO {
     public List<Object[]> tongBanTheoHoa() {
         String sql = "SELECT f.flower_id, f.name, COALESCE(SUM(od.quantity),0) AS total_sold " +
                 "FROM flower f LEFT JOIN orderdetail od ON f.flower_id = od.flower_id " +
+                "    AND od.order_id IN (SELECT order_id FROM `Order` " +
+                "                        WHERE order_status NOT IN ('DA_HUY', 'GIAO_THAT_BAI')) " +
                 "GROUP BY f.flower_id, f.name";
         return DBBase.query(sql);
     }
@@ -197,7 +203,9 @@ public class FlowerDAO {
     public List<Flower> hoaChuaBanDuoc() {
         List<Flower> list = new ArrayList<>();
         String sql = "SELECT * FROM flower f WHERE NOT EXISTS (" +
-                "SELECT 1 FROM orderdetail od WHERE od.flower_id = f.flower_id)";
+                "SELECT 1 FROM orderdetail od JOIN `Order` o ON od.order_id = o.order_id " +
+                "WHERE od.flower_id = f.flower_id " +
+                "AND o.order_status NOT IN ('DA_HUY', 'GIAO_THAT_BAI'))";
 
         try (Connection conn = DBConnection.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql);
