@@ -18,6 +18,10 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
 
+import vn.edu.crud.model.CareSchedule;
+import java.util.Comparator;
+import java.util.stream.Collectors;
+
 /**
  * Quản lý chăm sóc hoa.
  *
@@ -40,8 +44,8 @@ public class CareScheduleMenu {
     /** Quá số ngày này mà chưa kiểm tra thì coi là "lâu chưa chăm". */
     private static final int SO_NGAY_CANH_BAO = 3;
 
-    private static final String[] DO_TUOI = {"TƯƠI", "HƠI HÉO", "HÉO", "HỎNG"};
-    private static final String[] TINH_TRANG_NUOC = {"ĐỦ", "THIẾU"};
+    private static final String[] DO_TUOI = { "TƯƠI", "HƠI HÉO", "HÉO", "HỎNG" };
+    private static final String[] TINH_TRANG_NUOC = { "ĐỦ", "THIẾU" };
     private static final String[] HANH_DONG = {
             "Tưới nước", "Thay nước", "Tỉa lá", "Tỉa cành", "Bón phân", "Khác"
     };
@@ -71,15 +75,31 @@ public class CareScheduleMenu {
             }
 
             switch (chon) {
-                case 1: inBangTrangThai(dao.trangThaiHienTai()); break;
-                case 2: capNhatTinhTrang(); break;
-                case 3: suaGhiChu(); break;
-                case 4: xoaBanGhi(); break;
-                case 5: canChamHomNay(); break;
-                case 6: lichSuTheoHoa(); break;
-                case 7: lichSuTheoNhanVien(); break;
-                case 0: break;
-                default: System.out.println("Chọn sai!");
+                case 1:
+                    inBangTrangThai(dao.trangThaiHienTai());
+                    break;
+                case 2:
+                    capNhatTinhTrang();
+                    break;
+                case 3:
+                    suaGhiChu();
+                    break;
+                case 4:
+                    xoaBanGhi();
+                    break;
+                case 5:
+                    canChamHomNay();
+                    break;
+                case 6:
+                    lichSuTheoHoa();
+                    break;
+                case 7:
+                    lichSuTheoNhanVien();
+                    break;
+                case 0:
+                    break;
+                default:
+                    System.out.println("Chọn sai!");
             }
         } while (chon != 0);
     }
@@ -97,13 +117,13 @@ public class CareScheduleMenu {
             return;
         }
 
-        String[] tieuDe = {"STT", "Mã", "Tên hoa", "Tồn", "Lần cuối",
-                "Độ tươi", "Nước", "Trạng thái", "Ghi chú"};
+        String[] tieuDe = { "STT", "Mã", "Tên hoa", "Tồn", "Lần cuối",
+                "Độ tươi", "Nước", "Trạng thái", "Ghi chú" };
         List<String[]> dong = new ArrayList<>();
 
         for (int i = 0; i < ds.size(); i++) {
             Object[] r = ds.get(i);
-            dong.add(new String[]{
+            dong.add(new String[] {
                     String.valueOf(i + 1),
                     chuoi(r[0]),
                     cat(chuoi(r[1]), 22),
@@ -131,7 +151,8 @@ public class CareScheduleMenu {
         StringBuilder gach = new StringBuilder();
         for (int c = 0; c < rong.length; c++) {
             gach.append("-".repeat(rong[c]));
-            if (c < rong.length - 1) gach.append("-+-");
+            if (c < rong.length - 1)
+                gach.append("-+-");
         }
         System.out.println(gach);
 
@@ -153,12 +174,14 @@ public class CareScheduleMenu {
 
     /** Độ rộng hiển thị: emoji/ký hiệu rộng 2 cột, bỏ qua variation selector. */
     private int doRong(String s) {
-        if (s == null) return 0;
+        if (s == null)
+            return 0;
         int w = 0;
-        for (int i = 0; i < s.length(); ) {
+        for (int i = 0; i < s.length();) {
             int cp = s.codePointAt(i);
             i += Character.charCount(cp);
-            if (cp == 0xFE0F || cp == 0xFE0E) continue;
+            if (cp == 0xFE0F || cp == 0xFE0E)
+                continue;
             boolean rongDoi = (cp >= 0x1F300 && cp <= 0x1FAFF)
                     || (cp >= 0x2600 && cp <= 0x27BF);
             w += rongDoi ? 2 : 1;
@@ -167,7 +190,8 @@ public class CareScheduleMenu {
     }
 
     private String thoiGianNgan(Object o) {
-        if (o == null) return "—";
+        if (o == null)
+            return "—";
         if (o instanceof LocalDateTime) {
             return ((LocalDateTime) o).format(FMT_NGAN);
         }
@@ -186,11 +210,16 @@ public class CareScheduleMenu {
 
         // So khớp "mềm" để đọc được cả dữ liệu cũ (VD: "Tươi tốt (100%)", "Thiếu nhẹ")
         // lẫn dữ liệu mới (TƯƠI / HƠI HÉO / HÉO / HỎNG).
-        if (fresh.contains("HƠI HÉO")) return "🟠 Cần chú ý";
-        if (fresh.contains("HÉO") || fresh.contains("HỎNG")) return "🔴 Cần xử lý";
-        if (fresh.contains("KHÔ")) return "🟠 Cần chú ý";
-        if (water.startsWith("THIẾU")) return "🟠 Cần chú ý";
-        if (soNgayTu(r[5]) > SO_NGAY_CANH_BAO) return "🟡 Lâu chưa kiểm tra";
+        if (fresh.contains("HƠI HÉO"))
+            return "🟠 Cần chú ý";
+        if (fresh.contains("HÉO") || fresh.contains("HỎNG"))
+            return "🔴 Cần xử lý";
+        if (fresh.contains("KHÔ"))
+            return "🟠 Cần chú ý";
+        if (water.startsWith("THIẾU"))
+            return "🟠 Cần chú ý";
+        if (soNgayTu(r[5]) > SO_NGAY_CANH_BAO)
+            return "🟡 Lâu chưa kiểm tra";
         return "✅ Ổn";
     }
 
@@ -213,7 +242,8 @@ public class CareScheduleMenu {
             System.out.println("❌ Phải nhập số!");
             return;
         }
-        if (chon == 0) return;
+        if (chon == 0)
+            return;
         if (chon < 1 || chon > ds.size()) {
             System.out.println("❌ STT không hợp lệ!");
             return;
@@ -283,7 +313,8 @@ public class CareScheduleMenu {
                 System.out.println("❌ Phải nhập số!");
                 return;
             }
-            if (chon < 1 || chon > ds.size()) return;
+            if (chon < 1 || chon > ds.size())
+                return;
 
             Object[] r = ds.get(chon - 1);
             if (r[4] == null) {
@@ -371,20 +402,34 @@ public class CareScheduleMenu {
     // =====================================================
     private void lichSuTheoHoa() {
         String flowerId = chonLoaiHoa();
-        if (flowerId == null) return;
+        if (flowerId == null)
+            return;
+
+        // Lambda: lọc các bản ghi của loài hoa này, mới nhất lên đầu
+        List<CareSchedule> kq = dao.layDanhSachChamSoc().stream()
+                .filter(c -> flowerId.equals(c.getFlowerId()))
+                .sorted(Comparator.comparing(CareSchedule::getCheckDate,
+                        Comparator.nullsLast(Comparator.reverseOrder())))
+                .collect(Collectors.toList());
 
         System.out.println("\n--- LỊCH SỬ CHĂM SÓC CỦA " + flowerId + " ---");
-        inBangRutGon(dao.lichChamSocCuaHoa(flowerId),
-                "Mã CS", "Ngày kiểm tra", "Độ tươi", "Nước", "Hành động", "Ghi chú", "Nhân viên");
+        inLichSu(kq);
     }
 
     private void lichSuTheoNhanVien() {
         String empId = chonNhanVien();
-        if (empId == null) return;
+        if (empId == null)
+            return;
+
+        // Lambda: lọc các bản ghi do nhân viên này thực hiện, mới nhất lên đầu
+        List<CareSchedule> kq = dao.layDanhSachChamSoc().stream()
+                .filter(c -> empId.equals(c.getEmployeeId()))
+                .sorted(Comparator.comparing(CareSchedule::getCheckDate,
+                        Comparator.nullsLast(Comparator.reverseOrder())))
+                .collect(Collectors.toList());
 
         System.out.println("\n--- LỊCH SỬ CHĂM SÓC CỦA " + empId + " ---");
-        inBangRutGon(dao.lichChamSocCuaNV(empId),
-                "Mã CS", "Ngày kiểm tra", "Độ tươi", "Nước", "Hành động", "Loài hoa");
+        inLichSu(kq);
     }
 
     // =====================================================
@@ -409,7 +454,8 @@ public class CareScheduleMenu {
             System.out.print("Chọn số (0 = hủy): ");
             try {
                 int chon = Integer.parseInt(sc.nextLine().trim());
-                if (chon == 0) return null;
+                if (chon == 0)
+                    return null;
                 if (chon >= 1 && chon <= ds.size()) {
                     return ds.get(chon - 1).getEmployeeId();
                 }
@@ -429,7 +475,8 @@ public class CareScheduleMenu {
             System.out.print("Chọn (1-" + ds.length + "): ");
             try {
                 int chon = Integer.parseInt(sc.nextLine().trim());
-                if (chon >= 1 && chon <= ds.length) return chon - 1;
+                if (chon >= 1 && chon <= ds.length)
+                    return chon - 1;
                 System.out.println("⚠️ Chọn sai số!");
             } catch (NumberFormatException e) {
                 System.out.println("⚠️ Vui lòng nhập số!");
@@ -458,7 +505,8 @@ public class CareScheduleMenu {
             System.out.print("👉 Nhập STT loài hoa (hoặc 0 để hủy): ");
             try {
                 int chon = Integer.parseInt(sc.nextLine().trim());
-                if (chon == 0) return null;
+                if (chon == 0)
+                    return null;
                 if (chon >= 1 && chon <= list.size()) {
                     return list.get(chon - 1).getFlowerId();
                 }
@@ -491,7 +539,8 @@ public class CareScheduleMenu {
             System.out.println("⚠️ Bỏ qua thanh lý.");
             return;
         }
-        if (chon < 1 || chon > dsLo.size()) return;
+        if (chon < 1 || chon > dsLo.size())
+            return;
 
         String batchId = (String) dsLo.get(chon - 1)[0];
         System.out.print("Xác nhận thanh lý lô " + batchId + "? (y/n): ");
@@ -506,7 +555,8 @@ public class CareScheduleMenu {
     // TIỆN ÍCH
     // =====================================================
     private String chuanHoa(Object o) {
-        if (o == null) return "";
+        if (o == null)
+            return "";
         return Normalizer.normalize(o.toString().trim().toUpperCase(), Normalizer.Form.NFC);
     }
 
@@ -515,14 +565,17 @@ public class CareScheduleMenu {
     }
 
     private String cat(String s, int max) {
-        if (s == null) return "";
-        if (s.codePointCount(0, s.length()) <= max) return s;
+        if (s == null)
+            return "";
+        if (s.codePointCount(0, s.length()) <= max)
+            return s;
         int end = s.offsetByCodePoints(0, max - 1);
         return s.substring(0, end) + "…";
     }
 
     private String thoiGian(Object o) {
-        if (o == null) return "—";
+        if (o == null)
+            return "—";
         if (o instanceof java.sql.Timestamp) {
             return ((java.sql.Timestamp) o).toLocalDateTime().format(FMT);
         }
@@ -560,10 +613,34 @@ public class CareScheduleMenu {
             StringBuilder sb = new StringBuilder();
             for (int i = 0; i < row.length; i++) {
                 String o = row[i] == null ? "" : row[i].toString();
-                if (i == 1) o = thoiGian(row[i]);
+                if (i == 1)
+                    o = thoiGian(row[i]);
                 sb.append(cat(o, 30)).append(" | ");
             }
             System.out.println(sb);
         }
     }
+
+    // In danh sách bản ghi chăm sóc (dùng chung cho 2 truy vấn lambda ở chức năng
+    // 6, 7)
+    private void inLichSu(List<CareSchedule> ds) {
+        if (ds.isEmpty()) {
+            System.out.println("Chưa có bản ghi chăm sóc nào.");
+            return;
+        }
+        System.out.printf("%-6s | %-16s | %-6s | %-8s | %-14s | %-18s | %s%n",
+                "Mã CS", "Ngày kiểm tra", "Hoa", "Nhân viên", "Tươi/Nước", "Hành động", "Ghi chú");
+        System.out.println("-".repeat(100));
+        DateTimeFormatter fmt = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
+        for (CareSchedule c : ds) {
+            System.out.printf("%-6s | %-16s | %-6s | %-8s | %-14s | %-18s | %s%n",
+                    c.getCareId(),
+                    c.getCheckDate() == null ? "" : c.getCheckDate().format(fmt),
+                    c.getFlowerId(), c.getEmployeeId(),
+                    c.getFreshnessLevel() + "/" + c.getWaterStatus(),
+                    c.getActionTaken() == null ? "" : c.getActionTaken(),
+                    c.getNote() == null ? "" : c.getNote());
+        }
+    }
+
 }
