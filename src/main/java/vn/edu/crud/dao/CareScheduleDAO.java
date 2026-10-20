@@ -18,6 +18,32 @@ public class CareScheduleDAO {
         return DBBase.query(sql);
     }
 
+    /**
+     * Bảng tình trạng chăm sóc: TẤT CẢ loài hoa + bản ghi chăm sóc MỚI NHẤT của mỗi loài.
+     * Hoa chưa từng chăm vẫn xuất hiện (các cột chăm sóc = null).
+     *
+     * Cột trả về:
+     * 0 flower_id | 1 name | 2 color | 3 stock_quantity
+     * 4 care_id | 5 check_date | 6 freshness_level | 7 water_status | 8 note
+     */
+    public List<Object[]> trangThaiHienTai() {
+        String sql = "SELECT f.flower_id, f.name, f.color, f.stock_quantity, " +
+                "       cs.care_id, cs.check_date, cs.freshness_level, cs.water_status, cs.note " +
+                "FROM flower f " +
+                "LEFT JOIN careschedule cs ON cs.care_id = (" +
+                "    SELECT cs2.care_id FROM careschedule cs2 " +
+                "    WHERE cs2.flower_id = f.flower_id " +
+                "    ORDER BY cs2.check_date DESC, cs2.care_id DESC LIMIT 1) " +
+                "ORDER BY f.flower_id";
+        return DBBase.query(sql);
+    }
+
+    // Sửa riêng phần ghi chú của 1 bản ghi (không đổi tình trạng đã ghi nhận)
+    public boolean capNhatGhiChu(String careId, String note) {
+        return DBBase.update("UPDATE careschedule SET note = ? WHERE care_id = ?",
+                note, careId) > 0;
+    }
+
     public List<Object[]> findById(String id) {
         String sql = "SELECT * FROM careschedule WHERE care_id = ?";
         return DBBase.query(sql, id);
@@ -53,8 +79,8 @@ public class CareScheduleDAO {
 
     // Lịch chăm sóc của 1 nhân viên
     public List<Object[]> lichChamSocCuaNV(String maNV) {
-        String sql = "SELECT cs.check_date, cs.freshness_level, cs.water_status, cs.action_taken, " +
-                "f.name AS flower_name " +
+        String sql = "SELECT cs.care_id, cs.check_date, cs.freshness_level, cs.water_status, " +
+                "cs.action_taken, f.name AS flower_name " +
                 "FROM careschedule cs " +
                 "LEFT JOIN flower f ON cs.flower_id = f.flower_id " +
                 "WHERE cs.employee_id = ? " +
@@ -64,7 +90,7 @@ public class CareScheduleDAO {
 
     // Lịch sử chăm sóc của 1 Loài hoa cụ thể
     public List<Object[]> lichChamSocCuaHoa(String flowerId) {
-        String sql = "SELECT cs.check_date, cs.freshness_level, cs.water_status, " +
+        String sql = "SELECT cs.care_id, cs.check_date, cs.freshness_level, cs.water_status, " +
                 "cs.action_taken, cs.note, e.name AS employee_name " +
                 "FROM careschedule cs " +
                 "LEFT JOIN employee e ON cs.employee_id = e.employee_id " +
