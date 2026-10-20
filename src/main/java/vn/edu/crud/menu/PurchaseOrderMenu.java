@@ -36,6 +36,8 @@ public class PurchaseOrderMenu {
             System.out.println("║  3. Tạo Phiếu Nhập Mới (Nhập Hoa)    ║");
             System.out.println("║  4. Sửa                              ║");
             System.out.println("║  5. Xóa                              ║");
+            System.out.println("║  ── XỬ LÝ DỞ DANG ──                 ║");
+            System.out.println("║  9. Chốt phiếu nhập dở dang          ║");
             System.out.println("║  ── BÁO CÁO ──                       ║");
             System.out.println("║  6. Tổng tiền nhập theo NCC          ║");
             System.out.println("║  7. Phiếu nhập theo NCC              ║");
@@ -62,6 +64,7 @@ public class PurchaseOrderMenu {
                     inBang(poDAO.phieuNhapCuaNCC(sc.nextLine()));
                     break;
                 case 8: inBang(poDAO.tatCaPhieuNhap()); break;
+                case 9: chotPhieuNhap(); break;
                 case 0: break;
                 default: System.out.println("Chọn sai!");
             }
@@ -242,6 +245,9 @@ public class PurchaseOrderMenu {
         System.out.println("Ghi chú hiện tại    : " + noteCu);
         System.out.println("⚠️ Tổng tiền và trạng thái do hệ thống tính từ các lô — chỉ được sửa ghi chú.");
         System.out.println("   (Muốn đổi số lượng/giá nhập thì lập phiếu nhập mới.)");
+        if ("CHO_XU_LY".equals(status)) {
+            System.out.println("👉 Phiếu này CHƯA CHỐT (dở dang) — dùng chức năng [9] Chốt phiếu nhập.");
+        }
 
         System.out.print("Ghi chú mới (Enter = giữ nguyên): ");
         String note = sc.nextLine();
@@ -253,9 +259,66 @@ public class PurchaseOrderMenu {
     private void xoaPN() {
         System.out.print("Mã phiếu nhập cần xóa: ");
         String id = sc.nextLine();
+
+        int soLo = poDAO.demLoCuaPhieu(id);
+        if (soLo > 0) {
+            System.out.println("❌ KHÔNG THỂ XÓA! Phiếu đã sinh " + soLo + " lô hoa (xóa sẽ mất dữ liệu nhập).");
+            System.out.println("👉 Nếu phiếu bị dở dang, dùng [9] Chốt phiếu nhập dở dang.");
+            return;
+        }
+
         System.out.print("Xác nhận (y/n): ");
         if (sc.nextLine().equalsIgnoreCase("y")) {
             System.out.println(poDAO.delete(id) ? "✅ Đã xóa!" : "❌ Thất bại!");
+        }
+    }
+
+    // Chốt các phiếu nhập bị treo ở CHO_XU_LY (nhập dở / app bị ngắt giữa chừng)
+    private void chotPhieuNhap() {
+        List<Object[]> ds = poDAO.phieuChoXuLy();
+        if (ds.isEmpty()) {
+            System.out.println("✅ Không có phiếu nhập nào dở dang.");
+            return;
+        }
+
+        System.out.println("\n--- PHIẾU NHẬP DỞ DANG ---");
+        System.out.printf("%-5s | %-10s | %-20s | %-20s | %-6s%n",
+                "STT", "Mã PN", "Ngày nhập", "Nhà cung cấp", "Số lô");
+        System.out.println("-".repeat(72));
+        for (int i = 0; i < ds.size(); i++) {
+            Object[] r = ds.get(i);
+            System.out.printf("%-5d | %-10s | %-20s | %-20s | %-6s%n",
+                    (i + 1), r[0], r[1], r[2], r[3]);
+        }
+
+        System.out.print("\nChọn phiếu cần chốt (0 = hủy): ");
+        int chon;
+        try {
+            chon = Integer.parseInt(sc.nextLine().trim());
+        } catch (NumberFormatException e) {
+            System.out.println("❌ Phải nhập số!");
+            return;
+        }
+        if (chon == 0) return;
+        if (chon < 1 || chon > ds.size()) {
+            System.out.println("❌ STT không hợp lệ!");
+            return;
+        }
+
+        String poId = ds.get(chon - 1)[0].toString();
+        int soLo = poDAO.demLoCuaPhieu(poId);
+        if (soLo == 0) {
+            System.out.println("❌ Phiếu " + poId + " chưa có lô nào — không có gì để chốt.");
+            System.out.println("👉 Dùng [5] Xóa để bỏ phiếu rỗng này.");
+            return;
+        }
+
+        System.out.println("Phiếu " + poId + " có " + soLo + " lô. Tổng tiền sẽ được tính lại từ các lô.");
+        System.out.print("Xác nhận chốt phiếu " + poId + "? (y/n): ");
+        if (sc.nextLine().equalsIgnoreCase("y")) {
+            System.out.println(poDAO.chotPhieu(poId)
+                    ? "✅ Đã chốt phiếu nhập (trạng thái HOAN_THANH, tổng tiền tính theo lô)."
+                    : "❌ Chốt thất bại!");
         }
     }
 

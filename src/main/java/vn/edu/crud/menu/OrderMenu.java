@@ -203,18 +203,27 @@ public class OrderMenu {
             o.setOrderDate(LocalDateTime.now());
             System.out.println("Ngày đặt: " + o.getOrderDate().format(FMT));
 
-            System.out.print("Ngày giao (yyyy-MM-dd HH:mm:ss, Enter = +2h): ");
-            String dateStr = sc.nextLine().trim();
-            if (dateStr.isEmpty()) {
-                o.setDeliveryDate(o.getOrderDate().plusHours(2));
-                System.out.println("→ Dùng mặc định: " + o.getDeliveryDate().format(FMT));
-            } else {
+            LocalDateTime ngayMacDinh = o.getOrderDate().plusHours(2);
+            while (true) {
+                System.out.print("Ngày giao (yyyy-MM-dd HH:mm:ss, Enter = +2h): ");
+                String dateStr = sc.nextLine().trim();
+                if (dateStr.isEmpty()) {
+                    o.setDeliveryDate(ngayMacDinh);
+                    System.out.println("→ Dùng mặc định: " + ngayMacDinh.format(FMT));
+                    break;
+                }
                 try {
                     if (dateStr.length() == 16) dateStr += ":00";
-                    o.setDeliveryDate(LocalDateTime.parse(dateStr.replace(" ", "T")));
+                    LocalDateTime moi = LocalDateTime.parse(dateStr.replace(" ", "T"));
+                    if (moi.isBefore(o.getOrderDate())) {
+                        System.out.println("❌ Ngày giao không được trước ngày đặt ("
+                                + o.getOrderDate().format(FMT) + ")!");
+                        continue;
+                    }
+                    o.setDeliveryDate(moi);
+                    break;
                 } catch (DateTimeParseException e) {
-                    System.out.println("❌ Ngày giờ không hợp lệ! Lấy mặc định +2h.");
-                    o.setDeliveryDate(o.getOrderDate().plusHours(2));
+                    System.out.println("❌ Ngày giờ không hợp lệ! Ví dụ: 2026-10-25 15:00:00");
                 }
             }
 
@@ -312,10 +321,24 @@ public class OrderMenu {
             // =====================================================
 
             // Nếu vượt qua được chốt chặn trên, bắt đầu vòng lặp chọn hoa
+            boolean daBaoHoaChuaCoGia = false;
             while (true) {
                 List<Flower> dsHoa = new ArrayList<>();
+                int soHoaChuaCoGia = 0;
                 for (Flower f : flowerDAO.findAll()) {
-                    if (f.getStockQuantity() > 0) dsHoa.add(f);
+                    if (f.getStockQuantity() <= 0) continue;
+                    // Hoa chưa có giá bán (> 0) thì không bán được: đơn sẽ có tổng 0 đồng,
+                    // mà đơn 0 đồng thì không thể thanh toán / không thể hoàn thành.
+                    if (f.getUnitPrice() == null || f.getUnitPrice().compareTo(BigDecimal.ZERO) <= 0) {
+                        soHoaChuaCoGia++;
+                        continue;
+                    }
+                    dsHoa.add(f);
+                }
+                if (soHoaChuaCoGia > 0 && !daBaoHoaChuaCoGia) {
+                    daBaoHoaChuaCoGia = true;
+                    System.out.println("⚠️ " + soHoaChuaCoGia + " loại hoa chưa có giá bán (> 0) nên không bán được —"
+                            + " sửa giá ở menu Hoa → [4] Sửa.");
                 }
                 if (dsHoa.isEmpty()) {
                     System.out.println("⚠️ Không còn hoa nào trong kho!");

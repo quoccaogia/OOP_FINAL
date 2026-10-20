@@ -54,6 +54,53 @@ public class PurchaseOrderDAO {
     }
 
     // =====================================================
+    // NHÓM XỬ LÝ PHIẾU NHẬP DỞ DANG
+    // =====================================================
+
+    // Các phiếu còn treo ở CHO_XU_LY (tạo xong nhưng chưa nhập hết / bị ngắt giữa chừng)
+    public List<Object[]> phieuChoXuLy() {
+        String sql = "SELECT po.purchase_order_id, po.import_date, s.name, COUNT(fb.batch_id) " +
+                "FROM PurchaseOrder po " +
+                "LEFT JOIN Supplier s ON po.supplier_id = s.supplier_id " +
+                "LEFT JOIN FlowerBatch fb ON po.purchase_order_id = fb.purchase_order_id " +
+                "WHERE po.status = 'CHO_XU_LY' " +
+                "GROUP BY po.purchase_order_id, po.import_date, s.name " +
+                "ORDER BY po.import_date";
+        return DBBase.query(sql);
+    }
+
+    // Số lô đã sinh từ 1 phiếu nhập
+    public int demLoCuaPhieu(String purchaseOrderId) {
+        String sql = "SELECT COUNT(*) FROM FlowerBatch WHERE purchase_order_id = ?";
+        List<Object[]> rows = DBBase.query(sql, purchaseOrderId);
+        if (rows.isEmpty() || rows.get(0)[0] == null)
+            return 0;
+        return ((Number) rows.get(0)[0]).intValue();
+    }
+
+    /**
+     * Chốt 1 phiếu nhập dở dang: tính lại tổng tiền từ các lô đã nhập
+     * rồi chuyển sang HOAN_THANH. Không làm gì nếu phiếu chưa có lô nào.
+     */
+    public boolean chotPhieu(String purchaseOrderId) {
+        List<Object[]> rows = DBBase.query(
+                "SELECT COALESCE(SUM(quantity_imported * unit_cost), 0) " +
+                        "FROM FlowerBatch WHERE purchase_order_id = ?",
+                purchaseOrderId);
+        if (rows.isEmpty() || rows.get(0)[0] == null)
+            return false;
+
+        BigDecimal tong = new BigDecimal(rows.get(0)[0].toString());
+        if (tong.compareTo(BigDecimal.ZERO) <= 0)
+            return false;
+
+        String sql = "UPDATE PurchaseOrder SET total_amount = ?, status = 'HOAN_THANH', " +
+                "note = CONCAT(COALESCE(note, ''), ' | Chốt bổ sung') " +
+                "WHERE purchase_order_id = ? AND status = 'CHO_XU_LY'";
+        return DBBase.update(sql, tong, purchaseOrderId) > 0;
+    }
+
+    // =====================================================
     // NHÓM BÁO CÁO
     // =====================================================
 
