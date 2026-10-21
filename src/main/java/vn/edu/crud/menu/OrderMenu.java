@@ -11,6 +11,7 @@ import vn.edu.crud.model.Employee;
 import vn.edu.crud.model.Flower;
 import vn.edu.crud.model.Order;
 import vn.edu.crud.model.Payment;
+import vn.edu.crud.util.AnToan;
 import vn.edu.crud.util.NhapLieu;
 
 import java.math.BigDecimal;
@@ -94,10 +95,10 @@ public class OrderMenu {
                     default: System.out.println("⚠️ Chọn sai, vui lòng chọn lại!");
                 }
             } catch (NumberFormatException e) {
-                System.out.println("⚠️ Vui lòng nhập SỐ, không nhập chữ!");
+                System.out.println("⚠️ Vui lòng nhập SỐ, không nhập chữ! (VD: 1 để tạo đơn, 0 để quay lại)");
                 chon = -1;
             } catch (Exception e) {
-                System.out.println("❌ Lỗi không mong muốn: " + e.getMessage());
+                AnToan.baoLoi(e, "số trong menu 0-19. VD: 1 = tạo đơn, 3 = thanh toán");
                 chon = -1;
             }
         } while (chon != 0);
@@ -249,7 +250,7 @@ public class OrderMenu {
                 System.out.println("❌ Tạo đơn thất bại!");
             }
         } catch (Exception e) {
-            System.out.println("❌ Lỗi khi tạo đơn: " + e.getMessage());
+            AnToan.baoLoi(e, "SĐT 10 số (VD 0901234567), ngày giao dạng 2026-10-25 15:00:00, chọn nhân viên theo số");
         }
     }
 
@@ -415,7 +416,7 @@ public class OrderMenu {
                 if (sc.nextLine().trim().equalsIgnoreCase("k")) break;
             }
         } catch (Exception e) {
-            System.out.println("❌ Lỗi: " + e.getMessage());
+            AnToan.baoLoi(e, "chọn STT đơn/STT hoa theo số, số lượng là số nguyên từ 1 đến tồn kho");
         }
     }
 
@@ -553,7 +554,7 @@ public class OrderMenu {
                 System.out.println("❌ Thanh toán thất bại!");
             }
         } catch (Exception e) {
-            System.out.println("❌ Lỗi khi thanh toán: " + e.getMessage());
+            AnToan.baoLoi(e, "chọn STT đơn theo số, chọn 0/1/2, phương thức TIEN_MAT/CHUYEN_KHOAN/MOMO/THE_TIN_DUNG");
         }
     }
 
@@ -662,8 +663,8 @@ public class OrderMenu {
             if (orderDAO.capNhatTrangThai(orderId, trangThaiMoi)) {
                 System.out.println("✅ Cập nhật thành công sang: " + dichTrangThai(trangThaiMoi));
             }
-        } catch (NumberFormatException e) {
-            System.out.println("❌ Phải nhập số!");
+        } catch (Exception e) {
+            AnToan.baoLoi(e, "mã đơn dạng ORD001 (VD: ORD001), chọn trạng thái bằng số 1 hoặc 2");
         }
     }
 
@@ -684,6 +685,14 @@ public class OrderMenu {
     }
 
     private void huyDon(String orderId) {
+        try {
+            huyDonImpl(orderId);
+        } catch (Exception e) {
+            AnToan.baoLoi(e, "mã đơn dạng ORD001 (VD: ORD001)");
+        }
+    }
+
+    private void huyDonImpl(String orderId) {
         BigDecimal tongTien = paymentDAO.tinhTongTienDon(orderId);
         BigDecimal daTra = paymentDAO.tinhDaTra(orderId);
 
@@ -726,6 +735,14 @@ public class OrderMenu {
     // GIAO_THAT_BAI. Tiền đã thu thì người dùng chọn HOÀN lại hay GIỮ lại.
     // =====================================================
     private void giaoThatBai(String orderId) {
+        try {
+            giaoThatBaiImpl(orderId);
+        } catch (Exception e) {
+            AnToan.baoLoi(e, "mã đơn dạng ORD001 (VD: ORD001) và chọn 0/1/2");
+        }
+    }
+
+    private void giaoThatBaiImpl(String orderId) {
         BigDecimal daTra = paymentDAO.tinhDaTra(orderId);
         List<Object[]> dsHoa = orderDAO.layHoaTrongDon(orderId);
 
@@ -798,6 +815,14 @@ public class OrderMenu {
     // 5, 6, 7. XEM/XÓA CHI TIẾT ĐƠN HÀNG
     // =====================================================
     private void xemChiTietDon() {
+        try {
+            xemChiTietDonImpl();
+        } catch (Exception e) {
+            AnToan.baoLoi(e, "mã đơn dạng ORD001 (VD: ORD001)");
+        }
+    }
+
+    private void xemChiTietDonImpl() {
         System.out.print("Nhập Mã đơn cần xem (VD: ORD001): ");
         String orderId = sc.nextLine().toUpperCase();
 
@@ -879,11 +904,19 @@ public class OrderMenu {
                 }
             }
         } catch (Exception e) {
-            System.out.println("❌ Lỗi: " + e.getMessage());
+            AnToan.baoLoi(e, "mã đơn dạng ORD001 và mã hoa dạng FL01 (VD: ORD001 / FL03)");
         }
     }
 
     private void xoaDon() {
+        try {
+            xoaDonImpl();
+        } catch (Exception e) {
+            AnToan.baoLoi(e, "mã đơn dạng ORD001 (VD: ORD001) — nhập đúng mã in ở danh sách đơn");
+        }
+    }
+
+    private void xoaDonImpl() {
         System.out.print("Nhập Mã đơn cần xóa (VD: ORD001): ");
         String orderId = sc.nextLine().toUpperCase();
 
@@ -944,6 +977,14 @@ public class OrderMenu {
     // 19. SỬA THÔNG TIN ĐƠN (địa chỉ / ngày giao / nhân viên)
     // =====================================================
     private void suaThongTinDon() {
+        try {
+            suaThongTinDonImpl();
+        } catch (Exception e) {
+            AnToan.baoLoi(e, "mã đơn ORD001, ngày giao dạng 2026-10-25 15:00:00, nhân viên chọn theo số");
+        }
+    }
+
+    private void suaThongTinDonImpl() {
         System.out.print("Nhập Mã đơn cần sửa: ");
         String orderId = sc.nextLine().toUpperCase();
 
@@ -1056,6 +1097,14 @@ public class OrderMenu {
     }
 
     private void xemDonCuaKhach() {
+        try {
+            xemDonCuaKhachImpl();
+        } catch (Exception e) {
+            AnToan.baoLoi(e, "SĐT khách 10 số (VD: 0901234567)");
+        }
+    }
+
+    private void xemDonCuaKhachImpl() {
         System.out.print("Nhập SĐT khách hàng (VD: 0901234567): ");
         String sdt = customerDAO.chuanHoaSdt(sc.nextLine());
 
