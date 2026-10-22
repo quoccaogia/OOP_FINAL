@@ -65,6 +65,7 @@ public class OrderMenu {
                 System.out.println("║ 17. NV nhiều đơn nhất                ║");
                 System.out.println("║ 18. Tổng chi tiêu theo khách         ║");
                 System.out.println("║ 19. Sửa thông tin đơn (địa chỉ/ngày) ║");
+                System.out.println("║ 20. Tìm kiếm đơn (Mã/KH/NV)          ║");
                 System.out.println("║  0. Quay lại                         ║");
                 System.out.println("╚══════════════════════════════════════╝");
                 System.out.print("Chọn: ");
@@ -80,7 +81,8 @@ public class OrderMenu {
                     case 6: xoaDon(); break;
                     case 7: xemChiTietDon(); break;
                     case 8: inBang(orderDAO.donHangGiaCao(new BigDecimal("500000"))); break;
-                    case 9: inDsDon(orderDAO.donChuaGiaoHomNay()); break;
+                    // Lambda: lọc đơn chưa giao hôm nay
+                    case 9: inDsDon(orderDAO.donChuaGiaoHomNayLambda()); break;
                     case 10: System.out.println("Doanh thu hôm nay: " + orderDAO.doanhThuHomNay() + " VND"); break;
                     case 11: xemDonCuaKhach(); break;
                     case 12: inBang(orderDAO.thongKeDonTheoTrangThai()); break;
@@ -91,6 +93,7 @@ public class OrderMenu {
                     case 17: inBang(orderDAO.nhanVienNhieuDonNhat()); break;
                     case 18: inBang(orderDAO.tongChiTieuTheoKhach()); break;
                     case 19: suaThongTinDon(); break;
+                    case 20: timKiemDonHangLambda(); break;
                     case 0: System.out.println("Quay lại menu chính."); break;
                     default: System.out.println("⚠️ Chọn sai, vui lòng chọn lại!");
                 }
@@ -98,7 +101,7 @@ public class OrderMenu {
                 System.out.println("⚠️ Vui lòng nhập SỐ, không nhập chữ! (VD: 1 để tạo đơn, 0 để quay lại)");
                 chon = -1;
             } catch (Exception e) {
-                AnToan.baoLoi(e, "số trong menu 0-19. VD: 1 = tạo đơn, 3 = thanh toán");
+                AnToan.baoLoi(e, "số trong menu 0-20. VD: 1 = tạo đơn, 20 = tìm kiếm đơn");
                 chon = -1;
             }
         } while (chon != 0);
@@ -1116,7 +1119,8 @@ public class OrderMenu {
 
         Customer kh = dsKH.get(0);
         System.out.println("--- ĐƠN HÀNG CỦA: " + kh.getName() + " ---");
-        inDsDon(orderDAO.donCuaKhach(kh.getCustomerId()));
+        // Lambda: lọc đơn theo mã khách hàng
+        inDsDon(orderDAO.donCuaKhachLambda(kh.getCustomerId()));
     }
 
     private String layDiaChiKhach(String customerId) {
@@ -1155,6 +1159,25 @@ public class OrderMenu {
         if (s == null) return "";
         if (s.length() <= maxLen) return s;
         return s.substring(0, maxLen - 1) + "…";
+    }
+
+    // =========================================================================
+    // CHỨC NĂNG TÌM KIẾM ĐƠN HÀNG BẰNG LAMBDA (MỤC 5)
+    // =========================================================================
+    private void timKiemDonHangLambda() {
+        System.out.println("\n--- TÌM KIẾM ĐƠN HÀNG (SỬ DỤNG LAMBDA) ---");
+        System.out.print("Nhập từ khóa cần tìm (Mã đơn, Mã KH hoặc Mã NV): ");
+        String tuKhoa = sc.nextLine();
+
+        // Gọi hàm searchOrdersByLambda đã viết trong OrderDAO
+        List<Order> ketQua = orderDAO.searchOrdersByLambda(tuKhoa);
+
+        if (ketQua.isEmpty()) {
+            System.out.println("❌ Không tìm thấy đơn hàng nào khớp với từ khóa: \"" + tuKhoa + "\"");
+        } else {
+            System.out.println("✅ Tìm thấy " + ketQua.size() + " đơn hàng phù hợp:");
+            inDsDon(ketQua);
+        }
     }
 
     private void inDsDon(List<Order> list) {
