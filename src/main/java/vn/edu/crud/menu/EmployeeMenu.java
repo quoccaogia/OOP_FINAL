@@ -1,15 +1,15 @@
 package vn.edu.crud.menu;
 
-import vn.edu.crud.dao.EmployeeDAO;
-import vn.edu.crud.model.Employee;
-import vn.edu.crud.model.EmployeeRole;
-import vn.edu.crud.util.NhapLieu;
-
 import java.math.BigDecimal;
 import java.text.NumberFormat;
 import java.util.List;
 import java.util.Locale;
 import java.util.Scanner;
+
+import vn.edu.crud.dao.EmployeeDAO;
+import vn.edu.crud.model.Employee;
+import vn.edu.crud.model.EmployeeRole;
+import vn.edu.crud.util.NhapLieu;
 
 public class EmployeeMenu {
     private final Scanner sc = new Scanner(System.in);
@@ -25,14 +25,15 @@ public class EmployeeMenu {
             System.out.println("║          QUẢN LÝ NHÂN VIÊN           ║");
             System.out.println("╠══════════════════════════════════════╣");
             System.out.println("║  1. Xem tất cả                       ║");
-            System.out.println("║  2. Tìm theo mã                      ║");
-            System.out.println("║  3. Thêm mới                         ║");
-            System.out.println("║  4. Sửa (Nhập Mã NV)                 ║");
-            System.out.println("║  5. Xóa (Nhập Mã NV)                 ║");
+            System.out.println("║  2. Tìm kiếm nhân viên               ║");
+            System.out.println("║  3. Tìm theo mã                      ║");
+            System.out.println("║  4. Thêm mới                         ║");
+            System.out.println("║  5. Sửa (Nhập Mã NV)                 ║");
+            System.out.println("║  6. Xóa (Nhập Mã NV)                 ║");
             System.out.println("║  ── BÁO CÁO ──                       ║");
-            System.out.println("║  6. NV đang phụ trách đơn            ║");
-            System.out.println("║  7. NV nhiều đơn nhất                ║");
-            System.out.println("║  8. Tính lương tháng + Hoa hồng      ║"); // MỚI
+            System.out.println("║  7. NV đang phụ trách đơn            ║");
+            System.out.println("║  8. NV nhiều đơn nhất                ║");
+            System.out.println("║  9. Tính lương tháng + Hoa hồng      ║"); // MỚI
             System.out.println("║  0. Quay lại                         ║");
             System.out.println("╚══════════════════════════════════════╝");
             System.out.print("Chọn: ");
@@ -41,19 +42,41 @@ public class EmployeeMenu {
             catch (NumberFormatException e) { chon = -1; }
 
             switch (chon) {
-                case 1: inDanhSach(dao.findAll()); break;
-                case 2: timTheoMa(); break;
-                case 3: themNhanVien(); break;
-                case 4: suaNhanVien(); break;
-                case 5: xoaNhanVien(); break;
-                case 6: inBang(dao.nhanVienCoDonHang()); break;
-                case 7: inBang(dao.nhanVienNhieuDonNhat()); break;
-                case 8: tinhLuongNhanVien(); break;
-                case 0: break;
-                default: System.out.println("Chọn sai!");
+                case 1 -> inDanhSach(dao.findAll());
+                case 2 -> timKiemNhanVienLambda();
+                case 3 -> timTheoMa();
+                case 4 -> themNhanVien();
+                case 5 -> suaNhanVien();
+                case 6 -> xoaNhanVien();
+                case 7 -> inBang(dao.nhanVienCoDonHang());
+                case 8 -> inBang(dao.nhanVienNhieuDonNhat());
+                case 9 -> tinhLuongNhanVien();
+                case 0 -> {
+                }
+                default -> System.out.println("Chọn sai!");
             }
         } while (chon != 0);
     }
+
+// =========================================================================
+// CHỨC NĂNG TÌM KIẾM NHÂN VIÊN BẰNG LAMBDA (MỤC 3)
+// =========================================================================
+private void timKiemNhanVienLambda() {
+    System.out.println("\n--- TÌM KIẾM NHÂN VIÊN (SỬ DỤNG LAMBDA) ---");
+    System.out.print("Nhập mã hoặc tên nhân viên cần tìm: ");
+    String tuKhoa = sc.nextLine();
+
+    // Gọi hàm filter/search bằng Lambda đã viết trong EmployeeDAO
+    List<Employee> ketQua = dao.searchEmployeesByLambda(tuKhoa);
+
+    if (ketQua.isEmpty()) {
+        System.out.println("❌ Không tìm thấy nhân viên nào khớp với từ khóa: \"" + tuKhoa + "\"");
+    } else {
+        System.out.println("✅ Tìm thấy " + ketQua.size() + " nhân viên phù hợp:");
+        // Sử dụng lại hàm inDanhSach có sẵn trong EmployeeMenu để hiển thị dạng bảng đẹp mắt
+        inDanhSach(ketQua);
+    }
+}
 
     private void themNhanVien() {
         String id = dao.sinhMaNVMoi();
@@ -154,6 +177,7 @@ public class EmployeeMenu {
         }
     }
 
+    @SuppressWarnings("UseSpecificCatch")
     private void suaNhanVien() {
         System.out.print("Nhập Mã NV cần sửa (VD: NV01): ");
         String id = sc.nextLine().trim().toUpperCase();
