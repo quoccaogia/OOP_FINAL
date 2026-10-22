@@ -1,12 +1,12 @@
 package vn.edu.crud.menu;
 
-import vn.edu.crud.dao.SupplierDAO;
-import vn.edu.crud.dao.PurchaseOrderDAO;
-import vn.edu.crud.model.Supplier;
-import vn.edu.crud.util.NhapLieu;
-
 import java.util.List;
 import java.util.Scanner;
+
+import vn.edu.crud.dao.PurchaseOrderDAO;
+import vn.edu.crud.dao.SupplierDAO;
+import vn.edu.crud.model.Supplier;
+import vn.edu.crud.util.NhapLieu;
 
 public class SupplierMenu {
     private final Scanner sc = new Scanner(System.in);
@@ -21,7 +21,8 @@ public class SupplierMenu {
             System.out.println("╠══════════════════════════════════════╣");
             System.out.println("║  1. Xem tất cả danh sách             ║");
             System.out.println("║  2. Nghiệp vụ (Tiếp nhận NCC)        ║");
-            System.out.println("║  3. Xóa nhà cung cấp                 ║");
+            System.out.println("║  3. Tìm kiếm nhà cung cấp            ║");
+            System.out.println("║  4. Xóa nhà cung cấp                 ║");
             System.out.println("║  ── BÁO CÁO ──                       ║");
             System.out.println("║  6. Tổng tiền nhập theo NCC          ║");
             System.out.println("║  7. NCC đang cung cấp hoa            ║");
@@ -35,19 +36,39 @@ public class SupplierMenu {
             catch (NumberFormatException e) { chon = -1; }
 
             switch (chon) {
-                case 1: inDanhSach(dao.findAll()); break;
-                case 2: tiepNhanNhaCungCap(); break;
-                case 3: xoaNhaCungCap(); break;
-                case 6: inBang(dao.tongNhapTheoNCC()); break;
-                case 7: inBang(dao.nccDangCungCapHoa()); break;
-                case 8: inBang(dao.nccNhieuLoaiHoaNhat()); break;
-                case 9: inBang(dao.thongKeLoaiHoaTheoNCC()); break;
-                case 0: break;
-                default: System.out.println("Chọn sai!");
+                case 1 -> inDanhSach(dao.findAll());
+                case 2 -> tiepNhanNhaCungCap();
+                case 3 -> timKiemNhaCungCapLambda();
+                case 4 -> xoaNhaCungCap();
+                case 6 -> inBang(dao.tongNhapTheoNCC());
+                case 7 -> inBang(dao.nccDangCungCapHoa());
+                case 8 -> inBang(dao.nccNhieuLoaiHoaNhat());
+                case 9 -> inBang(dao.thongKeLoaiHoaTheoNCC());
+                case 0 -> {
+                }
+                default -> System.out.println("Chọn sai!");
             }
         } while (chon != 0);
     }
+    // =========================================================================
+// CHỨC NĂNG TÌM KIẾM NHÀ CUNG CẤP BẰNG LAMBDA (MỤC 2)
+// =========================================================================
+private void timKiemNhaCungCapLambda() {
+    System.out.println("\n--- TÌM KIẾM NHÀ CUNG CẤP (SỬ DỤNG LAMBDA) ---");
+    System.out.print("Nhập tên nhà cung cấp cần tìm: ");
+    String tuKhoa = sc.nextLine();
 
+    // Gọi hàm tìm kiếm bằng Lambda đã viết trong SupplierDAO
+    List<Supplier> ketQua = dao.searchSuppliersByLambda(tuKhoa);
+
+    if (ketQua.isEmpty()) {
+        System.out.println("❌ Không tìm thấy nhà cung cấp nào có tên khớp với: \"" + tuKhoa + "\"");
+    } else {
+        System.out.println("✅ Tìm thấy " + ketQua.size() + " nhà cung cấp phù hợp:");
+        // Sử dụng lại hàm inDanhSach có sẵn để in bảng kết quả đẹp mắt
+        inDanhSach(ketQua);
+    }
+}
     // =====================================================
     // CHỨC NĂNG 2: NGHIỆP VỤ TIẾP NHẬN NCC (CHECK SĐT)
     // =====================================================

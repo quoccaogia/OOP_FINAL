@@ -1,19 +1,40 @@
 package vn.edu.crud.dao;
 
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.SQLIntegrityConstraintViolationException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
+
 import vn.edu.crud.model.Supplier;
 import vn.edu.crud.util.DBBase;
 import vn.edu.crud.util.DBConnection;
 
-import java.sql.*;
-import java.util.ArrayList;
-import java.util.List;
-
 public class SupplierDAO {
+    @SuppressWarnings("CallToStackTrace")
+    public List<Supplier> searchSuppliersByLambda(String keyword) {
+        List<Supplier> allSuppliers = this.findAll();
+        
+        if (keyword == null || keyword.trim().isEmpty()) {
+            return allSuppliers;
+        }
+        
+        String lowerKeyword = keyword.toLowerCase().trim();
+        
+        // Sử dụng Stream API và Biểu thức Lambda để lọc danh sách nhà cung cấp theo tên
+        return allSuppliers.stream()
+                .filter(s -> s.getName() != null && s.getName().toLowerCase().contains(lowerKeyword))
+                .collect(Collectors.toList());
+    } 
 
     // =====================================================
     // NHÓM CRUD
     // =====================================================
 
+    @SuppressWarnings("CallToPrintStackTrace")
     public List<Supplier> findAll() {
         List<Supplier> list = new ArrayList<>();
         String sql = "SELECT * FROM Supplier";
@@ -26,6 +47,7 @@ public class SupplierDAO {
     }
 
     // Hàm tìm theo ID (Trả về Object Supplier thay vì List<Object[]>)
+    @SuppressWarnings("CallToPrintStackTrace")
     public Supplier findById(String id) {
         String sql = "SELECT * FROM Supplier WHERE supplier_id = ?";
         try (Connection conn = DBConnection.getConnection();
@@ -39,6 +61,7 @@ public class SupplierDAO {
     }
 
     // Tìm theo SĐT (Dùng cho nghiệp vụ tiếp nhận)
+    @SuppressWarnings({"CallToPrintStackTrace", "CallToPrintStackTrace", "CallToPrintStackTrace"})
     public List<Supplier> timTheoSdt(String sdt) {
         List<Supplier> list = new ArrayList<>();
         String sql = "SELECT * FROM Supplier WHERE phone LIKE ?";
@@ -52,6 +75,7 @@ public class SupplierDAO {
         return list;
     }
 
+    @SuppressWarnings("CallToPrintStackTrace")
     public boolean insert(Supplier s) {
         String sql = "INSERT INTO Supplier (supplier_id, name, phone, address, representative) VALUES (?, ?, ?, ?, ?)";
         try (Connection conn = DBConnection.getConnection();
@@ -68,6 +92,7 @@ public class SupplierDAO {
         } catch (SQLException e) { e.printStackTrace(); return false; }
     }
 
+    @SuppressWarnings("CallToPrintStackTrace")
     public boolean update(Supplier s) {
         String sql = "UPDATE Supplier SET name=?, phone=?, address=?, representative=? WHERE supplier_id=?";
         try (Connection conn = DBConnection.getConnection();
