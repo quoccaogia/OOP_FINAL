@@ -7,6 +7,8 @@ import java.sql.SQLException;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Comparator;
+import java.util.stream.Collectors;
 
 import vn.edu.crud.model.CareSchedule;
 import vn.edu.crud.util.DBBase;
@@ -122,6 +124,23 @@ public class CareScheduleDAO {
             e.printStackTrace();
         }
         return list;
+    }
+
+    public List<CareSchedule> lichSuTheoHoaLambda(String flowerId){
+        return layDanhSachChamSoc().stream()
+                .filter(c -> flowerId.equals(c.getFlowerId()))
+                .sorted(Comparator.comparing(CareSchedule::getCheckDate,
+                        Comparator.nullsLast(Comparator.reverseOrder())))
+                .collect(Collectors.toList());
+    }
+
+    public List<CareSchedule> lichSuTheoNhanVienLambda(String empId){
+        return layDanhSachChamSoc().stream()
+                .filter(c -> empId.equals(c.getEmployeeId()))
+                .sorted(Comparator.comparing(CareSchedule::getCheckDate,
+                        Comparator.nullsLast(Comparator.reverseOrder())))
+                .collect(Collectors.toList());
+
     }
 
     private CareSchedule mapRow(ResultSet rs) throws SQLException {

@@ -395,30 +395,21 @@ public class PurchaseOrderMenu {
 
     }
 
-    // Lambda: tìm 1 phiếu nhập theo mã
+    
     private void timPhieuTheoMa(String maPN) {
-        List<PurchaseOrder> kq = poDAO.layDanhSachPhieuNhap().stream()
-                .filter(po -> maPN.equals(po.getPurchaseOrderId()))
-                .collect(Collectors.toList());
+        List<PurchaseOrder> kq = poDAO.timPhieuTheoMaLambda(maPN);
         inDanhSachPhieu(kq);
     }
 
-    // Lambda: các phiếu nhập của 1 nhà cung cấp
+    
     private void phieuCuaNCC(String maNCC) {
-        List<PurchaseOrder> kq = poDAO.layDanhSachPhieuNhap().stream()
-                .filter(po -> maNCC.equals(po.getSupplierId()))
-                .collect(Collectors.toList());
+        List<PurchaseOrder> kq = poDAO.phieuCuaNCCLambda(maNCC);
         inDanhSachPhieu(kq);
     }
 
-    // Lambda: tổng tiền nhập theo từng nhà cung cấp
+    
     private void tongNhapTheoNCC() {
-        Map<String, BigDecimal> tong = poDAO.layDanhSachPhieuNhap().stream()
-                .filter(po -> po.getSupplierId() != null && po.getTotalAmount() != null)
-                .collect(Collectors.groupingBy(
-                        PurchaseOrder::getSupplierId,
-                        TreeMap::new,
-                        Collectors.reducing(BigDecimal.ZERO, PurchaseOrder::getTotalAmount, BigDecimal::add)));
+        Map<String, BigDecimal> tong = poDAO.tongNhapTheoNCCLambda();
 
         System.out.println("\n--- TỔNG TIỀN NHẬP THEO NHÀ CUNG CẤP ---");
         if (tong.isEmpty()) {

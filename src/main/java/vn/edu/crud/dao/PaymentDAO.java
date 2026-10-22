@@ -7,9 +7,11 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import vn.edu.crud.util.DBConnection;
 import java.sql.*;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 public class PaymentDAO {
@@ -162,7 +164,6 @@ public class PaymentDAO {
         return DBBase.query(sql);
     }
 
-    // Lấy tất cả giao dịch dưới dạng đối tượng Payment (dùng cho truy vấn lambda)
     public List<Payment> layDanhSachThanhToan() {
         List<Payment> list = new ArrayList<>();
         String sql = "SELECT * FROM payment";
@@ -175,6 +176,24 @@ public class PaymentDAO {
             e.printStackTrace();
         }
         return list;
+    }
+
+    public List<Payment> theoPhuongThucLambda(String phuongThuc) {
+        return layDanhSachThanhToan().stream()
+                .filter(p -> phuongThuc.equals(p.getPaymentMethod()))
+                .collect(Collectors.toList());
+    }
+
+    public BigDecimal doanhThuHomNayLambda() {
+        LocalDate homNay = LocalDate.now();
+        return layDanhSachThanhToan().stream()
+                .filter(p -> "THANH_TOAN_THANH_CONG".equals(p.getPaymentStatus())
+                        && p.getPaymentDate() != null
+                        && p.getPaymentDate().toLocalDate().equals(homNay)
+                        && p.getAmount() != null)
+                .map(Payment::getAmount)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+
     }
 
     private Payment mapRow(ResultSet rs) throws SQLException {

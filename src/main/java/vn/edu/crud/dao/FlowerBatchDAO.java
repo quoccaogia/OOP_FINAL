@@ -1,4 +1,5 @@
 package vn.edu.crud.dao;
+
 import java.math.BigDecimal;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -8,10 +9,14 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
+import java.util.Comparator;
 
 import vn.edu.crud.model.FlowerBatch;
 import vn.edu.crud.util.DBBase;
 import vn.edu.crud.util.DBConnection;
+
+import java.time.temporal.ChronoUnit;
 
 public class FlowerBatchDAO {
 
@@ -267,6 +272,35 @@ public class FlowerBatchDAO {
                         e.printStackTrace();
                 }
                 return list;
+        }
+
+        public List<FlowerBatch> loConHangLambda() {
+                return layDanhSachLo().stream()
+                                .filter(b -> "AVAILABLE".equals(b.getStatus())
+                                                && b.getQuantityRemaining() > 0)
+                                .collect(Collectors.toList());
+
+        }
+
+        public List<FlowerBatch> loNhapQua7NgayLambda() {
+                return layDanhSachLo().stream()
+                                .filter(b -> b.getImportDate() != null
+                                                && b.getQuantityRemaining() > 0
+                                                && ChronoUnit.DAYS.between(b.getImportDate().toLocalDate(),
+                                                                LocalDate.now()) > 7)
+                                .collect(Collectors.toList());
+        }
+
+        public List<FlowerBatch> loSapHetHanLambda(int soNgay) {
+                LocalDate homNay = LocalDate.now();
+                return layDanhSachLo().stream()
+                                .filter(b -> "AVAILABLE".equals(b.getStatus())
+                                                && b.getQuantityRemaining() > 0
+                                                && b.getExpiryDate() != null
+                                                && ChronoUnit.DAYS.between(homNay, b.getExpiryDate()) >= 0
+                                                && ChronoUnit.DAYS.between(homNay, b.getExpiryDate()) <= soNgay)
+                                .sorted(Comparator.comparing(FlowerBatch::getExpiryDate))
+                                .collect(Collectors.toList());
         }
 
         private FlowerBatch mapRow(ResultSet rs) throws SQLException {

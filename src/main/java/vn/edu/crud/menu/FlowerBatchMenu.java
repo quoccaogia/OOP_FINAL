@@ -221,15 +221,10 @@ public class FlowerBatchMenu {
         }
     }
 
-    // Câu 09 (lambda): lô hoa nhập quá 7 ngày
+    
     private void loNhapQua7Ngay() {
-        List<FlowerBatch> dsLo = dao.layDanhSachLo();
-
-        List<FlowerBatch> kq = dsLo.stream()
-                .filter(b -> b.getImportDate() != null
-                        && b.getQuantityRemaining() > 0
-                        && ChronoUnit.DAYS.between(b.getImportDate().toLocalDate(), LocalDate.now()) > 7)
-                .collect(Collectors.toList());
+       
+        List<FlowerBatch> kq = dao.loNhapQua7NgayLambda();
 
         System.out.println("\n--- LÔ HOA NHẬP QUÁ 7 NGÀY ---");
         if (kq.isEmpty()) {
@@ -246,14 +241,10 @@ public class FlowerBatchMenu {
         }
     }
 
-    // Lambda: lô hoa còn hàng (đang bán và còn hoa)
+    
     private void loConHang() {
-        List<FlowerBatch> dsLo = dao.layDanhSachLo();
-
-        List<FlowerBatch> kq = dsLo.stream()
-                .filter(b -> "AVAILABLE".equals(b.getStatus())
-                        && b.getQuantityRemaining() > 0)
-                .collect(Collectors.toList());
+       
+        List<FlowerBatch> kq = dao.loConHangLambda();
 
         System.out.println("\n--- LÔ HOA CÒN HÀNG ---");
         if (kq.isEmpty()) {
@@ -272,19 +263,12 @@ public class FlowerBatchMenu {
         }
     }
 
-    // Lambda: lô hoa sắp hết hạn trong soNgay ngày tới (còn hàng, đang bán)
+    
     private void loSapHetHan(int soNgay) {
-        List<FlowerBatch> dsLo = dao.layDanhSachLo();
+        
         LocalDate homNay = LocalDate.now();
 
-        List<FlowerBatch> kq = dsLo.stream()
-                .filter(b -> "AVAILABLE".equals(b.getStatus())
-                        && b.getQuantityRemaining() > 0
-                        && b.getExpiryDate() != null
-                        && ChronoUnit.DAYS.between(homNay, b.getExpiryDate()) >= 0
-                        && ChronoUnit.DAYS.between(homNay, b.getExpiryDate()) <= soNgay)
-                .sorted(Comparator.comparing(FlowerBatch::getExpiryDate))
-                .collect(Collectors.toList());
+        List<FlowerBatch> kq = dao.loSapHetHanLambda(soNgay);
 
         System.out.println("\n--- LÔ HOA SẮP HẾT HẠN (<= " + soNgay + " NGÀY) ---");
         if (kq.isEmpty()) {
