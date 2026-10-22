@@ -50,10 +50,12 @@ public class PaymentMenu {
                         System.out.println("Quay lại menu chính.");
                         break;
                     default:
-                        System.out.println("⚠️ Chọn sai! Vui lòng chọn số từ 0 đến 4 (VD: 1 = xem tất cả, 3 = xem doanh thu).");
+                        System.out.println(
+                                "⚠️ Chọn sai! Vui lòng chọn số từ 0 đến 4 (VD: 1 = xem tất cả, 3 = xem doanh thu).");
                 }
             } catch (NumberFormatException e) {
-                System.out.println("⚠️ Vui lòng nhập SỐ, không nhập chữ! Gợi ý: chọn số từ 0 đến 4 (VD: 1 để xem danh sách, 0 để quay lại).");
+                System.out.println(
+                        "⚠️ Vui lòng nhập SỐ, không nhập chữ! Gợi ý: chọn số từ 0 đến 4 (VD: 1 để xem danh sách, 0 để quay lại).");
                 chon = -1;
             } catch (Exception e) {
                 AnToan.baoLoi(e, "số trong menu 0-4. VD: 1 = xem tất cả, 4 = hủy giao dịch/hoàn tiền");
@@ -90,7 +92,8 @@ public class PaymentMenu {
             try {
                 soPT = Integer.parseInt(sc.nextLine().trim());
             } catch (NumberFormatException e) {
-                System.out.println("⚠️ Vui lòng nhập SỐ! Gợi ý: nhập số từ 1 đến " + dsPhuongThuc.length + " (VD: 1 cho TIEN_MAT).");
+                System.out.println("⚠️ Vui lòng nhập SỐ! Gợi ý: nhập số từ 1 đến " + dsPhuongThuc.length
+                        + " (VD: 1 cho TIEN_MAT).");
                 return;
             }
 
@@ -100,7 +103,8 @@ public class PaymentMenu {
             }
 
             if (soPT < 1 || soPT > dsPhuongThuc.length) {
-                System.out.println("⚠️ Lựa chọn không hợp lệ! Gợi ý: chỉ chọn từ 1 đến " + dsPhuongThuc.length + " (VD: 1 cho TIEN_MAT, 2 cho CHUYEN_KHOAN).");
+                System.out.println("⚠️ Lựa chọn không hợp lệ! Gợi ý: chỉ chọn từ 1 đến " + dsPhuongThuc.length
+                        + " (VD: 1 cho TIEN_MAT, 2 cho CHUYEN_KHOAN).");
                 return;
             }
 
@@ -113,11 +117,7 @@ public class PaymentMenu {
     // Lambda: các giao dịch theo một phương thức thanh toán
     private void inTheoPhuongThuc(String phuongThuc) {
         try {
-            List<Payment> ds = dao.layDanhSachThanhToan();
-
-            List<Payment> kq = ds.stream()
-                    .filter(p -> phuongThuc.equals(p.getPaymentMethod()))
-                    .collect(Collectors.toList());
+            List<Payment> kq = dao.theoPhuongThucLambda(phuongThuc);
 
             System.out.println("\n--- GIAO DỊCH PHƯƠNG THỨC " + phuongThuc + " ---");
             if (kq.isEmpty()) {
@@ -143,16 +143,10 @@ public class PaymentMenu {
     // =====================================================
     private void doanhThuHomNay() {
         try {
-            List<Payment> ds = dao.layDanhSachThanhToan();
+
             LocalDate homNay = LocalDate.now();
 
-            BigDecimal tong = ds.stream()
-                    .filter(p -> "THANH_TOAN_THANH_CONG".equals(p.getPaymentStatus())
-                            && p.getPaymentDate() != null
-                            && p.getPaymentDate().toLocalDate().equals(homNay)
-                            && p.getAmount() != null)
-                    .map(Payment::getAmount)
-                    .reduce(BigDecimal.ZERO, BigDecimal::add);
+            BigDecimal tong = dao.doanhThuHomNayLambda();
 
             System.out.println("\n--- DOANH THU HÔM NAY ---");
             System.out.println("Doanh thu hôm nay (" + homNay + "): " + tong + " VND");
@@ -176,13 +170,15 @@ public class PaymentMenu {
             String maDon = dao.layMaDon(id);
             if (maDon == null) {
                 System.out.println("❌ Không tìm thấy giao dịch có mã: " + id);
-                System.out.println("👉 Gợi ý: Mã thanh toán có dạng P001, P002... Bạn có thể xem danh sách tại chức năng [1].");
+                System.out.println(
+                        "👉 Gợi ý: Mã thanh toán có dạng P001, P002... Bạn có thể xem danh sách tại chức năng [1].");
                 return;
             }
 
             String trangThaiTT = dao.layTrangThaiThanhToan(id);
             if ("DA_HUY".equals(trangThaiTT) || "DA_HOAN_TIEN".equals(trangThaiTT)) {
-                System.out.println("⚠️ Giao dịch " + id + " đã ở trạng thái [" + trangThaiTT + "] trước đó, không thể thực hiện lại!");
+                System.out.println("⚠️ Giao dịch " + id + " đã ở trạng thái [" + trangThaiTT
+                        + "] trước đó, không thể thực hiện lại!");
                 return;
             }
 
@@ -201,12 +197,14 @@ public class PaymentMenu {
             if (!chuaGiao && !donDaDong) {
                 System.out.println("❌ Đơn " + maDon + " đang ở trạng thái [" + trangThai
                         + "] — không thể hủy/hoàn giao dịch.");
-                System.out.println("👉 Gợi ý: Chỉ hủy giao dịch khi đơn chưa giao (Đang chuẩn bị hoa), hoặc hoàn tiền khi đơn đã đóng (Đã hủy / Giao thất bại).");
+                System.out.println(
+                        "👉 Gợi ý: Chỉ hủy giao dịch khi đơn chưa giao (Đang chuẩn bị hoa), hoặc hoàn tiền khi đơn đã đóng (Đã hủy / Giao thất bại).");
                 return;
             }
 
             if (donDaDong) {
-                System.out.println("ℹ️ Đơn hàng đã đóng (" + trangThai + ") nhưng còn giữ tiền — thao tác này là HOÀN TIỀN cho khách.");
+                System.out.println("ℹ️ Đơn hàng đã đóng (" + trangThai
+                        + ") nhưng còn giữ tiền — thao tác này là HOÀN TIỀN cho khách.");
                 System.out.print("Xác nhận hoàn tiền giao dịch " + id + "? (y/n, VD: y): ");
                 String xacNhan = sc.nextLine().trim();
                 if (xacNhan.equalsIgnoreCase("y")) {

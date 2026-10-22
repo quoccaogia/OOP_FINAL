@@ -9,6 +9,9 @@ import java.sql.*;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
+import java.util.stream.Collectors;
 
 public class PurchaseOrderDAO {
 
@@ -137,7 +140,7 @@ public class PurchaseOrderDAO {
         return DBBase.query(sql);
     }
 
-    // Lấy tất cả phiếu nhập dưới dạng đối tượng PurchaseOrder 
+    // Lấy tất cả phiếu nhập dưới dạng đối tượng PurchaseOrder
     public List<PurchaseOrder> layDanhSachPhieuNhap() {
         List<PurchaseOrder> list = new ArrayList<>();
         String sql = "SELECT * FROM purchaseorder";
@@ -150,6 +153,27 @@ public class PurchaseOrderDAO {
             e.printStackTrace();
         }
         return list;
+    }
+
+    public List<PurchaseOrder> timPhieuTheoMaLambda(String maPN) {
+        return layDanhSachPhieuNhap().stream()
+                .filter(po -> maPN.equals(po.getPurchaseOrderId()))
+                .collect(Collectors.toList());
+    }
+
+    public List<PurchaseOrder> phieuCuaNCCLambda(String maNCC) {
+        return layDanhSachPhieuNhap().stream()
+                .filter(po -> maNCC.equals(po.getSupplierId()))
+                .collect(Collectors.toList());
+    }
+
+    public Map<String, BigDecimal> tongNhapTheoNCCLambda() {
+        return layDanhSachPhieuNhap().stream()
+                .filter(po -> po.getSupplierId() != null && po.getTotalAmount() != null)
+                .collect(Collectors.groupingBy(
+                        PurchaseOrder::getSupplierId,
+                        TreeMap::new,
+                        Collectors.reducing(BigDecimal.ZERO, PurchaseOrder::getTotalAmount, BigDecimal::add)));
     }
 
     private PurchaseOrder mapRow(ResultSet rs) throws SQLException {

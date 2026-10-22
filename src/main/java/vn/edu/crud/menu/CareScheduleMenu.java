@@ -389,12 +389,7 @@ public class CareScheduleMenu {
         if (flowerId == null)
             return;
 
-        // Lambda: lọc các bản ghi của loài hoa này, mới nhất lên đầu
-        List<CareSchedule> kq = dao.layDanhSachChamSoc().stream()
-                .filter(c -> flowerId.equals(c.getFlowerId()))
-                .sorted(Comparator.comparing(CareSchedule::getCheckDate,
-                        Comparator.nullsLast(Comparator.reverseOrder())))
-                .collect(Collectors.toList());
+        List<CareSchedule> kq = dao.lichSuTheoHoaLambda(flowerId);
 
         System.out.println("\n--- LỊCH SỬ CHĂM SÓC CỦA " + flowerId + " ---");
         inLichSu(kq);
@@ -405,13 +400,8 @@ public class CareScheduleMenu {
         if (empId == null)
             return;
 
-        // Lambda: lọc các bản ghi do nhân viên này thực hiện, mới nhất lên đầu
-        List<CareSchedule> kq = dao.layDanhSachChamSoc().stream()
-                .filter(c -> empId.equals(c.getEmployeeId()))
-                .sorted(Comparator.comparing(CareSchedule::getCheckDate,
-                        Comparator.nullsLast(Comparator.reverseOrder())))
-                .collect(Collectors.toList());
-
+        
+        List<CareSchedule> kq = dao.lichSuTheoNhanVienLambda(empId);
         System.out.println("\n--- LỊCH SỬ CHĂM SÓC CỦA " + empId + " ---");
         inLichSu(kq);
     }
