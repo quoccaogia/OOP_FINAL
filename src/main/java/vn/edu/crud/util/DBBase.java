@@ -1,6 +1,10 @@
 package vn.edu.crud.util;
 
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -19,6 +23,7 @@ public class DBBase {
      * Ví dụ:
      *   query("SELECT * FROM Flower WHERE color = ?", "Đỏ")
      */
+    @SuppressWarnings("CallToPrintStackTrace")
     public static List<Object[]> query(String sql, Object... params) {
         List<Object[]> ketQua = new ArrayList<>();
 
@@ -53,6 +58,7 @@ public class DBBase {
      * Chạy câu INSERT / UPDATE / DELETE.
      * Trả về số dòng bị ảnh hưởng.
      */
+    @SuppressWarnings("CallToPrintStackTrace")
     public static int update(String sql, Object... params) {
         try (Connection conn = DBConnection.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {

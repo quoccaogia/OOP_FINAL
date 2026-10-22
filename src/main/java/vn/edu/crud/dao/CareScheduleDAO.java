@@ -1,13 +1,16 @@
 package vn.edu.crud.dao;
 
-import vn.edu.crud.model.CareSchedule;
-import vn.edu.crud.util.DBBase;
-import vn.edu.crud.util.DBConnection;
-
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+
+import vn.edu.crud.model.CareSchedule;
+import vn.edu.crud.util.DBBase;
+import vn.edu.crud.util.DBConnection;
 
 public class CareScheduleDAO {
 
@@ -106,6 +109,7 @@ public class CareScheduleDAO {
     }
 
     // Lấy tất cả bản ghi chăm sóc dưới dạng đối tượng CareSchedule 
+    @SuppressWarnings("CallToPrintStackTrace")
     public List<CareSchedule> layDanhSachChamSoc() {
         List<CareSchedule> list = new ArrayList<>();
         String sql = "SELECT * FROM careschedule";

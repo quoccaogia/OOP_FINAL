@@ -1,15 +1,21 @@
 package vn.edu.crud.dao;
 
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.SQLIntegrityConstraintViolationException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
+
 import vn.edu.crud.model.Customer;
 import vn.edu.crud.util.DBBase;
 import vn.edu.crud.util.DBConnection;
 
-import java.sql.*;
-import java.util.ArrayList;
-import java.util.List;
-
 public class CustomerDAO {
 
+    @SuppressWarnings({"CallToStackTrace", "CallToPrintStackTrace"})
     public List<Customer> findAll() {
         List<Customer> list = new ArrayList<>();
         String sql = "SELECT * FROM Customer";
@@ -22,6 +28,7 @@ public class CustomerDAO {
     }
 
     // Hàm này cực kỳ quan trọng để OrderMenu lấy địa chỉ khách hàng
+    @SuppressWarnings({"CallToStackTrace", "CallToPrintStackTrace"})
     public Customer findById(String id) {
         String sql = "SELECT * FROM Customer WHERE customer_id = ?";
         try (Connection conn = DBConnection.getConnection();
@@ -35,6 +42,7 @@ public class CustomerDAO {
     }
 
     // Tìm theo SĐT (Dùng cho nghiệp vụ tiếp đón)
+    @SuppressWarnings({"CallToStackTrace", "CallToPrintStackTrace"})
     public List<Customer> timTheoSdt(String sdt) {
         List<Customer> list = new ArrayList<>();
         String sql = "SELECT * FROM Customer WHERE phone LIKE ?";
@@ -48,6 +56,26 @@ public class CustomerDAO {
         return list;
     }
 
+    // =========================================================================
+    // HÀM SỬ DỤNG BIỂU THỨC LAMBDA & STREAM API CHO MỤC 1
+    // =========================================================================
+    @SuppressWarnings("CallToStackTrace")
+    public List<Customer> filterCustomersByLambda(String keyword) {
+        List<Customer> allCustomers = this.findAll();
+        if (keyword == null || keyword.trim().isEmpty()) {
+            return allCustomers;
+        }
+        String lowerKeyword = keyword.toLowerCase().trim();
+        
+        // Sử dụng Stream API và Biểu thức Lambda để lọc dữ liệu trực tiếp trong bộ nhớ
+        return allCustomers.stream()
+                .filter(c -> (c.getName() != null && c.getName().toLowerCase().contains(lowerKeyword)) ||
+                             (c.getPhone() != null && c.getPhone().contains(lowerKeyword)) ||
+                             (c.getEmail() != null && c.getEmail().toLowerCase().contains(lowerKeyword)))
+                .collect(Collectors.toList());
+    }
+
+    @SuppressWarnings({"CallToStackTrace", "CallToPrintStackTrace"})
     public boolean insert(Customer c) {
         String sql = "INSERT INTO Customer (customer_id, name, phone, address, email) VALUES (?, ?, ?, ?, ?)";
         try (Connection conn = DBConnection.getConnection();
@@ -64,6 +92,7 @@ public class CustomerDAO {
         } catch (SQLException e) { e.printStackTrace(); return false; }
     }
 
+    @SuppressWarnings({"CallToStackTrace", "CallToPrintStackTrace"})
     public boolean update(Customer c) {
         String sql = "UPDATE Customer SET name=?, phone=?, address=?, email=? WHERE customer_id=?";
         try (Connection conn = DBConnection.getConnection();

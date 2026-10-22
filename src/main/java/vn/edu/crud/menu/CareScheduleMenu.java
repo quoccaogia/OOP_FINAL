@@ -1,26 +1,25 @@
 package vn.edu.crud.menu;
 
-import vn.edu.crud.dao.CareScheduleDAO;
-import vn.edu.crud.dao.EmployeeDAO;
-import vn.edu.crud.dao.FlowerBatchDAO;
-import vn.edu.crud.dao.FlowerDAO;
-import vn.edu.crud.model.Employee;
-import vn.edu.crud.model.EmployeeRole;
-import vn.edu.crud.model.Flower;
-import vn.edu.crud.util.NhapLieu;
-
 import java.text.Normalizer;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Scanner;
-
-import vn.edu.crud.model.CareSchedule;
-import java.util.Comparator;
 import java.util.stream.Collectors;
+
+import vn.edu.crud.dao.CareScheduleDAO;
+import vn.edu.crud.dao.EmployeeDAO;
+import vn.edu.crud.dao.FlowerBatchDAO;
+import vn.edu.crud.dao.FlowerDAO;
+import vn.edu.crud.model.CareSchedule;
+import vn.edu.crud.model.Employee;
+import vn.edu.crud.model.EmployeeRole;
+import vn.edu.crud.model.Flower;
+import vn.edu.crud.util.NhapLieu;
 
 /**
  * Quản lý chăm sóc hoa.
@@ -75,31 +74,16 @@ public class CareScheduleMenu {
             }
 
             switch (chon) {
-                case 1:
-                    inBangTrangThai(dao.trangThaiHienTai());
-                    break;
-                case 2:
-                    capNhatTinhTrang();
-                    break;
-                case 3:
-                    suaGhiChu();
-                    break;
-                case 4:
-                    xoaBanGhi();
-                    break;
-                case 5:
-                    canChamHomNay();
-                    break;
-                case 6:
-                    lichSuTheoHoa();
-                    break;
-                case 7:
-                    lichSuTheoNhanVien();
-                    break;
-                case 0:
-                    break;
-                default:
-                    System.out.println("Chọn sai!");
+                case 1 -> inBangTrangThai(dao.trangThaiHienTai());
+                case 2 -> capNhatTinhTrang();
+                case 3 -> suaGhiChu();
+                case 4 -> xoaBanGhi();
+                case 5 -> canChamHomNay();
+                case 6 -> lichSuTheoHoa();
+                case 7 -> lichSuTheoNhanVien();
+                case 0 -> {
+                }
+                default -> System.out.println("Chọn sai!");
             }
         } while (chon != 0);
     }
@@ -192,11 +176,11 @@ public class CareScheduleMenu {
     private String thoiGianNgan(Object o) {
         if (o == null)
             return "—";
-        if (o instanceof LocalDateTime) {
-            return ((LocalDateTime) o).format(FMT_NGAN);
+        if (o instanceof LocalDateTime localDateTime) {
+            return localDateTime.format(FMT_NGAN);
         }
-        if (o instanceof java.sql.Timestamp) {
-            return ((java.sql.Timestamp) o).toLocalDateTime().format(FMT_NGAN);
+        if (o instanceof java.sql.Timestamp timestamp) {
+            return timestamp.toLocalDateTime().format(FMT_NGAN);
         }
         return thoiGian(o);
     }
@@ -576,32 +560,32 @@ public class CareScheduleMenu {
     private String thoiGian(Object o) {
         if (o == null)
             return "—";
-        if (o instanceof java.sql.Timestamp) {
-            return ((java.sql.Timestamp) o).toLocalDateTime().format(FMT);
+        if (o instanceof java.sql.Timestamp timestamp) {
+            return timestamp.toLocalDateTime().format(FMT);
         }
-        if (o instanceof java.sql.Date) {
-            return ((java.sql.Date) o).toLocalDate() + "";
+        if (o instanceof java.sql.Date date) {
+            return date.toLocalDate() + "";
         }
-        if (o instanceof LocalDateTime) {
-            return ((LocalDateTime) o).format(FMT);
+        if (o instanceof LocalDateTime localDateTime) {
+            return localDateTime.format(FMT);
         }
         return o.toString();
     }
 
     private long soNgayTu(Object o) {
         LocalDate d;
-        if (o instanceof java.sql.Timestamp) {
-            d = ((java.sql.Timestamp) o).toLocalDateTime().toLocalDate();
-        } else if (o instanceof java.sql.Date) {
-            d = ((java.sql.Date) o).toLocalDate();
-        } else if (o instanceof LocalDateTime) {
-            d = ((LocalDateTime) o).toLocalDate();
-        } else {
-            return 0;
+        switch (o) {
+            case java.sql.Timestamp timestamp -> d = timestamp.toLocalDateTime().toLocalDate();
+            case java.sql.Date date -> d = date.toLocalDate();
+            case LocalDateTime localDateTime -> d = localDateTime.toLocalDate();
+            default -> {
+                return 0;
+            }
         }
         return ChronoUnit.DAYS.between(d, LocalDate.now());
     }
 
+    @SuppressWarnings("unused")
     private void inBangRutGon(List<Object[]> list, String... tieuDe) {
         if (list.isEmpty()) {
             System.out.println("Không có dữ liệu.");

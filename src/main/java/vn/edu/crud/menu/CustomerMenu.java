@@ -1,13 +1,13 @@
 package vn.edu.crud.menu;
 
+import java.util.List;
+import java.util.Scanner;
+
 import vn.edu.crud.dao.CustomerDAO;
 import vn.edu.crud.dao.OrderDAO;
 import vn.edu.crud.model.Customer;
 import vn.edu.crud.model.Order;
 import vn.edu.crud.util.NhapLieu;
-
-import java.util.List;
-import java.util.Scanner;
 
 public class CustomerMenu {
     private final Scanner sc = new Scanner(System.in);
@@ -22,6 +22,7 @@ public class CustomerMenu {
             System.out.println("╠══════════════════════════════════════╣");
             System.out.println("║  1. Xem tất cả danh sách             ║");
             System.out.println("║  2. Nghiệp vụ (Tiếp đón khách)       ║");
+            System.out.println("║  3. Tìm kiếm khách hàng              ║");
             System.out.println("║  ── BÁO CÁO ──                       ║");
             System.out.println("║  6. Khách đã từng đặt hàng           ║");
             System.out.println("║  7. Khách chưa từng đặt hàng         ║");
@@ -36,15 +37,17 @@ public class CustomerMenu {
             catch (NumberFormatException e) { chon = -1; }
 
             switch (chon) {
-                case 1: inDanhSach(dao.findAll()); break;
-                case 2: tiepDonKhachHang(); break;
-                case 6: inBang(orderDAO.khachDaTungDatHang()); break;
-                case 7: inBang(orderDAO.khachChuaTungDatHang()); break;
-                case 8: inBang(orderDAO.khachNhieuDonNhat()); break;
-                case 9: inBang(orderDAO.tongChiTieuTheoKhach()); break;
-                case 10: xemDonHangBangSdt(); break;
-                case 0: break;
-                default: System.out.println("Chọn sai!");
+                case 1 -> inDanhSach(dao.findAll());
+                case 2 -> tiepDonKhachHang();
+                case 3 -> timKiemKhachHangLambda();
+                case 6 -> inBang(orderDAO.khachDaTungDatHang());
+                case 7 -> inBang(orderDAO.khachChuaTungDatHang());
+                case 8 -> inBang(orderDAO.khachNhieuDonNhat());
+                case 9 -> inBang(orderDAO.tongChiTieuTheoKhach());
+                case 10 -> xemDonHangBangSdt();
+                case 0 -> {
+                }
+                default -> System.out.println("Chọn sai!");
             }
         } while (chon != 0);
     }
@@ -107,6 +110,7 @@ public class CustomerMenu {
             }
         }
     }
+    
 
     // =====================================================
     // CÁC HÀM HỖ TRỢ
@@ -164,6 +168,26 @@ public class CustomerMenu {
                     c.getCustomerId(), c.getName(), c.getPhone(), c.getAddress(), c.getEmail());
         }
     }
+    // =========================================================================
+    // CHỨC NĂNG TÌM KIẾM KHÁCH HÀNG BẰNG LAMBDA (MỤC 1)
+    // =========================================================================
+    @SuppressWarnings({"unused", "unused", "unused", "unused", "unused", "unused", "unused", "unused"})
+    private void timKiemKhachHangLambda() {
+    System.out.println("\n--- TÌM KIẾM KHÁCH HÀNG BẰNG LAMBDA ---");
+    System.out.print("Nhập từ khóa cần tìm (Tên hoặc Số điện thoại): ");
+    String tuKhoa = sc.nextLine();
+
+    // Gọi hàm filterCustomersByLambda đã viết trong CustomerDAO
+    List<Customer> ketQua = dao.filterCustomersByLambda(tuKhoa);
+
+    if (ketQua.isEmpty()) {
+        System.out.println("❌ Không tìm thấy khách hàng nào khớp với từ khóa: \"" + tuKhoa + "\"");
+    } else {
+        System.out.println("✅ Tìm thấy " + ketQua.size() + " kết quả khớp:");
+        // Sử dụng lại hàm inDanhSach có sẵn trong CustomerMenu để hiển thị đẹp mắt
+        inDanhSach(ketQua);
+    }
+}
 
     private void inBang(List<Object[]> list) {
         if (list.isEmpty()) { System.out.println("Không có dữ liệu."); return; }
@@ -173,4 +197,5 @@ public class CustomerMenu {
             System.out.println(sb);
         }
     }
+
 }

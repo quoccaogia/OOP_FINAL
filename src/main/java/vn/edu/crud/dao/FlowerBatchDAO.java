@@ -1,14 +1,17 @@
 package vn.edu.crud.dao;
-import vn.edu.crud.model.FlowerBatch;
-import vn.edu.crud.util.DBBase;
-import vn.edu.crud.util.DBConnection;
-
 import java.math.BigDecimal;
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+
+import vn.edu.crud.model.FlowerBatch;
+import vn.edu.crud.util.DBBase;
+import vn.edu.crud.util.DBConnection;
 
 public class FlowerBatchDAO {
 
@@ -251,6 +254,7 @@ public class FlowerBatchDAO {
         }
 
         // Lấy tất cả lô hoa dưới dạng đối tượng FlowerBatch (dùng cho truy vấn lambda)
+        @SuppressWarnings("CallToPrintStackTrace")
         public List<FlowerBatch> layDanhSachLo() {
                 List<FlowerBatch> list = new ArrayList<>();
                 String sql = "SELECT * FROM flowerbatch";
