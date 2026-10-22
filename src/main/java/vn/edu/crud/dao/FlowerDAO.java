@@ -8,8 +8,60 @@ import java.math.BigDecimal;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class FlowerDAO {
+
+    // =========================================================================
+    // HÀM SỬ DỤNG BIỂU THỨC LAMBDA & STREAM API CHO MỤC 4 (QUẢN LÝ HOA)
+    // =========================================================================
+
+    // 1. Tìm kiếm hoa theo Tên hoặc Danh mục bằng Lambda
+    public List<Flower> searchFlowersByLambda(String keyword) {
+        List<Flower> allFlowers = this.findAll();
+
+        if (keyword == null || keyword.trim().isEmpty()) {
+            return allFlowers;
+        }
+
+        String tuKhoa = keyword.toLowerCase().trim();
+
+        // Sử dụng Stream API và biểu thức Lambda để lọc theo tên hoặc danh mục
+        return allFlowers.stream()
+                .filter(f -> (f.getName() != null && f.getName().toLowerCase().contains(tuKhoa)) ||
+                             (f.getCategory() != null && f.getCategory().toLowerCase().contains(tuKhoa)))
+                .collect(Collectors.toList());
+    }
+
+    // 2. Lọc danh sách hoa sắp hết hàng (tồn kho < ngưỡng) bằng Lambda
+    public List<Flower> hoaSapHetLambda(int nguong) {
+        List<Flower> allFlowers = this.findAll();
+
+        return allFlowers.stream()
+                .filter(f -> f.getStockQuantity() < nguong)
+                .collect(Collectors.toList());
+    }
+
+    // 3. Lọc hoa theo khoảng giá bằng Lambda
+    public List<Flower> timTheoKhoangGiaLambda(BigDecimal giaMin, BigDecimal giaMax) {
+        List<Flower> allFlowers = this.findAll();
+
+        return allFlowers.stream()
+                .filter(f -> f.getUnitPrice() != null
+                          && f.getUnitPrice().compareTo(giaMin) >= 0
+                          && f.getUnitPrice().compareTo(giaMax) <= 0)
+                .collect(Collectors.toList());
+    }
+
+    // 4. Sắp xếp danh sách hoa theo giá giảm dần bằng Lambda
+    public List<Flower> hoaGiaGiamDanLambda() {
+        List<Flower> allFlowers = this.findAll();
+
+        return allFlowers.stream()
+                .filter(f -> f.getUnitPrice() != null)
+                .sorted((f1, f2) -> f2.getUnitPrice().compareTo(f1.getUnitPrice()))
+                .collect(Collectors.toList());
+    }
 
     // =====================================================
     // NHÓM CRUD

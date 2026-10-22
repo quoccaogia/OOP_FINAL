@@ -33,7 +33,7 @@ public class FlowerMenu {
             System.out.println("║  5. Xóa                              ║");
             System.out.println("║  ── BÁO CÁO ──                       ║");
             System.out.println("║  6. Hoa tồn < 10                     ║");
-            System.out.println("║  7. Tìm hoa theo tên                 ║");
+            System.out.println("║  7. Tìm hoa theo tên / danh mục      ║");
             System.out.println("║  8. Hoa theo khoảng giá              ║");
             System.out.println("║  9. Hoa theo màu                     ║");
             System.out.println("║ 10. Hoa bán chạy nhất                ║");
@@ -62,10 +62,8 @@ public class FlowerMenu {
             case 1:
                 List<Flower> tatCa = dao.findAll();
                 inDsHoa(tatCa);
-                int tongTon = 0;
-                for (Flower hoa : tatCa) {
-                    tongTon += hoa.getStockQuantity();
-                }
+                // Sử dụng Stream và Lambda để tính tổng tồn kho
+                int tongTon = tatCa.stream().mapToInt(f -> f.getStockQuantity()).sum();
                 System.out.println("👉 Tổng cộng: " + tatCa.size()
                         + " loài hoa trong hệ thống — tổng tồn kho: " + tongTon + " bông.");
                 break;
@@ -93,11 +91,14 @@ public class FlowerMenu {
                 xoaHoa();
                 break;
             case 6:
-                inDsHoa(dao.hoaSapHet(10));
+                // Lambda lọc hoa tồn kho < 10
+
+                inDsHoa(dao.hoaSapHetLambda(10));
                 break;
             case 7:
-                System.out.print("Từ khóa (VD: Hồng): ");
-                inDsHoa(dao.timTheoTen(sc.nextLine()));
+                System.out.print("Từ khóa tìm kiếm (Tên hoặc Danh mục): ");
+                // Lambda tìm kiếm hoa theo tên hoặc danh mục
+                inDsHoa(dao.searchFlowersByLambda(sc.nextLine()));
                 break;
             case 8:
                 BigDecimal min = NhapLieu.tien(sc, "Giá min", "VD: 5000", true);
@@ -108,7 +109,9 @@ public class FlowerMenu {
                     min = max;
                     max = tam;
                 }
-                inDsHoa(dao.timTheoGia(min, max));
+                // Lambda lọc hoa theo khoảng giá
+
+                inDsHoa(dao.timTheoKhoangGiaLambda(min, max));
                 break;
             case 9:
                 System.out.print("Màu (VD: Đỏ): ");
@@ -121,7 +124,9 @@ public class FlowerMenu {
                 inBang(dao.hoaBanCham());
                 break;
             case 12:
-                inDsHoa(dao.hoaGiaGiamDan());
+                // Lambda sắp xếp hoa giá giảm dần
+
+                inDsHoa(dao.hoaGiaGiamDanLambda());
                 break;
             case 13:
                 inBang(dao.tongBanTheoHoa());
