@@ -6,12 +6,10 @@ import vn.edu.crud.dao.FlowerDAO;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Scanner;
-import java.util.Comparator;
 
 import vn.edu.crud.model.FlowerBatch;
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
-import java.util.stream.Collectors;
 
 public class FlowerBatchMenu {
     private final Scanner sc = new Scanner(System.in);

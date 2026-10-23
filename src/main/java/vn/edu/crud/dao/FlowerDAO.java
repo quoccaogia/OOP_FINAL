@@ -63,6 +63,20 @@ public class FlowerDAO {
                 .collect(Collectors.toList());
     }
 
+    // 5. Tính tổng số lượng tồn kho của tất cả hoa bằng Lambda & Stream API
+    public int tinhTongTonKhoLambda() {
+        return tinhTongTonKhoLambda(this.findAll());
+    }
+
+    public int tinhTongTonKhoLambda(List<Flower> flowerList) {
+        if (flowerList == null || flowerList.isEmpty()) {
+            return 0;
+        }
+        return flowerList.stream()
+                .mapToInt(Flower::getStockQuantity)
+                .sum();
+    }
+
     // =====================================================
     // NHÓM CRUD
     // =====================================================

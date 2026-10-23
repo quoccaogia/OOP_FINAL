@@ -62,8 +62,8 @@ public class FlowerMenu {
             case 1:
                 List<Flower> tatCa = dao.findAll();
                 inDsHoa(tatCa);
-                // Sử dụng Stream và Lambda để tính tổng tồn kho
-                int tongTon = tatCa.stream().mapToInt(f -> f.getStockQuantity()).sum();
+                // Sử dụng hàm Lambda từ FlowerDAO để tính tổng tồn kho
+                int tongTon = dao.tinhTongTonKhoLambda(tatCa);
                 System.out.println("👉 Tổng cộng: " + tatCa.size()
                         + " loài hoa trong hệ thống — tổng tồn kho: " + tongTon + " bông.");
                 break;

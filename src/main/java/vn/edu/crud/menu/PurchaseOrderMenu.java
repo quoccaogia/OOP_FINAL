@@ -19,8 +19,6 @@ import java.util.Scanner;
 
 import vn.edu.crud.model.PurchaseOrder;
 import java.util.Map;
-import java.util.TreeMap;
-import java.util.stream.Collectors;
 
 public class PurchaseOrderMenu {
     private final Scanner sc = new Scanner(System.in);

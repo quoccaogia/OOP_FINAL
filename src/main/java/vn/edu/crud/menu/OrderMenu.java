@@ -66,6 +66,8 @@ public class OrderMenu {
                 System.out.println("║ 18. Tổng chi tiêu theo khách         ║");
                 System.out.println("║ 19. Sửa thông tin đơn (địa chỉ/ngày) ║");
                 System.out.println("║ 20. Tìm kiếm đơn (Mã/KH/NV)          ║");
+                System.out.println("║ 21. Lọc đơn theo trạng thái (Lambda) ║");
+                System.out.println("║ 22. Đơn hàng mới nhất (Lambda)       ║");
                 System.out.println("║  0. Quay lại                         ║");
                 System.out.println("╚══════════════════════════════════════╝");
                 System.out.print("Chọn: ");
@@ -94,6 +96,8 @@ public class OrderMenu {
                     case 18: inBang(orderDAO.tongChiTieuTheoKhach()); break;
                     case 19: suaThongTinDon(); break;
                     case 20: timKiemDonHangLambda(); break;
+                    case 21: locDonTheoTrangThaiLambda(); break;
+                    case 22: donHangMoiNhatLambda(); break;
                     case 0: System.out.println("Quay lại menu chính."); break;
                     default: System.out.println("⚠️ Chọn sai, vui lòng chọn lại!");
                 }
@@ -101,7 +105,7 @@ public class OrderMenu {
                 System.out.println("⚠️ Vui lòng nhập SỐ, không nhập chữ! (VD: 1 để tạo đơn, 0 để quay lại)");
                 chon = -1;
             } catch (Exception e) {
-                AnToan.baoLoi(e, "số trong menu 0-20. VD: 1 = tạo đơn, 20 = tìm kiếm đơn");
+                AnToan.baoLoi(e, "số trong menu 0-22. VD: 1 = tạo đơn, 20 = tìm kiếm đơn");
                 chon = -1;
             }
         } while (chon != 0);
@@ -1159,6 +1163,34 @@ public class OrderMenu {
         if (s == null) return "";
         if (s.length() <= maxLen) return s;
         return s.substring(0, maxLen - 1) + "…";
+    }
+
+    // =========================================================================
+    // CÁC CHỨC NĂNG LỌC & SẮP XẾP ĐƠN HÀNG BẰNG LAMBDA (MỤC 5)
+    // =========================================================================
+    private void locDonTheoTrangThaiLambda() {
+        System.out.println("\n--- LỌC ĐƠN HÀNG THEO TRẠNG THÁI (SỬ DỤNG LAMBDA) ---");
+        System.out.println("Các trạng thái gợi ý: CHO_XAC_NHAN, CHO_XU_LY, DANG_CHUAN_BI, DANG_GIAO, HOAN_THANH, DA_HUY, GIAO_THAT_BAI");
+        System.out.print("Nhập trạng thái cần lọc (hoặc để trống để lấy tất cả): ");
+        String status = sc.nextLine().trim();
+
+        List<Order> ketQua = orderDAO.locDonTheoTrangThaiLambda(status);
+        if (ketQua.isEmpty()) {
+            System.out.println("❌ Không tìm thấy đơn hàng nào có trạng thái: \"" + status + "\"");
+        } else {
+            System.out.println("✅ Tìm thấy " + ketQua.size() + " đơn hàng phù hợp:");
+            inDsDon(ketQua);
+        }
+    }
+
+    private void donHangMoiNhatLambda() {
+        System.out.println("\n--- DANH SÁCH ĐƠN HÀNG MỚI NHẤT (SẮP XẾP BẰNG LAMBDA) ---");
+        List<Order> dsMoiNhat = orderDAO.donHangMoiNhatLambda();
+        if (dsMoiNhat.isEmpty()) {
+            System.out.println("Không có dữ liệu đơn hàng.");
+        } else {
+            inDsDon(dsMoiNhat);
+        }
     }
 
     // =========================================================================
