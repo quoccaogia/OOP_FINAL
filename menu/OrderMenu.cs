@@ -256,50 +256,166 @@ public class OrderMenu
 
     private void ThemHoaVaoDon()
     {
-        Console.Write("Nhập Mã Đơn (VD: ORD001): ");
-        string orderId = Console.ReadLine()?.Trim().ToUpper() ?? "";
-        var don = _orderService.TimTheoMa(orderId);
-        if (don == null)
+        Console.WriteLine("\n--- THÊM HOA VÀO ĐƠN ---");
+        var dsDon = _orderService.FindAll();
+        if (dsDon.Count == 0)
         {
-            Console.WriteLine($"❌ Đơn hàng {orderId} không tồn tại!");
+            Console.WriteLine("⚠️ Chưa có đơn hàng nào!");
             return;
         }
 
-        Console.Write("Nhập Mã Hoa (VD: FL01): ");
-        string flowerId = Console.ReadLine()?.Trim().ToUpper() ?? "";
-        var hoa = _flowerService.TimTheoMa(flowerId);
-        if (hoa == null)
+        Console.WriteLine("\nDANH SÁCH ĐƠN HÀNG HIỆN CÓ:");
+        Console.WriteLine($"{"STT",-4} | {"Mã Đơn",-8} | {"Khách Hàng",-22} | {"Trạng Thái",-18}");
+        Console.WriteLine(new string('-', 58));
+        for (int i = 0; i < dsDon.Count; i++)
         {
-            Console.WriteLine($"❌ Hoa {flowerId} không tồn tại!");
-            return;
+            var o = dsDon[i];
+            var kh = _customerService.FindById(o.CustomerId);
+            string tenKh = kh?.Name ?? "Khách vãng lai";
+            if (tenKh.Length > 20) tenKh = tenKh[..17] + "...";
+            Console.WriteLine($"{i + 1,-4} | {o.OrderId,-8} | {tenKh,-22} | {DichTrangThai(o.OrderStatus),-18}");
         }
 
-        int soLuong = NhapLieu.SoNguyen("Số lượng mua", "VD: 5", 1, 100_000);
-        if (hoa.StockQuantity < soLuong)
-        {
-            Console.WriteLine($"❌ Tồn kho không đủ! Hiện còn {hoa.StockQuantity} bông.");
-            return;
-        }
+        Console.Write("\nNhập STT đơn hoặc Mã Đơn (0 để hủy): ");
+        string nhapDon = Console.ReadLine()?.Trim() ?? "";
+        if (nhapDon == "0" || string.IsNullOrEmpty(nhapDon)) return;
 
-        if (_orderService.HoaDaCoTrongDon(orderId, flowerId))
+        Order? don = null;
+        if (int.TryParse(nhapDon, out int sttDon) && sttDon >= 1 && sttDon <= dsDon.Count)
         {
-            _orderService.CongThemSoLuong(orderId, flowerId, soLuong);
+            don = dsDon[sttDon - 1];
         }
         else
         {
-            _orderService.ThemChiTiet(orderId, flowerId, soLuong, hoa.UnitPrice);
+            don = _orderService.TimTheoMa(nhapDon.ToUpper());
         }
 
-        _orderService.TruSoLuong(flowerId, soLuong);
-        _batchService.XuatKho(flowerId, soLuong);
+        if (don == null)
+        {
+            Console.WriteLine("❌ Đơn hàng không tồn tại!");
+            return;
+        }
 
-        Console.WriteLine($"✅ Đã thêm {soLuong} bông {hoa.Name} vào đơn {orderId}!");
+        string orderId = don.OrderId;
+        string trangThaiDon = don.OrderStatus?.Trim() ?? "";
+
+        bool isHopLe = trangThaiDon.Equals("DANG_CHUAN_BI", StringComparison.OrdinalIgnoreCase)
+                    || trangThaiDon.Equals("CHO_XU_LY", StringComparison.OrdinalIgnoreCase)
+                    || trangThaiDon.Equals("CHO_XAC_NHAN", StringComparison.OrdinalIgnoreCase);
+
+        if (!isHopLe)
+        {
+            Console.WriteLine($"\n❌ TỪ CHỐI THÊM HOA! Đơn {orderId} đang ở trạng thái [{DichTrangThai(trangThaiDon)}]. Chỉ thêm hoa khi đơn đang 'Đang chuẩn bị hoa'.");
+            return;
+        }
+
+        if (_paymentService.TinhDaTra(orderId) > 0)
+        {
+            Console.WriteLine($"\n❌ TỪ CHỐI THÊM HOA! Đơn đã thu {_paymentService.TinhDaTra(orderId).ToString("C0", _vnCulture)} nên không thể thêm/sửa hoa.");
+            return;
+        }
+
+        while (true)
+        {
+            var dsHoa = _flowerService.FindAll().Where(f => f.StockQuantity > 0 && f.UnitPrice > 0).ToList();
+            if (dsHoa.Count == 0)
+            {
+                Console.WriteLine("⚠️ Không còn hoa nào có sẵn trong kho!");
+                break;
+            }
+
+            Console.WriteLine("\nDANH SÁCH HOA CÒN TRONG KHO:");
+            Console.WriteLine($"{"STT",-4} | {"Mã Hoa",-8} | {"Tên Hoa",-25} | {"Đơn Giá",-14} | {"Tồn",-6}");
+            Console.WriteLine(new string('-', 64));
+            for (int i = 0; i < dsHoa.Count; i++)
+            {
+                var f = dsHoa[i];
+                string ten = f.Name;
+                if (ten.Length > 23) ten = ten[..20] + "...";
+                Console.WriteLine($"{i + 1,-4} | {f.FlowerId,-8} | {ten,-25} | {f.UnitPrice.ToString("C0", _vnCulture),-14} | {f.StockQuantity,-6}");
+            }
+
+            Console.Write("\nNhập STT hoa hoặc Mã Hoa muốn thêm (0 để kết thúc): ");
+            string nhapHoa = Console.ReadLine()?.Trim() ?? "";
+            if (nhapHoa == "0" || string.IsNullOrEmpty(nhapHoa)) break;
+
+            Flower? hoa = null;
+            if (int.TryParse(nhapHoa, out int sttHoa) && sttHoa >= 1 && sttHoa <= dsHoa.Count)
+            {
+                hoa = dsHoa[sttHoa - 1];
+            }
+            else
+            {
+                hoa = _flowerService.TimTheoMa(nhapHoa.ToUpper());
+            }
+
+            if (hoa == null)
+            {
+                Console.WriteLine("❌ Không tìm thấy hoa!");
+                continue;
+            }
+
+            string flowerId = hoa.FlowerId;
+            int soLuong = NhapLieu.SoNguyen($"Số lượng mua (1-{hoa.StockQuantity})", "VD: 5", 1, hoa.StockQuantity);
+
+            if (_orderService.HoaDaCoTrongDon(orderId, flowerId))
+            {
+                _orderService.CongThemSoLuong(orderId, flowerId, soLuong);
+            }
+            else
+            {
+                _orderService.ThemChiTiet(orderId, flowerId, soLuong, hoa.UnitPrice);
+            }
+
+            _orderService.TruSoLuong(flowerId, soLuong);
+            _batchService.XuatKho(flowerId, soLuong);
+
+            Console.WriteLine($"✅ Đã thêm {hoa.Name} x{soLuong} vào đơn {orderId}!");
+
+            Console.Write("Thêm hoa khác vào đơn? (c/K, Enter = c): ");
+            if (Console.ReadLine()?.Trim().ToLower() == "k") break;
+        }
     }
 
     private void ThanhToanDon()
     {
-        Console.Write("Nhập Mã Đơn cần thanh toán (VD: ORD001): ");
-        string orderId = Console.ReadLine()?.Trim().ToUpper() ?? "";
+        Console.WriteLine("\n--- THANH TOÁN ĐƠN HÀNG ---");
+        var dsChuaTT = _paymentService.LayDanhSachDonChuaThanhToan();
+        if (dsChuaTT.Count == 0)
+        {
+            Console.WriteLine("✅ Tuyệt vời! Hiện tại không có đơn hàng nào nợ tiền.");
+            return;
+        }
+
+        Console.WriteLine("\nDANH SÁCH ĐƠN HÀNG CHƯA THU ĐỦ TIỀN:");
+        Console.WriteLine($"{"STT",-4} | {"Mã Đơn",-8} | {"Khách Hàng",-22} | {"Trạng Thái",-18} | {"Tổng Tiền",-14} | {"Đã Trả",-14}");
+        Console.WriteLine(new string('-', 88));
+        for (int i = 0; i < dsChuaTT.Count; i++)
+        {
+            var r = dsChuaTT[i];
+            string mDon = r[0]?.ToString() ?? "";
+            string tenKh = r[2]?.ToString() ?? "";
+            if (tenKh.Length > 20) tenKh = tenKh[..17] + "...";
+            string st = r[1]?.ToString() ?? "";
+            decimal tong = r[3] != null ? Convert.ToDecimal(r[3]) : 0;
+            decimal tra = r[4] != null ? Convert.ToDecimal(r[4]) : 0;
+            Console.WriteLine($"{i + 1,-4} | {mDon,-8} | {tenKh,-22} | {DichTrangThai(st),-18} | {tong.ToString("C0", _vnCulture),-14} | {tra.ToString("C0", _vnCulture),-14}");
+        }
+
+        Console.Write("\n👉 Nhập STT đơn hoặc Mã Đơn cần thanh toán (0 để hủy): ");
+        string nhap = Console.ReadLine()?.Trim() ?? "";
+        if (nhap == "0" || string.IsNullOrEmpty(nhap)) return;
+
+        string orderId = "";
+        if (int.TryParse(nhap, out int stt) && stt >= 1 && stt <= dsChuaTT.Count)
+        {
+            orderId = dsChuaTT[stt - 1][0]?.ToString() ?? "";
+        }
+        else
+        {
+            orderId = nhap.ToUpper();
+        }
+
         var don = _orderService.TimTheoMa(orderId);
         if (don == null)
         {
@@ -310,26 +426,43 @@ public class OrderMenu
         decimal tongTien = _paymentService.TinhTongTienDon(orderId);
         decimal daTra = _paymentService.TinhDaTra(orderId);
         decimal conLai = tongTien - daTra;
+        decimal tienCoc = _paymentService.TinhTienCoc(orderId);
 
+        Console.WriteLine($"\n--- CHI TIẾT THANH TOÁN ĐƠN {orderId} ---");
         Console.WriteLine($"Tổng tiền đơn: {tongTien.ToString("C0", _vnCulture)} | Đã trả: {daTra.ToString("C0", _vnCulture)} | Còn nợ: {conLai.ToString("C0", _vnCulture)}");
+
         if (conLai <= 0)
         {
             Console.WriteLine("✅ Đơn này đã được thanh toán đầy đủ!");
             return;
         }
 
-        decimal soTien = NhapLieu.Tien("Số tiền thanh toán", $"VD: {conLai}", false);
-        if (soTien > conLai)
+        decimal amount = 0;
+        if (daTra == 0)
         {
-            Console.WriteLine($"⚠️ Số tiền vượt quá số nợ còn lại ({conLai.ToString("C0", _vnCulture)}). Đặt lại bằng {conLai.ToString("C0", _vnCulture)}.");
-            soTien = conLai;
+            Console.WriteLine("\nChọn hình thức thanh toán:");
+            Console.WriteLine($"  1. Trả đủ tiền cọc (20%) : {tienCoc.ToString("C0", _vnCulture)}");
+            Console.WriteLine($"  2. Trả hết cả tiền đơn   : {tongTien.ToString("C0", _vnCulture)}");
+            Console.WriteLine("  0. Hủy thao tác");
+            Console.Write("Nhập số chọn (1 hoặc 2): ");
+            string ht = Console.ReadLine()?.Trim() ?? "";
+            if (ht == "1") amount = tienCoc;
+            else if (ht == "2") amount = tongTien;
+            else { Console.WriteLine("Đã hủy thao tác."); return; }
+        }
+        else
+        {
+            Console.WriteLine($"Đơn đã thanh toán một phần. Thanh toán nốt số tiền còn lại: {conLai.ToString("C0", _vnCulture)}");
+            Console.Write("Xác nhận khách trả hết? (y/n): ");
+            if (Console.ReadLine()?.Trim().ToLower() != "y") { Console.WriteLine("Đã hủy."); return; }
+            amount = conLai;
         }
 
-        Console.Write("Phương thức (1. TIEN_MAT, 2. CHUYEN_KHOAN, 3. THE): ");
+        Console.Write("Phương thức (1. TIEN_MAT, 2. CHUYEN_KHOAN, 3. MOMO, Enter = TIEN_MAT): ");
         string pt = Console.ReadLine()?.Trim() switch
         {
             "2" => "CHUYEN_KHOAN",
-            "3" => "THE",
+            "3" => "MOMO",
             _ => "TIEN_MAT"
         };
 
@@ -337,7 +470,7 @@ public class OrderMenu
         {
             PaymentId = _paymentService.SinhMaThanhToan(),
             OrderId = orderId,
-            Amount = soTien,
+            Amount = amount,
             PaymentMethod = pt,
             PaymentDate = DateTime.Now,
             PaymentStatus = "THANH_TOAN_THANH_CONG"
@@ -345,26 +478,76 @@ public class OrderMenu
 
         if (_paymentService.TaoThanhToan(p))
         {
-            Console.WriteLine($"✅ Đã thanh toán {soTien.ToString("C0", _vnCulture)} cho đơn {orderId} (Mã TT: {p.PaymentId})!");
+            decimal daTraSau = daTra + amount;
+            Console.WriteLine($"✅ Thanh toán thành công {amount.ToString("C0", _vnCulture)} cho đơn {orderId} (Mã TT: {p.PaymentId})!");
+            Console.WriteLine($"Đã trả: {daTraSau.ToString("C0", _vnCulture)} / {tongTien.ToString("C0", _vnCulture)}");
+            if (daTraSau >= tongTien)
+            {
+                Console.WriteLine("🎉 Khách đã trả hết đơn. Khi giao hoa xong hãy cập nhật trạng thái sang HOÀN THÀNH.");
+            }
+            else
+            {
+                Console.WriteLine("👉 Đã thu đủ cọc 20%. Khi giao hoa xong thu nốt phần còn lại.");
+            }
+        }
+        else
+        {
+            Console.WriteLine("❌ Thanh toán thất bại!");
         }
     }
 
     private void CapNhatTrangThai()
     {
-        Console.Write("Nhập Mã Đơn cần cập nhật: ");
-        string orderId = Console.ReadLine()?.Trim().ToUpper() ?? "";
-        var don = _orderService.TimTheoMa(orderId);
-        if (don == null)
+        Console.WriteLine("\n--- CẬP NHẬT TRẠNG THÁI ĐƠN HÀNG ---");
+        var dsDon = _orderService.FindAll();
+        var dsChuaXong = dsDon.Where(o => !string.Equals(o.OrderStatus, "HOAN_THANH", StringComparison.OrdinalIgnoreCase)
+                                       && !string.Equals(o.OrderStatus, "DA_HUY", StringComparison.OrdinalIgnoreCase)
+                                       && !string.Equals(o.OrderStatus, "GIAO_THAT_BAI", StringComparison.OrdinalIgnoreCase)).ToList();
+
+        if (dsChuaXong.Count == 0)
         {
-            Console.WriteLine($"❌ Không tìm thấy đơn {orderId}!");
+            Console.WriteLine("⚠️ Hiện không có đơn hàng nào đang chờ xử lý.");
             return;
         }
 
-        Console.WriteLine($"Trạng thái hiện tại: {DichTrangThai(don.OrderStatus)} ({don.OrderStatus})");
+        Console.WriteLine("\nDANH SÁCH ĐƠN HÀNG ĐANG XỬ LÝ:");
+        Console.WriteLine($"{"STT",-4} | {"Mã Đơn",-8} | {"Khách Hàng",-22} | {"Trạng Thái",-18}");
+        Console.WriteLine(new string('-', 58));
+        for (int i = 0; i < dsChuaXong.Count; i++)
+        {
+            var o = dsChuaXong[i];
+            var kh = _customerService.FindById(o.CustomerId);
+            string tenKh = kh?.Name ?? "Khách vãng lai";
+            if (tenKh.Length > 20) tenKh = tenKh[..17] + "...";
+            Console.WriteLine($"{i + 1,-4} | {o.OrderId,-8} | {tenKh,-22} | {DichTrangThai(o.OrderStatus),-18}");
+        }
+
+        Console.Write("\nNhập STT đơn hoặc Mã Đơn cần cập nhật (0 để hủy): ");
+        string nhap = Console.ReadLine()?.Trim() ?? "";
+        if (nhap == "0" || string.IsNullOrEmpty(nhap)) return;
+
+        Order? don = null;
+        if (int.TryParse(nhap, out int stt) && stt >= 1 && stt <= dsChuaXong.Count)
+        {
+            don = dsChuaXong[stt - 1];
+        }
+        else
+        {
+            don = _orderService.TimTheoMa(nhap.ToUpper());
+        }
+
+        if (don == null)
+        {
+            Console.WriteLine("❌ Không tìm thấy đơn hàng!");
+            return;
+        }
+
+        string orderId = don.OrderId;
+        Console.WriteLine($"\nĐơn: {orderId} | Trạng thái hiện tại: {DichTrangThai(don.OrderStatus)} ({don.OrderStatus})");
         Console.WriteLine("1. DANG_CHUAN_BI (Đang chuẩn bị hoa)");
         Console.WriteLine("2. DANG_GIAO (Đang giao hàng)");
         Console.WriteLine("3. HOAN_THANH (Hoàn thành)");
-        Console.WriteLine("4. GIAO_THAT_BAI (Giao thất bại)");
+        Console.WriteLine("4. GIAO_THAT_BAI (Giao thất bại - không liên lạc được)");
         Console.WriteLine("5. DA_HUY (Đã hủy)");
         Console.Write("Chọn: ");
 
@@ -394,11 +577,16 @@ public class OrderMenu
             if (moi == "GIAO_THAT_BAI")
             {
                 _paymentService.HoanTienToanBo(orderId);
+                Console.WriteLine("💰 Đã ghi nhận hoàn tiền cho khách (hoặc hủy thu nếu có) và trả hoa về kho.");
+            }
+            else
+            {
+                Console.WriteLine("📦 Đã hủy đơn và hoàn trả toàn bộ hoa về kho!");
             }
         }
 
         if (_orderService.CapNhatTrangThai(orderId, moi))
-            Console.WriteLine($"✅ Cập nhật trạng thái thành: {DichTrangThai(moi)}");
+            Console.WriteLine($"✅ Cập nhật trạng thái thành công: {DichTrangThai(moi)}");
     }
 
     private void XoaChiTiet()

@@ -67,20 +67,55 @@ public class CareScheduleMenu
 
     private void CapNhatTinhTrang()
     {
-        Console.Write("Nhập Mã Hoa cần chăm sóc: ");
-        string flowerId = Console.ReadLine()?.Trim().ToUpper() ?? "";
-        var hoa = _flowerService.TimTheoMa(flowerId);
-        if (hoa == null)
+        Console.WriteLine("\n--- CẬP NHẬT TÌNH TRẠNG CHĂM SÓC HOA ---");
+        var dsHoa = _flowerService.FindAll();
+        if (dsHoa.Count == 0)
         {
-            Console.WriteLine($"❌ Không tìm thấy hoa {flowerId}!");
+            Console.WriteLine("❌ Chưa có hoa nào trong hệ thống!");
             return;
         }
 
-        Console.Write("Nhập Mã Nhân Viên thực hiện: ");
-        string empId = Console.ReadLine()?.Trim().ToUpper() ?? "";
-        if (_employeeService.FindById(empId) == null)
+        Console.WriteLine("\nDANH SÁCH HOA:");
+        for (int i = 0; i < dsHoa.Count; i++)
         {
-            Console.WriteLine($"❌ Không tìm thấy nhân viên {empId}!");
+            Console.WriteLine($"  {i + 1}. {dsHoa[i].Name,-25} (Mã: {dsHoa[i].FlowerId} - Tồn: {dsHoa[i].StockQuantity})");
+        }
+        Console.Write($"Chọn hoa cần chăm sóc (1-{dsHoa.Count} hoặc Mã Hoa): ");
+        string nhapHoa = Console.ReadLine()?.Trim() ?? "";
+        Flower? hoa = null;
+        if (int.TryParse(nhapHoa, out int idxHoa) && idxHoa >= 1 && idxHoa <= dsHoa.Count)
+            hoa = dsHoa[idxHoa - 1];
+        else
+            hoa = _flowerService.TimTheoMa(nhapHoa.ToUpper());
+
+        if (hoa == null)
+        {
+            Console.WriteLine("❌ Không tìm thấy hoa!");
+            return;
+        }
+        string flowerId = hoa.FlowerId;
+
+        var dsNV = _employeeService.FindAll();
+        if (dsNV.Count == 0)
+        {
+            Console.WriteLine("❌ Chưa có nhân viên nào trong hệ thống!");
+            return;
+        }
+        Console.WriteLine("\nDANH SÁCH NHÂN VIÊN:");
+        for (int i = 0; i < dsNV.Count; i++)
+        {
+            Console.WriteLine($"  {i + 1}. {dsNV[i].Name,-20} (Mã: {dsNV[i].EmployeeId})");
+        }
+        Console.Write($"Chọn nhân viên thực hiện (1-{dsNV.Count} hoặc Mã NV): ");
+        string nhapNV = Console.ReadLine()?.Trim() ?? "";
+        string empId = "";
+        if (int.TryParse(nhapNV, out int idxNV) && idxNV >= 1 && idxNV <= dsNV.Count)
+            empId = dsNV[idxNV - 1].EmployeeId;
+        else if (_employeeService.FindById(nhapNV.ToUpper()) != null)
+            empId = nhapNV.ToUpper();
+        else
+        {
+            Console.WriteLine("❌ Không tìm thấy nhân viên!");
             return;
         }
 

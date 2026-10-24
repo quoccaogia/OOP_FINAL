@@ -75,20 +75,52 @@ public class PurchaseOrderMenu
         string poId = _poService.SinhMaPNMoi();
         Console.WriteLine($"\n--- TẠO PHIẾU NHẬP MỚI ({poId}) ---");
 
-        Console.Write("Nhập Mã NCC: ");
-        string supId = Console.ReadLine()?.Trim().ToUpper() ?? "";
-        if (_supplierService.FindById(supId) == null)
+        var dsNCC = _supplierService.FindAll();
+        if (dsNCC.Count == 0)
         {
-            Console.WriteLine($"❌ NCC '{supId}' không tồn tại!");
+            Console.WriteLine("❌ Chưa có Nhà cung cấp nào trong hệ thống!");
             return;
         }
-
-        Console.Write("Nhập Mã NV nhập hàng: ");
-        string empId = Console.ReadLine()?.Trim().ToUpper() ?? "";
-        if (_employeeService.FindById(empId) == null)
+        Console.WriteLine("\n--- CHỌN NHÀ CUNG CẤP ---");
+        for (int i = 0; i < dsNCC.Count; i++)
         {
-            Console.WriteLine($"❌ NV '{empId}' không tồn tại!");
+            Console.WriteLine($"  {i + 1}. {dsNCC[i].Name,-25} (Mã: {dsNCC[i].SupplierId})");
+        }
+        string supId = "";
+        while (string.IsNullOrEmpty(supId))
+        {
+            Console.Write($"Chọn NCC (1-{dsNCC.Count} hoặc nhập Mã NCC): ");
+            string nhapNCC = Console.ReadLine()?.Trim() ?? "";
+            if (int.TryParse(nhapNCC, out int idx) && idx >= 1 && idx <= dsNCC.Count)
+                supId = dsNCC[idx - 1].SupplierId;
+            else if (_supplierService.FindById(nhapNCC.ToUpper()) != null)
+                supId = nhapNCC.ToUpper();
+            else
+                Console.WriteLine("⚠️ NCC không hợp lệ!");
+        }
+
+        var dsNV = _employeeService.FindAll();
+        if (dsNV.Count == 0)
+        {
+            Console.WriteLine("❌ Chưa có Nhân viên nào trong hệ thống!");
             return;
+        }
+        Console.WriteLine("\n--- CHỌN NHÂN VIÊN NHẬP HÀNG ---");
+        for (int i = 0; i < dsNV.Count; i++)
+        {
+            Console.WriteLine($"  {i + 1}. {dsNV[i].Name,-20} (Mã: {dsNV[i].EmployeeId})");
+        }
+        string empId = "";
+        while (string.IsNullOrEmpty(empId))
+        {
+            Console.Write($"Chọn NV (1-{dsNV.Count} hoặc nhập Mã NV): ");
+            string nhapNV = Console.ReadLine()?.Trim() ?? "";
+            if (int.TryParse(nhapNV, out int idx) && idx >= 1 && idx <= dsNV.Count)
+                empId = dsNV[idx - 1].EmployeeId;
+            else if (_employeeService.FindById(nhapNV.ToUpper()) != null)
+                empId = nhapNV.ToUpper();
+            else
+                Console.WriteLine("⚠️ Nhân viên không hợp lệ!");
         }
 
         DateTime date = DateTime.Now;
@@ -98,22 +130,35 @@ public class PurchaseOrderMenu
             return;
         }
 
-        Console.WriteLine($"✅ Đã tạo phiếu {poId}. Bây giờ nhập từng lô hoa vào phiếu:");
+        Console.WriteLine($"✅ Đã tạo phiếu {poId}. Bắt đầu nhập hoa vào lô:");
         decimal tongTien = 0;
 
         while (true)
         {
-            Console.Write("\nNhập Mã Hoa vào lô (hoặc Enter để kết thúc nhập): ");
-            string fId = Console.ReadLine()?.Trim().ToUpper() ?? "";
-            if (string.IsNullOrEmpty(fId)) break;
+            var dsHoa = _flowerService.FindAll();
+            Console.WriteLine("\n--- CHỌN LOẠI HOA NHẬP ---");
+            for (int i = 0; i < dsHoa.Count; i++)
+            {
+                Console.WriteLine($"  {i + 1}. {dsHoa[i].Name,-25} (Mã: {dsHoa[i].FlowerId} - Tồn: {dsHoa[i].StockQuantity})");
+            }
+            Console.WriteLine("  Enter để kết thúc nhập hoa");
+            Console.Write($"Chọn hoa (1-{dsHoa.Count} hoặc Mã Hoa): ");
+            string nhapHoa = Console.ReadLine()?.Trim() ?? "";
+            if (string.IsNullOrEmpty(nhapHoa)) break;
 
-            var hoa = _flowerService.TimTheoMa(fId);
+            Flower? hoa = null;
+            if (int.TryParse(nhapHoa, out int idxHoa) && idxHoa >= 1 && idxHoa <= dsHoa.Count)
+                hoa = dsHoa[idxHoa - 1];
+            else
+                hoa = _flowerService.TimTheoMa(nhapHoa.ToUpper());
+
             if (hoa == null)
             {
-                Console.WriteLine($"❌ Không tìm thấy hoa {fId}!");
+                Console.WriteLine("❌ Hoa không hợp lệ!");
                 continue;
             }
 
+            string fId = hoa.FlowerId;
             int sl = NhapLieu.SoNguyen("Số lượng nhập", "VD: 100", 1, 100_000);
             decimal giaVon = NhapLieu.Tien("Giá vốn mỗi bông", "VD: 3000", false);
             int hanDungNgay = NhapLieu.SoNguyen("Hạn sử dụng (số ngày kể từ hôm nay)", "VD: 7", 1, 365);

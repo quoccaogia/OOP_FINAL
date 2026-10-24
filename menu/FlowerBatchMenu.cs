@@ -68,11 +68,47 @@ public class FlowerBatchMenu
         InBangHelper.InBang(rows, ["Mã Lô", "Mã PN", "Tên Hoa", "Nhà Cung Cấp", "SL Nhập", "SL Còn", "Giá Vốn", "Hạn SD", "Trạng Thái"]);
     }
 
+    private string? ChonLoHoa()
+    {
+        var list = _batchService.FindAll();
+        if (list.Count == 0)
+        {
+            Console.WriteLine("Chưa có lô hoa nào.");
+            return null;
+        }
+
+        Console.WriteLine("\nDANH SÁCH LÔ HOA HIỆN CÓ:");
+        Console.WriteLine($"{"STT",-4} | {"Mã Lô",-8} | {"Tên Hoa",-22} | {"SL Còn",-8} | {"Hạn SD",-12} | {"Trạng Thái",-12}");
+        Console.WriteLine(new string('-', 72));
+        for (int i = 0; i < list.Count; i++)
+        {
+            var r = list[i];
+            string mLo = r[0]?.ToString() ?? "";
+            string tenHoa = r[4]?.ToString() ?? "";
+            if (tenHoa.Length > 20) tenHoa = tenHoa[..17] + "...";
+            int slCon = r[6] != null ? Convert.ToInt32(r[6]) : 0;
+            string hanSd = r[9] != null ? Convert.ToDateTime(r[9]).ToString("dd/MM/yyyy") : "—";
+            string st = r[10]?.ToString() ?? "";
+            Console.WriteLine($"{i + 1,-4} | {mLo,-8} | {tenHoa,-22} | {slCon,-8} | {hanSd,-12} | {st,-12}");
+        }
+
+        Console.Write("\n👉 Nhập STT lô hoặc Mã Lô (0 để hủy): ");
+        string nhap = Console.ReadLine()?.Trim() ?? "";
+        if (nhap == "0" || string.IsNullOrEmpty(nhap)) return null;
+
+        if (int.TryParse(nhap, out int stt) && stt >= 1 && stt <= list.Count)
+            return list[stt - 1][0]?.ToString();
+
+        return nhap.ToUpper();
+    }
+
     private void CapNhatTrangThai()
     {
-        Console.Write("Nhập Mã Lô cần đổi trạng thái: ");
-        string batchId = Console.ReadLine()?.Trim().ToUpper() ?? "";
-        Console.WriteLine("1. AVAILABLE | 2. SOLD_OUT | 3. EXPIRED");
+        Console.WriteLine("\n--- CẬP NHẬT TRẠNG THÁI LÔ HOA ---");
+        string? batchId = ChonLoHoa();
+        if (string.IsNullOrEmpty(batchId)) return;
+
+        Console.WriteLine("1. AVAILABLE (Đang bán) | 2. SOLD_OUT (Hết hàng) | 3. EXPIRED (Hỏng/Hết hạn)");
         Console.Write("Chọn: ");
         string moi = Console.ReadLine()?.Trim() switch
         {
@@ -92,8 +128,9 @@ public class FlowerBatchMenu
 
     private void ThanhLyLoHoa()
     {
-        Console.Write("Nhập Mã Lô cần thanh lý (hủy bỏ): ");
-        string batchId = Console.ReadLine()?.Trim().ToUpper() ?? "";
+        Console.WriteLine("\n--- THANH LÝ / HỦY LÔ HOA ---");
+        string? batchId = ChonLoHoa();
+        if (string.IsNullOrEmpty(batchId)) return;
 
         Console.Write($"Bạn có chắc chắn muốn thanh lý toàn bộ số hoa còn lại trong lô {batchId}? (y/n): ");
         if (Console.ReadLine()?.Trim().ToLower() == "y")
