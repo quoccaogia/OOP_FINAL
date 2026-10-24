@@ -1,5 +1,7 @@
 package vn.edu.crud.menu;
 
+import vn.edu.crud.util.InBangHelper;
+
 import vn.edu.crud.service.EmployeeService;
 import vn.edu.crud.service.FlowerBatchService;
 import vn.edu.crud.service.FlowerService;
@@ -58,7 +60,7 @@ public class PurchaseOrderMenu {
 
             switch (chon) {
                 case 1:
-                    inBang(purchaseOrderService.findAll());
+                    InBangHelper.inBang(purchaseOrderService.findAll(), new String[]{"Mã PN", "Mã NCC", "Mã NV", "Ngày Nhập", "Tổng Tiền", "Trạng Thái", "Ghi Chú"});
                     break;
                 case 2:
                     System.out.print("Nhập mã: ");
@@ -81,7 +83,7 @@ public class PurchaseOrderMenu {
                     phieuCuaNCC(sc.nextLine().trim().toUpperCase());
                     break;
                 case 8:
-                    inBang(purchaseOrderService.tatCaPhieuNhap());
+                    InBangHelper.inBang(purchaseOrderService.tatCaPhieuNhap(), new String[]{"Mã PN", "Nhà Cung Cấp", "Nhân Viên Nhập", "Ngày Nhập", "Tổng Tiền", "Trạng Thái", "Ghi Chú"});
                     break;
                 case 9:
                     chotPhieuNhap();
@@ -380,17 +382,7 @@ public class PurchaseOrderMenu {
     }
 
     private void inBang(List<Object[]> list) {
-        if (list.isEmpty()) {
-            System.out.println("Không có dữ liệu.");
-            return;
-        }
-        for (Object[] row : list) {
-            StringBuilder sb = new StringBuilder();
-            for (Object o : row)
-                sb.append(o).append(" | ");
-            System.out.println(sb);
-        }
-
+        InBangHelper.inBang(list, null);
     }
 
     
@@ -414,9 +406,9 @@ public class PurchaseOrderMenu {
             System.out.println("Không có dữ liệu.");
             return;
         }
-        System.out.printf("%-8s | %-15s%n", "Mã NCC", "Tổng nhập");
-        System.out.println("-".repeat(28));
-        tong.forEach((ncc, tien) -> System.out.printf("%-8s | %-15s%n", ncc, tien));
+        List<Object[]> rows = new java.util.ArrayList<>();
+        tong.forEach((ncc, tien) -> rows.add(new Object[]{ncc, tien}));
+        InBangHelper.inBang(new String[]{"Mã NCC", "Tổng nhập"}, rows);
     }
 
     // In danh sách phiếu nhập (dùng chung cho các truy vấn lambda)
@@ -425,15 +417,11 @@ public class PurchaseOrderMenu {
             System.out.println("Không có dữ liệu.");
             return;
         }
-        System.out.printf("%-7s | %-7s | %-6s | %-12s | %-14s | %-11s | %s%n",
-                "Mã PN", "Mã NCC", "Mã NV", "Ngày nhập", "Tổng tiền", "Trạng thái", "Ghi chú");
-        System.out.println("-".repeat(85));
-        for (PurchaseOrder po : ds) {
-            System.out.printf("%-7s | %-7s | %-6s | %-12s | %-14s | %-11s | %s%n",
-                    po.getPurchaseOrderId(), po.getSupplierId(), po.getEmployeeId(),
-                    po.getImportDate() == null ? "" : po.getImportDate().toLocalDate(),
-                    po.getTotalAmount(), po.getStatus(),
-                    po.getNote() == null ? "" : po.getNote());
-        }
+        List<Object[]> rows = ds.stream().map(po -> new Object[]{
+            po.getPurchaseOrderId(), po.getSupplierId(), po.getEmployeeId(),
+            po.getImportDate(), po.getTotalAmount(), po.getStatus(),
+            po.getNote() == null ? "" : po.getNote()
+        }).toList();
+        InBangHelper.inBang(new String[]{"Mã PN", "Mã NCC", "Mã NV", "Ngày nhập", "Tổng tiền", "Trạng thái", "Ghi chú"}, rows);
     }
 }

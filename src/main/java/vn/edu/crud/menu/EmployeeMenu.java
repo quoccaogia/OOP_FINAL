@@ -1,5 +1,7 @@
 package vn.edu.crud.menu;
 
+import vn.edu.crud.util.InBangHelper;
+
 import java.math.BigDecimal;
 import java.text.NumberFormat;
 import java.util.List;
@@ -48,8 +50,8 @@ public class EmployeeMenu {
                 case 4 -> themNhanVien();
                 case 5 -> suaNhanVien();
                 case 6 -> xoaNhanVien();
-                case 7 -> inBang(employeeService.nhanVienCoDonHang());
-                case 8 -> inBang(employeeService.nhanVienNhieuDonNhat());
+                case 7 -> InBangHelper.inBang(employeeService.nhanVienCoDonHang(), new String[]{"Mã NV", "Tên NV", "Chức Vụ", "SĐT", "Lương"});
+                case 8 -> InBangHelper.inBang(employeeService.nhanVienNhieuDonNhat(), new String[]{"Mã NV", "Tên NV", "Số Lượng Đơn"});
                 case 9 -> tinhLuongNhanVien();
                 case 0 -> {
                 }
@@ -169,11 +171,11 @@ private void timKiemNhanVienLambda() {
             System.out.println("❌ Không tìm thấy nhân viên có mã: " + id);
         } else {
             System.out.println("✅ Thông tin nhân viên:");
-            System.out.printf("%-8s | %-25s | %-15s | %-15s | %-15s%n", "Mã NV", "Tên NV", "Chức Vụ", "SĐT", "Lương");
-            System.out.println("-".repeat(85));
             String roleHienThi = EmployeeRole.getLabelFromString(nv.getRole());
-            System.out.printf("%-8s | %-25s | %-15s | %-15s | %-15s%n",
-                    nv.getEmployeeId(), nv.getName(), roleHienThi, nv.getPhone(), VND.format(nv.getSalary()));
+            List<Object[]> rows = java.util.Collections.singletonList(new Object[]{
+                nv.getEmployeeId(), nv.getName(), roleHienThi, nv.getPhone(), nv.getSalary()
+            });
+            InBangHelper.inBang(new String[]{"Mã NV", "Tên NV", "Chức Vụ", "SĐT", "Lương"}, rows);
         }
     }
 
@@ -253,21 +255,13 @@ private void timKiemNhanVienLambda() {
 
     private void inDanhSach(List<Employee> list) {
         if (list.isEmpty()) { System.out.println("Không có dữ liệu."); return; }
-        System.out.printf("%-8s | %-25s | %-15s | %-15s | %-15s%n", "Mã NV", "Tên NV", "Chức Vụ", "SĐT", "Lương/Tháng");
-        System.out.println("-".repeat(85));
-        for (Employee e : list) {
-            String tenHienThi = EmployeeRole.getLabelFromString(e.getRole());
-            System.out.printf("%-8s | %-25s | %-15s | %-15s | %-15s%n",
-                    e.getEmployeeId(), e.getName(), tenHienThi, e.getPhone(), VND.format(e.getSalary()));
-        }
+        List<Object[]> rows = list.stream().map(e -> new Object[]{
+            e.getEmployeeId(), e.getName(), EmployeeRole.getLabelFromString(e.getRole()), e.getPhone(), e.getSalary()
+        }).toList();
+        InBangHelper.inBang(new String[]{"Mã NV", "Tên NV", "Chức Vụ", "SĐT", "Lương/Tháng"}, rows);
     }
 
     private void inBang(List<Object[]> list) {
-        if (list.isEmpty()) { System.out.println("Không có dữ liệu."); return; }
-        for (Object[] row : list) {
-            StringBuilder sb = new StringBuilder();
-            for (Object o : row) sb.append(o).append(" | ");
-            System.out.println(sb);
-        }
+        InBangHelper.inBang(list, null);
     }
 }

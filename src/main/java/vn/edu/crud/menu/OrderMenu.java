@@ -1,5 +1,7 @@
 package vn.edu.crud.menu;
 
+import vn.edu.crud.util.InBangHelper;
+
 import vn.edu.crud.service.*;
 import vn.edu.crud.model.Customer;
 import vn.edu.crud.model.Employee;
@@ -77,18 +79,17 @@ public class OrderMenu {
                     case 5: xoaChiTiet(); break;
                     case 6: xoaDon(); break;
                     case 7: xemChiTietDon(); break;
-                    case 8: inBang(orderService.donHangGiaCao(new BigDecimal("500000"))); break;
-                    // Lambda: lọc đơn chưa giao hôm nay
+                    case 8: InBangHelper.inBang(orderService.donHangGiaCao(new BigDecimal("500000")), new String[]{"Mã Đơn", "Mã KH", "Mã NV", "Ngày Đặt", "Tổng Tiền"}); break;
                     case 9: inDsDon(orderService.donChuaGiaoHomNayLambda()); break;
                     case 10: System.out.println("Doanh thu hôm nay: " + orderService.doanhThuHomNay() + " VND"); break;
                     case 11: xemDonCuaKhach(); break;
-                    case 12: inBang(orderService.thongKeDonTheoTrangThai()); break;
-                    case 13: inBang(orderService.donCoNhieuLoaiHoa(3)); break;
-                    case 14: inBang(orderService.khachDaTungDatHang()); break;
-                    case 15: inBang(orderService.khachChuaTungDatHang()); break;
-                    case 16: inBang(orderService.khachNhieuDonNhat()); break;
-                    case 17: inBang(orderService.nhanVienNhieuDonNhat()); break;
-                    case 18: inBang(orderService.tongChiTieuTheoKhach()); break;
+                    case 12: InBangHelper.inBang(orderService.thongKeDonTheoTrangThai(), new String[]{"Trạng Thái", "Số Lượng Đơn"}); break;
+                    case 13: InBangHelper.inBang(orderService.donCoNhieuLoaiHoa(3), new String[]{"Mã Đơn", "Số Loài Hoa"}); break;
+                    case 14: InBangHelper.inBang(orderService.khachDaTungDatHang(), new String[]{"Mã KH", "Tên KH", "SĐT", "Địa Chỉ", "Email"}); break;
+                    case 15: InBangHelper.inBang(orderService.khachChuaTungDatHang(), new String[]{"Mã KH", "Tên KH", "SĐT", "Địa Chỉ", "Email"}); break;
+                    case 16: InBangHelper.inBang(orderService.khachNhieuDonNhat(), new String[]{"Mã KH", "Tên KH", "Số Lượng Đơn"}); break;
+                    case 17: InBangHelper.inBang(orderService.nhanVienNhieuDonNhat(), new String[]{"Mã NV", "Tên NV", "Số Lượng Đơn"}); break;
+                    case 18: InBangHelper.inBang(orderService.tongChiTieuTheoKhach(), new String[]{"Mã KH", "Tên KH", "Tổng Chi Tiêu"}); break;
                     case 19: suaThongTinDon(); break;
                     case 20: timKiemDonHangLambda(); break;
                     case 21: locDonTheoTrangThaiLambda(); break;
@@ -857,11 +858,7 @@ public class OrderMenu {
         if (chiTiet.isEmpty()) {
             System.out.println("(Chưa có mặt hàng nào)");
         } else {
-            System.out.printf("%-25s | %-10s | %-15s%n", "Tên Hoa", "Số Lượng", "Đơn Giá");
-            System.out.println("-".repeat(55));
-            for (Object[] row : chiTiet) {
-                System.out.printf("%-25s | %-10s | %-15s%n", row[0], row[1], row[2]);
-            }
+            InBangHelper.inBang(new String[]{"Tên Hoa", "Số Lượng", "Đơn Giá"}, chiTiet);
         }
     }
 
@@ -1212,12 +1209,10 @@ public class OrderMenu {
             System.out.println("Không có dữ liệu.");
             return;
         }
-        System.out.printf("%-10s | %-15s | %-20s | %-20s%n", "Mã Đơn", "Mã KH", "Ngày Đặt", "Trạng Thái");
-        System.out.println("-".repeat(75));
-        for (Order o : list) {
-            System.out.printf("%-10s | %-15s | %-20s | %-20s%n",
-                    o.getOrderId(), o.getCustomerId(), o.getOrderDate().toString().replace("T", " "), dichTrangThai(o.getOrderStatus()));
-        }
+        List<Object[]> rows = list.stream().map(o -> new Object[]{
+            o.getOrderId(), o.getCustomerId(), o.getOrderDate(), dichTrangThai(o.getOrderStatus())
+        }).toList();
+        InBangHelper.inBang(new String[]{"Mã Đơn", "Mã KH", "Ngày Đặt", "Trạng Thái"}, rows);
     }
 
     private void inBang(List<?> list) {
@@ -1225,14 +1220,10 @@ public class OrderMenu {
             System.out.println("Không có dữ liệu.");
             return;
         }
-        for (Object o : list) {
-            if (o instanceof Object[]) {
-                StringBuilder sb = new StringBuilder();
-                for (Object cell : (Object[]) o) sb.append(cell).append(" | ");
-                System.out.println(sb);
-            } else {
-                System.out.println(o);
-            }
+        java.util.List<Object[]> rows = new java.util.ArrayList<>();
+        for (Object item : list) {
+            if (item instanceof Object[]) rows.add((Object[]) item);
         }
+        InBangHelper.inBang(rows, null);
     }
 }

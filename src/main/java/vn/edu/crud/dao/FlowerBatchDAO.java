@@ -274,34 +274,7 @@ public class FlowerBatchDAO {
                 return list;
         }
 
-        public List<FlowerBatch> loConHangLambda() {
-                return layDanhSachLo().stream()
-                                .filter(b -> "AVAILABLE".equals(b.getStatus())
-                                                && b.getQuantityRemaining() > 0)
-                                .collect(Collectors.toList());
 
-        }
-
-        public List<FlowerBatch> loNhapQua7NgayLambda() {
-                return layDanhSachLo().stream()
-                                .filter(b -> b.getImportDate() != null
-                                                && b.getQuantityRemaining() > 0
-                                                && ChronoUnit.DAYS.between(b.getImportDate().toLocalDate(),
-                                                                LocalDate.now()) > 7)
-                                .collect(Collectors.toList());
-        }
-
-        public List<FlowerBatch> loSapHetHanLambda(int soNgay) {
-                LocalDate homNay = LocalDate.now();
-                return layDanhSachLo().stream()
-                                .filter(b -> "AVAILABLE".equals(b.getStatus())
-                                                && b.getQuantityRemaining() > 0
-                                                && b.getExpiryDate() != null
-                                                && ChronoUnit.DAYS.between(homNay, b.getExpiryDate()) >= 0
-                                                && ChronoUnit.DAYS.between(homNay, b.getExpiryDate()) <= soNgay)
-                                .sorted(Comparator.comparing(FlowerBatch::getExpiryDate))
-                                .collect(Collectors.toList());
-        }
 
         private FlowerBatch mapRow(ResultSet rs) throws SQLException {
                 FlowerBatch b = new FlowerBatch();

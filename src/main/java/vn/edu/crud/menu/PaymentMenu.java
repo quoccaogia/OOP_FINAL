@@ -1,5 +1,7 @@
 package vn.edu.crud.menu;
 
+import vn.edu.crud.util.InBangHelper;
+
 import vn.edu.crud.service.OrderService;
 import vn.edu.crud.service.PaymentService;
 import vn.edu.crud.model.Payment;
@@ -68,7 +70,7 @@ public class PaymentMenu {
     // =====================================================
     private void xemTatCa() {
         try {
-            inBang(paymentService.tatCaThanhToan());
+            InBangHelper.inBang(paymentService.tatCaThanhToan(), new String[]{"Mã GD", "Mã Đơn", "Số Tiền", "Phương Thức", "Ngày TT", "Trạng Thái"});
         } catch (Exception e) {
             AnToan.baoLoi(e, "không thể tải danh sách thanh toán từ cơ sở dữ liệu");
         }
@@ -123,15 +125,12 @@ public class PaymentMenu {
                 System.out.println("Không có giao dịch nào sử dụng phương thức này.");
                 return;
             }
-            System.out.printf("%-8s | %-8s | %-14s | %-20s | %-22s%n",
-                    "Mã TT", "Mã Đơn", "Số Tiền", "Ngày TT", "Trạng Thái");
-            System.out.println("-".repeat(84));
-            for (Payment p : kq) {
-                System.out.printf("%-8s | %-8s | %-14s | %-20s | %-22s%n",
-                        p.getPaymentId(), p.getOrderId(), p.getAmount(),
-                        p.getPaymentDate() == null ? "" : p.getPaymentDate().toLocalDate(),
-                        p.getPaymentStatus());
-            }
+            List<Object[]> rows = kq.stream().map(p -> new Object[]{
+                p.getPaymentId(), p.getOrderId(), p.getAmount(),
+                p.getPaymentDate() == null ? "" : p.getPaymentDate(),
+                p.getPaymentStatus()
+            }).toList();
+            InBangHelper.inBang(new String[]{"Mã TT", "Mã Đơn", "Số Tiền", "Ngày TT", "Trạng Thái"}, rows);
         } catch (Exception e) {
             AnToan.baoLoi(e, "phương thức thanh toán (TIEN_MAT, CHUYEN_KHOAN, MOMO, THE_TIN_DUNG)");
         }
@@ -238,24 +237,7 @@ public class PaymentMenu {
     // =====================================================
     private void inBang(List<Object[]> list) {
         try {
-            if (list == null || list.isEmpty()) {
-                System.out.println("Không có dữ liệu.");
-                return;
-            }
-            System.out.printf("%-8s | %-8s | %-14s | %-16s | %-20s | %-22s%n",
-                    "Mã TT", "Mã Đơn", "Số Tiền", "Phương Thức", "Ngày TT", "Trạng Thái");
-            System.out.println("-".repeat(100));
-            for (Object[] row : list) {
-                if (row.length >= 6) {
-                    System.out.printf("%-8s | %-8s | %-14s | %-16s | %-20s | %-22s%n",
-                            row[0], row[1], row[2], row[3], row[4], row[5]);
-                } else {
-                    StringBuilder sb = new StringBuilder();
-                    for (Object o : row)
-                        sb.append(o).append(" | ");
-                    System.out.println(sb);
-                }
-            }
+            InBangHelper.inBang(new String[]{"Mã TT", "Mã Đơn", "Số Tiền", "Phương Thức", "Ngày TT", "Trạng Thái"}, list);
         } catch (Exception e) {
             AnToan.baoLoi(e, "hiển thị danh sách thanh toán");
         }

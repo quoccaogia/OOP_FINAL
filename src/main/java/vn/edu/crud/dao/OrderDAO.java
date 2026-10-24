@@ -13,77 +13,7 @@ import java.util.stream.Collectors;
 
 public class OrderDAO {
 
-    // =========================================================================
-    // HÀM SỬ DỤNG BIỂU THỨC LAMBDA & STREAM API CHO MỤC 5 (QUẢN LÝ ĐƠN HÀNG)
-    // =========================================================================
 
-    // 1. Tìm kiếm đơn hàng theo Mã đơn, Mã KH, hoặc Mã NV bằng Lambda
-    public List<Order> searchOrdersByLambda(String keyword) {
-        List<Order> allOrders = this.findAll();
-
-        if (keyword == null || keyword.trim().isEmpty()) {
-            return allOrders;
-        }
-
-        String kw = keyword.toLowerCase().trim();
-
-        // Sử dụng Stream API và biểu thức Lambda để lọc theo mã đơn, mã KH hoặc mã NV
-        return allOrders.stream()
-                .filter(o -> (o.getOrderId() != null && o.getOrderId().toLowerCase().contains(kw)) ||
-                             (o.getCustomerId() != null && o.getCustomerId().toLowerCase().contains(kw)) ||
-                             (o.getEmployeeId() != null && o.getEmployeeId().toLowerCase().contains(kw)))
-                .collect(Collectors.toList());
-    }
-
-    // 2. Lọc danh sách đơn chưa giao hôm nay bằng Lambda
-    public List<Order> donChuaGiaoHomNayLambda() {
-        List<Order> allOrders = this.findAll();
-        LocalDate homNay = LocalDate.now();
-
-        return allOrders.stream()
-                .filter(o -> o.getDeliveryDate() != null
-                          && o.getDeliveryDate().toLocalDate().equals(homNay)
-                          && !"HOAN_THANH".equals(o.getOrderStatus())
-                          && !"DA_HUY".equals(o.getOrderStatus())
-                          && !"GIAO_THAT_BAI".equals(o.getOrderStatus()))
-                .collect(Collectors.toList());
-    }
-
-    // 3. Lọc danh sách đơn hàng của một khách hàng bằng Lambda
-    public List<Order> donCuaKhachLambda(String maKhach) {
-        List<Order> allOrders = this.findAll();
-
-        if (maKhach == null || maKhach.trim().isEmpty()) {
-            return new ArrayList<>();
-        }
-
-        return allOrders.stream()
-                .filter(o -> o.getCustomerId() != null && o.getCustomerId().equalsIgnoreCase(maKhach.trim()))
-                .collect(Collectors.toList());
-    }
-
-    // 4. Lọc đơn hàng theo trạng thái cụ thể bằng Lambda
-    public List<Order> locDonTheoTrangThaiLambda(String status) {
-        List<Order> allOrders = this.findAll();
-
-        if (status == null || status.trim().isEmpty()) {
-            return allOrders;
-        }
-
-        return allOrders.stream()
-                .filter(o -> o.getOrderStatus() != null && o.getOrderStatus().equalsIgnoreCase(status.trim()))
-                .collect(Collectors.toList());
-    }
-
-    // 5. Sắp xếp đơn hàng mới nhất lên đầu bằng Lambda
-    public List<Order> donHangMoiNhatLambda() {
-        List<Order> allOrders = this.findAll();
-
-        return allOrders.stream()
-                .filter(o -> o.getOrderDate() != null)
-                .sorted((o1, o2) -> o2.getOrderDate().compareTo(o1.getOrderDate()))
-                .collect(Collectors.toList());
-    }
 
     // =====================================================
     // NHÓM THAO TÁC

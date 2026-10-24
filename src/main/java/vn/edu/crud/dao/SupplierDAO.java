@@ -14,21 +14,7 @@ import vn.edu.crud.util.DBBase;
 import vn.edu.crud.util.DBConnection;
 
 public class SupplierDAO {
-    @SuppressWarnings("CallToStackTrace")
-    public List<Supplier> searchSuppliersByLambda(String keyword) {
-        List<Supplier> allSuppliers = this.findAll();
-        
-        if (keyword == null || keyword.trim().isEmpty()) {
-            return allSuppliers;
-        }
-        
-        String lowerKeyword = keyword.toLowerCase().trim();
-        
-        // Sử dụng Stream API và Biểu thức Lambda để lọc danh sách nhà cung cấp theo tên
-        return allSuppliers.stream()
-                .filter(s -> s.getName() != null && s.getName().toLowerCase().contains(lowerKeyword))
-                .collect(Collectors.toList());
-    } 
+ 
 
     // =====================================================
     // NHÓM CRUD

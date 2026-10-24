@@ -56,24 +56,7 @@ public class CustomerDAO {
         return list;
     }
 
-    // =========================================================================
-    // HÀM SỬ DỤNG BIỂU THỨC LAMBDA & STREAM API CHO MỤC 1
-    // =========================================================================
-    @SuppressWarnings("CallToStackTrace")
-    public List<Customer> filterCustomersByLambda(String keyword) {
-        List<Customer> allCustomers = this.findAll();
-        if (keyword == null || keyword.trim().isEmpty()) {
-            return allCustomers;
-        }
-        String lowerKeyword = keyword.toLowerCase().trim();
-        
-        // Sử dụng Stream API và Biểu thức Lambda để lọc dữ liệu trực tiếp trong bộ nhớ
-        return allCustomers.stream()
-                .filter(c -> (c.getName() != null && c.getName().toLowerCase().contains(lowerKeyword)) ||
-                             (c.getPhone() != null && c.getPhone().contains(lowerKeyword)) ||
-                             (c.getEmail() != null && c.getEmail().toLowerCase().contains(lowerKeyword)))
-                .collect(Collectors.toList());
-    }
+
 
     @SuppressWarnings({"CallToStackTrace", "CallToPrintStackTrace"})
     public boolean insert(Customer c) {

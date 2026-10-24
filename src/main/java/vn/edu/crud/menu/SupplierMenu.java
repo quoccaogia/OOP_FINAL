@@ -1,5 +1,7 @@
 package vn.edu.crud.menu;
 
+import vn.edu.crud.util.InBangHelper;
+
 import java.util.List;
 import java.util.Scanner;
 
@@ -40,10 +42,10 @@ public class SupplierMenu {
                 case 2 -> tiepNhanNhaCungCap();
                 case 3 -> timKiemNhaCungCapLambda();
                 case 4 -> xoaNhaCungCap();
-                case 6 -> inBang(supplierService.tongNhapTheoNCC());
-                case 7 -> inBang(supplierService.nccDangCungCapHoa());
-                case 8 -> inBang(supplierService.nccNhieuLoaiHoaNhat());
-                case 9 -> inBang(supplierService.thongKeLoaiHoaTheoNCC());
+                case 6 -> InBangHelper.inBang(supplierService.tongNhapTheoNCC(), new String[]{"Mã NCC", "Tên NCC", "Tổng Tiền Nhập"});
+                case 7 -> InBangHelper.inBang(supplierService.nccDangCungCapHoa(), new String[]{"Mã NCC", "Tên NCC", "SĐT", "Địa Chỉ", "Người Đại Diện"});
+                case 8 -> InBangHelper.inBang(supplierService.nccNhieuLoaiHoaNhat(), new String[]{"Mã NCC", "Tên NCC", "Số Loài Hoa"});
+                case 9 -> InBangHelper.inBang(supplierService.thongKeLoaiHoaTheoNCC(), new String[]{"Mã NCC", "Tên NCC", "Số Loài Hoa"});
                 case 0 -> {
                 }
                 default -> System.out.println("Chọn sai!");
@@ -176,20 +178,15 @@ private void timKiemNhaCungCapLambda() {
     // =====================================================
     private void inDanhSach(List<Supplier> list) {
         if (list.isEmpty()) { System.out.println("Không có dữ liệu."); return; }
-        System.out.printf("%-8s | %-25s | %-15s | %-25s | %-20s%n", "Mã NCC", "Tên NCC", "SĐT", "Địa Chỉ", "Người Đại Diện");
-        System.out.println("-".repeat(100));
-        for (Supplier s : list) {
-            System.out.printf("%-8s | %-25s | %-15s | %-25s | %-20s%n",
-                    s.getSupplierId(), s.getName(), s.getPhone(), s.getAddress(), s.getRepresentative());
-        }
+        List<Object[]> rows = list.stream().map(s -> new Object[]{
+            s.getSupplierId(), s.getName(), s.getPhone(),
+            s.getAddress() == null ? "" : s.getAddress(),
+            s.getRepresentative() == null ? "" : s.getRepresentative()
+        }).toList();
+        InBangHelper.inBang(new String[]{"Mã NCC", "Tên NCC", "SĐT", "Địa Chỉ", "Người Đại Diện"}, rows);
     }
 
     private void inBang(List<Object[]> list) {
-        if (list.isEmpty()) { System.out.println("Không có dữ liệu."); return; }
-        for (Object[] row : list) {
-            StringBuilder sb = new StringBuilder();
-            for (Object o : row) sb.append(o).append(" | ");
-            System.out.println(sb);
-        }
+        InBangHelper.inBang(list, null);
     }
 }

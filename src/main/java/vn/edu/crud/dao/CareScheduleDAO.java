@@ -126,22 +126,7 @@ public class CareScheduleDAO {
         return list;
     }
 
-    public List<CareSchedule> lichSuTheoHoaLambda(String flowerId){
-        return layDanhSachChamSoc().stream()
-                .filter(c -> flowerId.equals(c.getFlowerId()))
-                .sorted(Comparator.comparing(CareSchedule::getCheckDate,
-                        Comparator.nullsLast(Comparator.reverseOrder())))
-                .collect(Collectors.toList());
-    }
 
-    public List<CareSchedule> lichSuTheoNhanVienLambda(String empId){
-        return layDanhSachChamSoc().stream()
-                .filter(c -> empId.equals(c.getEmployeeId()))
-                .sorted(Comparator.comparing(CareSchedule::getCheckDate,
-                        Comparator.nullsLast(Comparator.reverseOrder())))
-                .collect(Collectors.toList());
-
-    }
 
     private CareSchedule mapRow(ResultSet rs) throws SQLException {
         CareSchedule c = new CareSchedule();

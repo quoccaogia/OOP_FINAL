@@ -1,5 +1,7 @@
 package vn.edu.crud.menu;
 
+import vn.edu.crud.util.InBangHelper;
+
 
 import java.util.ArrayList;
 import vn.edu.crud.service.FlowerBatchService;
@@ -118,24 +120,22 @@ public class FlowerMenu {
                 inDsHoa(flowerService.timTheoMau(sc.nextLine()));
                 break;
             case 10:
-                inBang(flowerService.hoaBanChay());
+                InBangHelper.inBang(flowerService.hoaBanChay(), new String[]{"Mã Hoa", "Tên Hoa", "Tổng Đã Bán"});
                 break;
             case 11:
-                inBang(flowerService.hoaBanCham());
+                InBangHelper.inBang(flowerService.hoaBanCham(), new String[]{"Mã Hoa", "Tên Hoa", "Tổng Đã Bán"});
                 break;
             case 12:
-                // Lambda sắp xếp hoa giá giảm dần
-
                 inDsHoa(flowerService.hoaGiaGiamDanLambda());
                 break;
             case 13:
-                inBang(flowerService.tongBanTheoHoa());
+                InBangHelper.inBang(flowerService.tongBanTheoHoa(), new String[]{"Mã Hoa", "Tên Hoa", "Tổng Đã Bán"});
                 break;
             case 14:
                 inDsHoa(flowerService.hoaChuaBanDuoc());
                 break;
             case 15:
-                inBang(flowerService.loHoaTonLau(7));
+                InBangHelper.inBang(flowerService.loHoaTonLau(7), new String[]{"Mã Hoa", "Tên Hoa", "Mã Lô", "Ngày Nhập", "Số Ngày Tồn"});
                 break;
             case 0:
                 break;
@@ -226,22 +226,13 @@ public class FlowerMenu {
 
     private void inDsHoa(List<Flower> list) {
         if (list.isEmpty()) { System.out.println("Không có dữ liệu."); return; }
-        System.out.printf("%-8s | %-32s | %-16s | %-12s | %-6s | %-8s%n",
-                "Mã", "Tên", "Danh mục", "Giá", "Tồn", "Màu");
-        System.out.println("-".repeat(95));
-        for (Flower f : list) {
-            System.out.printf("%-8s | %-32s | %-16s | %-12s | %-6d | %-8s%n",
-                    f.getFlowerId(), f.getName(), f.getCategory(),
-                    f.getUnitPrice(), f.getStockQuantity(), f.getColor());
-        }
+        List<Object[]> rows = list.stream().map(f -> new Object[]{
+            f.getFlowerId(), f.getName(), f.getCategory(), f.getUnitPrice(), f.getStockQuantity(), f.getColor()
+        }).toList();
+        InBangHelper.inBang(new String[]{"Mã", "Tên", "Danh mục", "Giá", "Tồn", "Màu"}, rows);
     }
 
     private void inBang(List<Object[]> list) {
-        if (list.isEmpty()) { System.out.println("Không có dữ liệu."); return; }
-        for (Object[] row : list) {
-            StringBuilder sb = new StringBuilder();
-            for (Object o : row) sb.append(o).append(" | ");
-            System.out.println(sb);
-        }
+        InBangHelper.inBang(list, null);
     }
 }

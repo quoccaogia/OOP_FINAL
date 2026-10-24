@@ -1,5 +1,7 @@
 package vn.edu.crud.menu;
 
+import vn.edu.crud.util.InBangHelper;
+
 import java.text.Normalizer;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -600,19 +602,16 @@ public class CareScheduleMenu {
             System.out.println("Chưa có bản ghi chăm sóc nào.");
             return;
         }
-        System.out.printf("%-6s | %-16s | %-6s | %-8s | %-14s | %-18s | %s%n",
-                "Mã CS", "Ngày kiểm tra", "Hoa", "Nhân viên", "Tươi/Nước", "Hành động", "Ghi chú");
-        System.out.println("-".repeat(100));
-        DateTimeFormatter fmt = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
-        for (CareSchedule c : ds) {
-            System.out.printf("%-6s | %-16s | %-6s | %-8s | %-14s | %-18s | %s%n",
-                    c.getCareId(),
-                    c.getCheckDate() == null ? "" : c.getCheckDate().format(fmt),
-                    c.getFlowerId(), c.getEmployeeId(),
-                    c.getFreshnessLevel() + "/" + c.getWaterStatus(),
-                    c.getActionTaken() == null ? "" : c.getActionTaken(),
-                    c.getNote() == null ? "" : c.getNote());
-        }
+        List<Object[]> rows = ds.stream().map(c -> new Object[]{
+            c.getCareId(),
+            c.getCheckDate() == null ? "" : c.getCheckDate(),
+            c.getFlowerId(),
+            c.getEmployeeId(),
+            c.getFreshnessLevel() + "/" + c.getWaterStatus(),
+            c.getActionTaken() == null ? "" : c.getActionTaken(),
+            c.getNote() == null ? "" : c.getNote()
+        }).toList();
+        InBangHelper.inBang(new String[]{"Mã CS", "Ngày kiểm tra", "Hoa", "Nhân viên", "Tươi/Nước", "Hành động", "Ghi chú"}, rows);
     }
 
 }

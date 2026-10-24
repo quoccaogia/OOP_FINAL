@@ -178,23 +178,7 @@ public class PaymentDAO {
         return list;
     }
 
-    public List<Payment> theoPhuongThucLambda(String phuongThuc) {
-        return layDanhSachThanhToan().stream()
-                .filter(p -> phuongThuc.equals(p.getPaymentMethod()))
-                .collect(Collectors.toList());
-    }
 
-    public BigDecimal doanhThuHomNayLambda() {
-        LocalDate homNay = LocalDate.now();
-        return layDanhSachThanhToan().stream()
-                .filter(p -> "THANH_TOAN_THANH_CONG".equals(p.getPaymentStatus())
-                        && p.getPaymentDate() != null
-                        && p.getPaymentDate().toLocalDate().equals(homNay)
-                        && p.getAmount() != null)
-                .map(Payment::getAmount)
-                .reduce(BigDecimal.ZERO, BigDecimal::add);
-
-    }
 
     private Payment mapRow(ResultSet rs) throws SQLException {
         Payment p = new Payment();

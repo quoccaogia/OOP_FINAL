@@ -1,5 +1,7 @@
 package vn.edu.crud.menu;
 
+import vn.edu.crud.util.InBangHelper;
+
 import vn.edu.crud.service.FlowerBatchService;
 import vn.edu.crud.service.FlowerService;
 
@@ -74,31 +76,22 @@ public class FlowerBatchMenu {
     // HÀM IN BẢNG
     // =====================================================
     private void inDanhSach(List<Object[]> list) {
-        if (list.isEmpty()) {
+        if (list == null || list.isEmpty()) {
             System.out.println("Không có dữ liệu.");
             return;
         }
-
-        System.out.printf("%-7s | %-8s | %-18s | %-7s | %-20s | %-8s | %-8s | %-10s | %-12s | %-10s%n",
-                "Mã Lô", "Mã PN", "Nhà Cung Cấp", "Mã Hoa", "Tên Hoa", "SL Nhập", "SL Còn", "Đơn Giá", "Hạn SD",
-                "Trạng Thái");
-        System.out.println("-".repeat(135));
-
-        DateTimeFormatter df = DateTimeFormatter.ofPattern("dd/MM/yyyy");
-
-        for (Object[] row : list) {
-            String expiryDateStr = "N/A";
-            if (row[9] != null) {
-                if (row[9] instanceof java.sql.Date) {
-                    expiryDateStr = ((java.sql.Date) row[9]).toLocalDate().format(df);
-                } else {
-                    expiryDateStr = row[9].toString();
-                }
-            }
-
-            System.out.printf("%-7s | %-8s | %-18s | %-7s | %-20s | %-8s | %-8s | %-10s | %-12s | %-10s%n",
-                    row[0], row[1], row[2], row[3], row[4], row[5], row[6], row[7], expiryDateStr, row[10]);
-        }
+        List<Object[]> rows = list.stream().map(r -> new Object[]{
+            r[0], // Mã Lô
+            r[1], // Mã PN
+            r[4], // Tên Hoa
+            r[2], // Nhà Cung Cấp
+            r[5], // SL Nhập
+            r[6], // SL Còn
+            r[7], // Giá Vốn
+            r[9], // Hạn SD
+            r[10] // Trạng Thái
+        }).toList();
+        InBangHelper.inBang(new String[]{"Mã Lô", "Mã PN", "Tên Hoa", "Nhà Cung Cấp", "SL Nhập", "SL Còn", "Giá Vốn", "Hạn SD", "Trạng Thái"}, rows);
     }
 
     private String chonLoHoa() {
@@ -203,20 +196,7 @@ public class FlowerBatchMenu {
 
     private void inBangRutGon(List<Object[]> list, String title) {
         System.out.println("\n--- " + title + " ---");
-        if (list.isEmpty()) {
-            System.out.println("Không có dữ liệu.");
-            return;
-        }
-
-        System.out.printf("%-8s | %-20s | %-18s | %-10s | %-12s%n",
-                "Mã Lô", "Tên Hoa", "Nhà Cung Cấp", "SL Còn", "Hạn SD");
-        System.out.println("-".repeat(80));
-
-        for (Object[] row : list) {
-            String expiry = row.length > 4 && row[4] != null ? row[4].toString() : "";
-            System.out.printf("%-8s | %-20s | %-18s | %-10s | %-12s%n",
-                    row[0], row[1], row[2], row[3], expiry);
-        }
+        InBangHelper.inBang(new String[]{"Mã Lô", "Tên Hoa", "Nhà Cung Cấp", "SL Còn", "Hạn SD"}, list);
     }
 
     
@@ -229,14 +209,11 @@ public class FlowerBatchMenu {
             System.out.println("Không có lô nào nhập quá 7 ngày.");
             return;
         }
-        System.out.printf("%-8s | %-8s | %-12s | %-8s | %-10s%n",
-                "Mã Lô", "Mã Hoa", "Ngày Nhập", "SL Còn", "Trạng Thái");
-        System.out.println("-".repeat(58));
-        for (FlowerBatch b : kq) {
-            System.out.printf("%-8s | %-8s | %-12s | %-8d | %-10s%n",
-                    b.getBatchId(), b.getFlowerId(), b.getImportDate().toLocalDate(),
-                    b.getQuantityRemaining(), b.getStatus());
-        }
+        List<Object[]> rows = kq.stream().map(b -> new Object[]{
+            b.getBatchId(), b.getFlowerId(), b.getImportDate(),
+            b.getQuantityRemaining(), b.getStatus()
+        }).toList();
+        InBangHelper.inBang(new String[]{"Mã Lô", "Mã Hoa", "Ngày Nhập", "SL Còn", "Trạng Thái"}, rows);
     }
 
     
@@ -249,16 +226,13 @@ public class FlowerBatchMenu {
             System.out.println("Không có lô nào còn hàng.");
             return;
         }
-        System.out.printf("%-8s | %-8s | %-12s | %-8s | %-12s%n",
-                "Mã Lô", "Mã Hoa", "Ngày Nhập", "SL Còn", "Hạn SD");
-        System.out.println("-".repeat(60));
-        for (FlowerBatch b : kq) {
-            System.out.printf("%-8s | %-8s | %-12s | %-8d | %-12s%n",
-                    b.getBatchId(), b.getFlowerId(),
-                    b.getImportDate() == null ? "" : b.getImportDate().toLocalDate(),
-                    b.getQuantityRemaining(),
-                    b.getExpiryDate() == null ? "" : b.getExpiryDate());
-        }
+        List<Object[]> rows = kq.stream().map(b -> new Object[]{
+            b.getBatchId(), b.getFlowerId(),
+            b.getImportDate(),
+            b.getQuantityRemaining(),
+            b.getExpiryDate()
+        }).toList();
+        InBangHelper.inBang(new String[]{"Mã Lô", "Mã Hoa", "Ngày Nhập", "SL Còn", "Hạn SD"}, rows);
     }
 
     
@@ -273,13 +247,10 @@ public class FlowerBatchMenu {
             System.out.println("Không có lô nào sắp hết hạn.");
             return;
         }
-        System.out.printf("%-8s | %-8s | %-8s | %-12s | %-8s%n",
-                "Mã Lô", "Mã Hoa", "SL Còn", "Hạn SD", "Còn Ngày");
-        System.out.println("-".repeat(56));
-        for (FlowerBatch b : kq) {
-            System.out.printf("%-8s | %-8s | %-8d | %-12s | %-8d%n",
-                    b.getBatchId(), b.getFlowerId(), b.getQuantityRemaining(),
-                    b.getExpiryDate(), ChronoUnit.DAYS.between(homNay, b.getExpiryDate()));
-        }
+        List<Object[]> rows = kq.stream().map(b -> new Object[]{
+            b.getBatchId(), b.getFlowerId(), b.getQuantityRemaining(),
+            b.getExpiryDate(), ChronoUnit.DAYS.between(homNay, b.getExpiryDate())
+        }).toList();
+        InBangHelper.inBang(new String[]{"Mã Lô", "Mã Hoa", "SL Còn", "Hạn SD", "Còn Ngày"}, rows);
     }
 }

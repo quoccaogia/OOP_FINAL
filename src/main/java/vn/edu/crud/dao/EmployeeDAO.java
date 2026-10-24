@@ -15,26 +15,7 @@ import vn.edu.crud.util.DBConnection;
 
 public class EmployeeDAO {
 
-    // =========================================================================
-    // HÀM SỬ DỤNG BIỂU THỨC LAMBDA & STREAM API CHO MỤC 3
-    // (Tìm kiếm nhân viên theo Mã nhân viên hoặc Tên nhân viên)
-    // =========================================================================
-    @SuppressWarnings("CallToStackTrace")
-    public List<Employee> searchEmployeesByLambda(String keyword) {
-        List<Employee> allEmployees = this.findAll();
-        
-        if (keyword == null || keyword.trim().isEmpty()) {
-            return allEmployees;
-        }
-        
-        String lowerKeyword = keyword.toLowerCase().trim();
-        
-        // Sử dụng Stream API và Biểu thức Lambda để lọc theo mã NV hoặc tên NV
-        return allEmployees.stream()
-                .filter(e -> (e.getEmployeeId() != null && e.getEmployeeId().toLowerCase().contains(lowerKeyword)) ||
-                             (e.getName() != null && e.getName().toLowerCase().contains(lowerKeyword)))
-                .collect(Collectors.toList());
-    }
+
     @SuppressWarnings("CallToPrintStackTrace")
     public List<Employee> findAll() {
         List<Employee> list = new ArrayList<>();

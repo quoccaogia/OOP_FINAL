@@ -155,26 +155,7 @@ public class PurchaseOrderDAO {
         return list;
     }
 
-    public List<PurchaseOrder> timPhieuTheoMaLambda(String maPN) {
-        return layDanhSachPhieuNhap().stream()
-                .filter(po -> maPN.equals(po.getPurchaseOrderId()))
-                .collect(Collectors.toList());
-    }
 
-    public List<PurchaseOrder> phieuCuaNCCLambda(String maNCC) {
-        return layDanhSachPhieuNhap().stream()
-                .filter(po -> maNCC.equals(po.getSupplierId()))
-                .collect(Collectors.toList());
-    }
-
-    public Map<String, BigDecimal> tongNhapTheoNCCLambda() {
-        return layDanhSachPhieuNhap().stream()
-                .filter(po -> po.getSupplierId() != null && po.getTotalAmount() != null)
-                .collect(Collectors.groupingBy(
-                        PurchaseOrder::getSupplierId,
-                        TreeMap::new,
-                        Collectors.reducing(BigDecimal.ZERO, PurchaseOrder::getTotalAmount, BigDecimal::add)));
-    }
 
     private PurchaseOrder mapRow(ResultSet rs) throws SQLException {
         PurchaseOrder po = new PurchaseOrder();

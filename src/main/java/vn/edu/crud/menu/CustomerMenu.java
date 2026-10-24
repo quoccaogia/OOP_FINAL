@@ -1,5 +1,7 @@
 package vn.edu.crud.menu;
 
+import vn.edu.crud.util.InBangHelper;
+
 import java.util.List;
 import java.util.Scanner;
 
@@ -40,10 +42,10 @@ public class CustomerMenu {
                 case 1 -> inDanhSach(customerService.findAll());
                 case 2 -> tiepDonKhachHang();
                 case 3 -> timKiemKhachHangLambda();
-                case 6 -> inBang(orderService.khachDaTungDatHang());
-                case 7 -> inBang(orderService.khachChuaTungDatHang());
-                case 8 -> inBang(orderService.khachNhieuDonNhat());
-                case 9 -> inBang(orderService.tongChiTieuTheoKhach());
+                case 6 -> InBangHelper.inBang(orderService.khachDaTungDatHang(), new String[]{"Mã KH", "Tên KH", "SĐT", "Địa Chỉ", "Email"});
+                case 7 -> InBangHelper.inBang(orderService.khachChuaTungDatHang(), new String[]{"Mã KH", "Tên KH", "SĐT", "Địa Chỉ", "Email"});
+                case 8 -> InBangHelper.inBang(orderService.khachNhieuDonNhat(), new String[]{"Mã KH", "Tên KH", "Số Lượng Đơn"});
+                case 9 -> InBangHelper.inBang(orderService.tongChiTieuTheoKhach(), new String[]{"Mã KH", "Tên KH", "Tổng Chi Tiêu"});
                 case 10 -> xemDonHangBangSdt();
                 case 0 -> {
                 }
@@ -103,11 +105,10 @@ public class CustomerMenu {
         if (donHang.isEmpty()) {
             System.out.println("Khách hàng này chưa có đơn hàng nào.");
         } else {
-            System.out.printf("%-10s | %-20s | %-15s%n", "Mã Đơn", "Ngày Đặt", "Trạng Thái");
-            System.out.println("-".repeat(55));
-            for (Order o : donHang) {
-                System.out.printf("%-10s | %-20s | %-15s%n", o.getOrderId(), o.getOrderDate(), o.getOrderStatus());
-            }
+            List<Object[]> rows = donHang.stream().map(o -> new Object[]{
+                o.getOrderId(), o.getOrderDate(), o.getOrderStatus()
+            }).toList();
+            InBangHelper.inBang(new String[]{"Mã Đơn", "Ngày Đặt", "Trạng Thái"}, rows);
         }
     }
     
@@ -161,12 +162,14 @@ public class CustomerMenu {
     // =====================================================
     private void inDanhSach(List<Customer> list) {
         if (list.isEmpty()) { System.out.println("Không có dữ liệu."); return; }
-        System.out.printf("%-8s | %-25s | %-15s | %-20s | %-25s%n", "Mã KH", "Tên KH", "SĐT", "Địa Chỉ", "Email");
-        System.out.println("-".repeat(100));
-        for (Customer c : list) {
-            System.out.printf("%-8s | %-25s | %-15s | %-20s | %-25s%n",
-                    c.getCustomerId(), c.getName(), c.getPhone(), c.getAddress(), c.getEmail());
-        }
+        List<Object[]> rows = list.stream().map(c -> new Object[]{
+            c.getCustomerId(),
+            c.getName() == null ? "" : c.getName(),
+            c.getPhone() == null ? "" : c.getPhone(),
+            c.getAddress() == null ? "" : c.getAddress(),
+            c.getEmail() == null ? "" : c.getEmail()
+        }).toList();
+        InBangHelper.inBang(new String[]{"Mã KH", "Tên KH", "SĐT", "Địa Chỉ", "Email"}, rows);
     }
     // =========================================================================
     // CHỨC NĂNG TÌM KIẾM KHÁCH HÀNG BẰNG LAMBDA (MỤC 1)
@@ -190,12 +193,7 @@ public class CustomerMenu {
 }
 
     private void inBang(List<Object[]> list) {
-        if (list.isEmpty()) { System.out.println("Không có dữ liệu."); return; }
-        for (Object[] row : list) {
-            StringBuilder sb = new StringBuilder();
-            for (Object o : row) sb.append(o).append(" | ");
-            System.out.println(sb);
-        }
+        InBangHelper.inBang(list, null);
     }
 
 }
