@@ -584,11 +584,50 @@ public class OrderMenu {
     }
 
     private void capNhatTrangThai() {
-        System.out.print("Nhập Mã đơn cần cập nhật (VD: ORD001): ");
-        String orderId = sc.nextLine().toUpperCase();
+        List<Order> dsDon = orderService.findAll();
+        List<Order> dsChuaXong = new ArrayList<>();
+        for (Order o : dsDon) {
+            String st = o.getOrderStatus();
+            if (st != null && !st.equalsIgnoreCase("HOAN_THANH")
+                    && !st.equalsIgnoreCase("DA_HUY")
+                    && !st.equalsIgnoreCase("GIAO_THAT_BAI")) {
+                dsChuaXong.add(o);
+            }
+        }
+
+        if (dsChuaXong.isEmpty()) {
+            System.out.println("⚠️ Hiện không có đơn hàng nào đang chờ xử lý.");
+            return;
+        }
+
+        System.out.println("\nDANH SÁCH ĐƠN HÀNG ĐANG XỬ LÝ:");
+        System.out.printf("%-4s | %-8s | %-22s | %-18s%n", "STT", "Mã Đơn", "Khách Hàng", "Trạng Thái");
+        System.out.println("-".repeat(58));
+        for (int i = 0; i < dsChuaXong.size(); i++) {
+            Order o = dsChuaXong.get(i);
+            System.out.printf("%-4d | %-8s | %-22s | %-18s%n",
+                    (i + 1), o.getOrderId(), catChuoi(layTenKhach(o.getCustomerId()), 22),
+                    dichTrangThai(o.getOrderStatus()));
+        }
+
+        System.out.print("\nNhập STT đơn hoặc Mã đơn cần cập nhật (0 để hủy): ");
+        String nhap = sc.nextLine().trim();
+        if (nhap.equals("0") || nhap.isEmpty()) return;
+
+        String orderId = null;
+        try {
+            int stt = Integer.parseInt(nhap);
+            if (stt >= 1 && stt <= dsChuaXong.size()) {
+                orderId = dsChuaXong.get(stt - 1).getOrderId();
+            }
+        } catch (NumberFormatException ignored) {}
+
+        if (orderId == null) {
+            orderId = nhap.toUpperCase();
+        }
 
         if (!orderService.donTonTai(orderId)) {
-            System.out.println("❌ Không tìm thấy đơn!");
+            System.out.println("❌ Không tìm thấy đơn: " + orderId);
             return;
         }
 
