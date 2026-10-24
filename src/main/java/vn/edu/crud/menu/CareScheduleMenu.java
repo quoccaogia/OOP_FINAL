@@ -9,10 +9,10 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
 
-import vn.edu.crud.dao.CareScheduleDAO;
-import vn.edu.crud.dao.EmployeeDAO;
-import vn.edu.crud.dao.FlowerBatchDAO;
-import vn.edu.crud.dao.FlowerDAO;
+import vn.edu.crud.service.CareScheduleService;
+import vn.edu.crud.service.EmployeeService;
+import vn.edu.crud.service.FlowerBatchService;
+import vn.edu.crud.service.FlowerService;
 import vn.edu.crud.model.CareSchedule;
 import vn.edu.crud.model.Employee;
 import vn.edu.crud.model.EmployeeRole;
@@ -30,10 +30,10 @@ import vn.edu.crud.util.NhapLieu;
 public class CareScheduleMenu {
 
     private final Scanner sc = new Scanner(System.in);
-    private final CareScheduleDAO dao = new CareScheduleDAO();
-    private final FlowerDAO flowerDAO = new FlowerDAO();
-    private final FlowerBatchDAO batchDAO = new FlowerBatchDAO();
-    private final EmployeeDAO employeeDAO = new EmployeeDAO();
+    private final CareScheduleService careScheduleService = new CareScheduleService();
+    private final FlowerService flowerService = new FlowerService();
+    private final FlowerBatchService batchService = new FlowerBatchService();
+    private final EmployeeService employeeService = new EmployeeService();
 
     private static final DateTimeFormatter FMT = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
     private static final DateTimeFormatter FMT_NGAN = DateTimeFormatter.ofPattern("dd/MM HH:mm");
@@ -72,7 +72,7 @@ public class CareScheduleMenu {
             }
 
             switch (chon) {
-                case 1 -> inBangTrangThai(dao.trangThaiHienTai());
+                case 1 -> inBangTrangThai(careScheduleService.trangThaiHienTai());
                 case 2 -> capNhatTinhTrang();
                 case 3 -> suaGhiChu();
                 case 4 -> xoaBanGhi();
@@ -209,7 +209,7 @@ public class CareScheduleMenu {
     // 2. CẬP NHẬT TÌNH TRẠNG (sinh bản ghi mới)
     // =====================================================
     private void capNhatTinhTrang() {
-        List<Object[]> ds = dao.trangThaiHienTai();
+        List<Object[]> ds = careScheduleService.trangThaiHienTai();
         if (ds.isEmpty()) {
             System.out.println("Chưa có loài hoa nào.");
             return;
@@ -256,8 +256,8 @@ public class CareScheduleMenu {
         System.out.print("Ghi chú (Enter để bỏ trống, VD: Hoa hơi héo): ");
         String note = sc.nextLine().trim();
 
-        String id = dao.sinhMaCSMoi();
-        if (dao.insert(id, flowerId, empId, LocalDateTime.now(), fresh, water, action, note)) {
+        String id = careScheduleService.sinhMaCSMoi();
+        if (careScheduleService.insert(id, flowerId, empId, LocalDateTime.now(), fresh, water, action, note)) {
             System.out.println("✅ Đã ghi nhận " + id + " cho " + flowerId + " — " + fresh + " / " + water);
             if (!note.isEmpty()) {
                 System.out.println("📝 Ghi chú: " + note);
@@ -280,7 +280,7 @@ public class CareScheduleMenu {
 
         List<Object[]> banGhi;
         if (id.isEmpty()) {
-            List<Object[]> ds = dao.trangThaiHienTai();
+            List<Object[]> ds = careScheduleService.trangThaiHienTai();
             if (ds.isEmpty()) {
                 System.out.println("Chưa có loài hoa nào.");
                 return;
@@ -304,9 +304,9 @@ public class CareScheduleMenu {
                 return;
             }
             id = chuoi(r[4]);
-            banGhi = dao.findById(id);
+            banGhi = careScheduleService.findById(id);
         } else {
-            banGhi = dao.findById(id);
+            banGhi = careScheduleService.findById(id);
         }
 
         if (banGhi.isEmpty()) {
@@ -333,7 +333,7 @@ public class CareScheduleMenu {
             return;
         }
 
-        System.out.println(dao.capNhatGhiChu(id, note)
+        System.out.println(careScheduleService.capNhatGhiChu(id, note)
                 ? "✅ Đã cập nhật ghi chú."
                 : "❌ Cập nhật thất bại!");
     }
@@ -345,14 +345,14 @@ public class CareScheduleMenu {
         System.out.print("Mã chăm sóc cần xóa (VD: CS001): ");
         String id = sc.nextLine().trim().toUpperCase();
 
-        if (dao.findById(id).isEmpty()) {
+        if (careScheduleService.findById(id).isEmpty()) {
             System.out.println("❌ Không tìm thấy bản ghi " + id + "!");
             return;
         }
 
         System.out.print("Xác nhận xóa " + id + "? (y/n): ");
         if (sc.nextLine().equalsIgnoreCase("y")) {
-            System.out.println(dao.delete(id) ? "✅ Đã xóa." : "❌ Thất bại!");
+            System.out.println(careScheduleService.delete(id) ? "✅ Đã xóa." : "❌ Thất bại!");
         }
     }
 
@@ -360,7 +360,7 @@ public class CareScheduleMenu {
     // 5. CẦN CHĂM HÔM NAY
     // =====================================================
     private void canChamHomNay() {
-        List<Object[]> ds = dao.trangThaiHienTai();
+        List<Object[]> ds = careScheduleService.trangThaiHienTai();
         List<Object[]> can = new ArrayList<>();
         for (Object[] r : ds) {
             if (!nhanTrangThai(r).startsWith("✅")) {
@@ -387,7 +387,7 @@ public class CareScheduleMenu {
         if (flowerId == null)
             return;
 
-        List<CareSchedule> kq = dao.lichSuTheoHoaLambda(flowerId);
+        List<CareSchedule> kq = careScheduleService.lichSuTheoHoaLambda(flowerId);
 
         System.out.println("\n--- LỊCH SỬ CHĂM SÓC CỦA " + flowerId + " ---");
         inLichSu(kq);
@@ -399,7 +399,7 @@ public class CareScheduleMenu {
             return;
 
         
-        List<CareSchedule> kq = dao.lichSuTheoNhanVienLambda(empId);
+        List<CareSchedule> kq = careScheduleService.lichSuTheoNhanVienLambda(empId);
         System.out.println("\n--- LỊCH SỬ CHĂM SÓC CỦA " + empId + " ---");
         inLichSu(kq);
     }
@@ -408,7 +408,7 @@ public class CareScheduleMenu {
     // HÀM HỖ TRỢ
     // =====================================================
     private String chonNhanVien() {
-        List<Employee> ds = employeeDAO.findAll();
+        List<Employee> ds = employeeService.findAll();
         if (ds.isEmpty()) {
             System.out.println("❌ Chưa có nhân viên nào!");
             return null;
@@ -457,7 +457,7 @@ public class CareScheduleMenu {
     }
 
     private String chonLoaiHoa() {
-        List<Flower> list = flowerDAO.findAll();
+        List<Flower> list = flowerService.findAll();
         if (list.isEmpty()) {
             System.out.println("❌ Hệ thống chưa có loài hoa nào!");
             return null;
@@ -491,7 +491,7 @@ public class CareScheduleMenu {
 
     // Sau khi ghi nhận hoa hỏng: cho thanh lý luôn lô tương ứng (trừ tồn kho)
     private void thanhLyLoHoaHong(String flowerId) {
-        List<Object[]> dsLo = batchDAO.loAvailableCuaHoa(flowerId);
+        List<Object[]> dsLo = batchService.loAvailableCuaHoa(flowerId);
         if (dsLo.isEmpty()) {
             System.out.println("(Loài hoa này không còn lô AVAILABLE nào để thanh lý.)");
             return;
@@ -517,7 +517,7 @@ public class CareScheduleMenu {
         String batchId = (String) dsLo.get(chon - 1)[0];
         System.out.print("Xác nhận thanh lý lô " + batchId + "? (y/n): ");
         if (sc.nextLine().equalsIgnoreCase("y")) {
-            System.out.println(batchDAO.thanhLyLo(batchId)
+            System.out.println(batchService.thanhLyLo(batchId)
                     ? "✅ Đã thanh lý lô và trừ tồn kho tương ứng."
                     : "❌ Thanh lý thất bại!");
         }

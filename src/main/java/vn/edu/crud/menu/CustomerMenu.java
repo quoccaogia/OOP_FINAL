@@ -3,16 +3,16 @@ package vn.edu.crud.menu;
 import java.util.List;
 import java.util.Scanner;
 
-import vn.edu.crud.dao.CustomerDAO;
-import vn.edu.crud.dao.OrderDAO;
+import vn.edu.crud.service.CustomerService;
+import vn.edu.crud.service.OrderService;
 import vn.edu.crud.model.Customer;
 import vn.edu.crud.model.Order;
 import vn.edu.crud.util.NhapLieu;
 
 public class CustomerMenu {
     private final Scanner sc = new Scanner(System.in);
-    private final CustomerDAO dao = new CustomerDAO();
-    private final OrderDAO orderDAO = new OrderDAO();
+    private final CustomerService customerService = new CustomerService();
+    private final OrderService orderService = new OrderService();
 
     public void hienThi() {
         int chon;
@@ -37,13 +37,13 @@ public class CustomerMenu {
             catch (NumberFormatException e) { chon = -1; }
 
             switch (chon) {
-                case 1 -> inDanhSach(dao.findAll());
+                case 1 -> inDanhSach(customerService.findAll());
                 case 2 -> tiepDonKhachHang();
                 case 3 -> timKiemKhachHangLambda();
-                case 6 -> inBang(orderDAO.khachDaTungDatHang());
-                case 7 -> inBang(orderDAO.khachChuaTungDatHang());
-                case 8 -> inBang(orderDAO.khachNhieuDonNhat());
-                case 9 -> inBang(orderDAO.tongChiTieuTheoKhach());
+                case 6 -> inBang(orderService.khachDaTungDatHang());
+                case 7 -> inBang(orderService.khachChuaTungDatHang());
+                case 8 -> inBang(orderService.khachNhieuDonNhat());
+                case 9 -> inBang(orderService.tongChiTieuTheoKhach());
                 case 10 -> xemDonHangBangSdt();
                 case 0 -> {
                 }
@@ -58,9 +58,9 @@ public class CustomerMenu {
     private void tiepDonKhachHang() {
         System.out.println("\n--- TIẾP ĐÓN KHÁCH HÀNG ---");
         System.out.print("Nhập SĐT khách hàng (VD: 0901234567, có thể nhập một phần): ");
-        String sdt = dao.chuanHoaSdt(sc.nextLine());
+        String sdt = customerService.chuanHoaSdt(sc.nextLine());
 
-        List<Customer> ketQua = dao.timTheoSdt(sdt);
+        List<Customer> ketQua = customerService.timTheoSdt(sdt);
 
         if (ketQua.isEmpty()) {
             System.out.println("❌ Không tìm thấy khách hàng nào dùng SĐT này.");
@@ -87,9 +87,9 @@ public class CustomerMenu {
     private void xemDonHangBangSdt() {
         System.out.println("\n--- XEM ĐƠN HÀNG THEO SĐT ---");
         System.out.print("Nhập SĐT khách hàng (VD: 0901234567, có thể nhập một phần): ");
-        String sdt = dao.chuanHoaSdt(sc.nextLine());
+        String sdt = customerService.chuanHoaSdt(sc.nextLine());
 
-        List<Customer> ds = dao.timTheoSdt(sdt);
+        List<Customer> ds = customerService.timTheoSdt(sdt);
         if (ds.isEmpty()) {
             System.out.println("❌ Không tìm thấy khách hàng nào dùng SĐT này.");
             return;
@@ -99,7 +99,7 @@ public class CustomerMenu {
         System.out.println("✅ Khách hàng: " + khachChon.getName() + " (Mã: " + khachChon.getCustomerId() + ")");
         System.out.println("--- DANH SÁCH ĐƠN HÀNG ---");
 
-        List<Order> donHang = orderDAO.donCuaKhach(khachChon.getCustomerId());
+        List<Order> donHang = orderService.donCuaKhach(khachChon.getCustomerId());
         if (donHang.isEmpty()) {
             System.out.println("Khách hàng này chưa có đơn hàng nào.");
         } else {
@@ -116,7 +116,7 @@ public class CustomerMenu {
     // CÁC HÀM HỖ TRỢ
     // =====================================================
     private void themKhachMoi(String sdtDaNhap) {
-        String id = dao.sinhMaKhachMoi();
+        String id = customerService.sinhMaKhachMoi();
         System.out.println("Mã KH tự sinh: " + id);
 
         String sdt = sdtDaNhap;
@@ -128,7 +128,7 @@ public class CustomerMenu {
         String email = NhapLieu.email(sc, "Email", false);
 
         Customer kh = new Customer(id, ten, sdt, diaChi, email);
-        if (dao.insert(kh)) System.out.println("✅ Thêm khách hàng thành công!");
+        if (customerService.insert(kh)) System.out.println("✅ Thêm khách hàng thành công!");
     }
 
     private void suaKhach(Customer kh) {
@@ -152,7 +152,7 @@ public class CustomerMenu {
             System.out.println("⚠️ Email không hợp lệ, phải có dạng ten@domain.com.");
         }
 
-        if (dao.update(kh)) System.out.println("✅ Sửa thành công!");
+        if (customerService.update(kh)) System.out.println("✅ Sửa thành công!");
         else System.out.println("❌ Sửa thất bại!");
     }
 
@@ -177,8 +177,8 @@ public class CustomerMenu {
     System.out.print("Nhập từ khóa cần tìm (Tên hoặc Số điện thoại): ");
     String tuKhoa = sc.nextLine();
 
-    // Gọi hàm filterCustomersByLambda đã viết trong CustomerDAO
-    List<Customer> ketQua = dao.filterCustomersByLambda(tuKhoa);
+    // Gọi hàm filterCustomersByLambda đã viết trong CustomerService
+    List<Customer> ketQua = customerService.filterCustomersByLambda(tuKhoa);
 
     if (ketQua.isEmpty()) {
         System.out.println("❌ Không tìm thấy khách hàng nào khớp với từ khóa: \"" + tuKhoa + "\"");

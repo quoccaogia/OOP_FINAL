@@ -1,7 +1,7 @@
 package vn.edu.crud.menu;
 
-import vn.edu.crud.dao.OrderDAO;
-import vn.edu.crud.dao.PaymentDAO;
+import vn.edu.crud.service.OrderService;
+import vn.edu.crud.service.PaymentService;
 import vn.edu.crud.model.Payment;
 import vn.edu.crud.util.AnToan;
 
@@ -12,8 +12,8 @@ import java.util.Scanner;
 
 public class PaymentMenu {
     private final Scanner sc = new Scanner(System.in);
-    private final PaymentDAO dao = new PaymentDAO();
-    private final OrderDAO orderDAO = new OrderDAO();
+    private final PaymentService paymentService = new PaymentService();
+    private final OrderService orderService = new OrderService();
 
     public void hienThi() {
         int chon = -1;
@@ -68,7 +68,7 @@ public class PaymentMenu {
     // =====================================================
     private void xemTatCa() {
         try {
-            inBang(dao.tatCaThanhToan());
+            inBang(paymentService.tatCaThanhToan());
         } catch (Exception e) {
             AnToan.baoLoi(e, "không thể tải danh sách thanh toán từ cơ sở dữ liệu");
         }
@@ -116,7 +116,7 @@ public class PaymentMenu {
     // Lambda: các giao dịch theo một phương thức thanh toán
     private void inTheoPhuongThuc(String phuongThuc) {
         try {
-            List<Payment> kq = dao.theoPhuongThucLambda(phuongThuc);
+            List<Payment> kq = paymentService.theoPhuongThucLambda(phuongThuc);
 
             System.out.println("\n--- GIAO DỊCH PHƯƠNG THỨC " + phuongThuc + " ---");
             if (kq.isEmpty()) {
@@ -145,7 +145,7 @@ public class PaymentMenu {
 
             LocalDate homNay = LocalDate.now();
 
-            BigDecimal tong = dao.doanhThuHomNayLambda();
+            BigDecimal tong = paymentService.doanhThuHomNayLambda();
 
             System.out.println("\n--- DOANH THU HÔM NAY ---");
             System.out.println("Doanh thu hôm nay (" + homNay + "): " + tong + " VND");
@@ -166,7 +166,7 @@ public class PaymentMenu {
                 return;
             }
 
-            String maDon = dao.layMaDon(id);
+            String maDon = paymentService.layMaDon(id);
             if (maDon == null) {
                 System.out.println("❌ Không tìm thấy giao dịch có mã: " + id);
                 System.out.println(
@@ -174,14 +174,14 @@ public class PaymentMenu {
                 return;
             }
 
-            String trangThaiTT = dao.layTrangThaiThanhToan(id);
+            String trangThaiTT = paymentService.layTrangThaiThanhToan(id);
             if ("DA_HUY".equals(trangThaiTT) || "DA_HOAN_TIEN".equals(trangThaiTT)) {
                 System.out.println("⚠️ Giao dịch " + id + " đã ở trạng thái [" + trangThaiTT
                         + "] trước đó, không thể thực hiện lại!");
                 return;
             }
 
-            String trangThai = orderDAO.layTrangThaiDon(maDon);
+            String trangThai = orderService.layTrangThaiDon(maDon);
             if (trangThai == null) {
                 System.out.println("❌ Không đọc được trạng thái của đơn hàng " + maDon + "!");
                 return;
@@ -207,7 +207,7 @@ public class PaymentMenu {
                 System.out.print("Xác nhận hoàn tiền giao dịch " + id + "? (y/n, VD: y): ");
                 String xacNhan = sc.nextLine().trim();
                 if (xacNhan.equalsIgnoreCase("y")) {
-                    if (dao.hoanTien(id)) {
+                    if (paymentService.hoanTien(id)) {
                         System.out.println("✅ Đã hoàn tiền thành công cho giao dịch " + id + "!");
                     } else {
                         System.out.println("❌ Hoàn tiền thất bại!");
@@ -219,7 +219,7 @@ public class PaymentMenu {
                 System.out.print("Xác nhận hủy giao dịch " + id + "? (y/n, VD: y): ");
                 String xacNhan = sc.nextLine().trim();
                 if (xacNhan.equalsIgnoreCase("y")) {
-                    if (dao.xoaThanhToan(id)) {
+                    if (paymentService.xoaThanhToan(id)) {
                         System.out.println("✅ Đã hủy giao dịch " + id + " thành công!");
                     } else {
                         System.out.println("❌ Hủy giao dịch thất bại!");

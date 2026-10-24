@@ -1,7 +1,7 @@
 package vn.edu.crud.menu;
 
-import vn.edu.crud.dao.FlowerBatchDAO;
-import vn.edu.crud.dao.FlowerDAO;
+import vn.edu.crud.service.FlowerBatchService;
+import vn.edu.crud.service.FlowerService;
 
 import java.time.format.DateTimeFormatter;
 import java.util.List;
@@ -13,8 +13,8 @@ import java.time.temporal.ChronoUnit;
 
 public class FlowerBatchMenu {
     private final Scanner sc = new Scanner(System.in);
-    private final FlowerBatchDAO dao = new FlowerBatchDAO();
-    private final FlowerDAO flowerDAO = new FlowerDAO();
+    private final FlowerBatchService flowerBatchService = new FlowerBatchService();
+    private final FlowerService flowerService = new FlowerService();
 
     public void hienThi() {
         int chon;
@@ -42,7 +42,7 @@ public class FlowerBatchMenu {
 
             switch (chon) {
                 case 1:
-                    inDanhSach(dao.findAll());
+                    inDanhSach(flowerBatchService.findAll());
                     break;
                 case 2:
                     capNhatTrangThai();
@@ -102,7 +102,7 @@ public class FlowerBatchMenu {
     }
 
     private String chonLoHoa() {
-        List<Object[]> list = dao.findAll();
+        List<Object[]> list = flowerBatchService.findAll();
         if (list.isEmpty()) {
             System.out.println("❌ Hệ thống chưa có lô hoa nào!");
             return null;
@@ -162,7 +162,7 @@ public class FlowerBatchMenu {
                 return;
         }
 
-        if (dao.doiTrangThaiLo(id, status)) {
+        if (flowerBatchService.doiTrangThaiLo(id, status)) {
             System.out.println("✅ Cập nhật thành công! Tồn kho của hoa đã được cộng/trừ tương ứng.");
         } else {
             System.out.println("❌ Thất bại!");
@@ -179,7 +179,7 @@ public class FlowerBatchMenu {
         System.out.println("   và TRỪ số hoa đó khỏi tồn kho (không bán được nữa).");
         System.out.print("Bạn có chắc chắn muốn thanh lý lô hoa này? (y/n): ");
         if (sc.nextLine().equalsIgnoreCase("y")) {
-            if (dao.thanhLyLo(id)) {
+            if (flowerBatchService.thanhLyLo(id)) {
                 System.out.println("✅ Đã thanh lý lô hoa và trừ tồn kho tương ứng!");
             } else {
                 System.out.println("❌ Thất bại!");
@@ -197,7 +197,7 @@ public class FlowerBatchMenu {
         if (!sc.nextLine().equalsIgnoreCase("y"))
             return;
 
-        int soDong = flowerDAO.dongBoTonKhoTuLo();
+        int soDong = flowerService.dongBoTonKhoTuLo();
         System.out.println("✅ Đã đồng bộ " + soDong + " loại hoa theo lô.");
     }
 
@@ -222,7 +222,7 @@ public class FlowerBatchMenu {
     
     private void loNhapQua7Ngay() {
        
-        List<FlowerBatch> kq = dao.loNhapQua7NgayLambda();
+        List<FlowerBatch> kq = flowerBatchService.loNhapQua7NgayLambda();
 
         System.out.println("\n--- LÔ HOA NHẬP QUÁ 7 NGÀY ---");
         if (kq.isEmpty()) {
@@ -242,7 +242,7 @@ public class FlowerBatchMenu {
     
     private void loConHang() {
        
-        List<FlowerBatch> kq = dao.loConHangLambda();
+        List<FlowerBatch> kq = flowerBatchService.loConHangLambda();
 
         System.out.println("\n--- LÔ HOA CÒN HÀNG ---");
         if (kq.isEmpty()) {
@@ -266,7 +266,7 @@ public class FlowerBatchMenu {
         
         LocalDate homNay = LocalDate.now();
 
-        List<FlowerBatch> kq = dao.loSapHetHanLambda(soNgay);
+        List<FlowerBatch> kq = flowerBatchService.loSapHetHanLambda(soNgay);
 
         System.out.println("\n--- LÔ HOA SẮP HẾT HẠN (<= " + soNgay + " NGÀY) ---");
         if (kq.isEmpty()) {

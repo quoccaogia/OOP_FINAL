@@ -1,10 +1,10 @@
 package vn.edu.crud.menu;
 
-import vn.edu.crud.dao.EmployeeDAO;
-import vn.edu.crud.dao.FlowerBatchDAO;
-import vn.edu.crud.dao.FlowerDAO;
-import vn.edu.crud.dao.PurchaseOrderDAO;
-import vn.edu.crud.dao.SupplierDAO;
+import vn.edu.crud.service.EmployeeService;
+import vn.edu.crud.service.FlowerBatchService;
+import vn.edu.crud.service.FlowerService;
+import vn.edu.crud.service.PurchaseOrderService;
+import vn.edu.crud.service.SupplierService;
 import vn.edu.crud.model.Employee;
 import vn.edu.crud.model.Flower;
 import vn.edu.crud.model.Supplier;
@@ -22,11 +22,11 @@ import java.util.Map;
 
 public class PurchaseOrderMenu {
     private final Scanner sc = new Scanner(System.in);
-    private final PurchaseOrderDAO poDAO = new PurchaseOrderDAO();
-    private final FlowerBatchDAO batchDAO = new FlowerBatchDAO();
-    private final SupplierDAO supplierDAO = new SupplierDAO();
-    private final EmployeeDAO employeeDAO = new EmployeeDAO();
-    private final FlowerDAO flowerDAO = new FlowerDAO();
+    private final PurchaseOrderService purchaseOrderService = new PurchaseOrderService();
+    private final FlowerBatchService batchService = new FlowerBatchService();
+    private final SupplierService supplierService = new SupplierService();
+    private final EmployeeService employeeService = new EmployeeService();
+    private final FlowerService flowerService = new FlowerService();
 
     public void hienThi() {
         int chon;
@@ -58,7 +58,7 @@ public class PurchaseOrderMenu {
 
             switch (chon) {
                 case 1:
-                    inBang(poDAO.findAll());
+                    inBang(purchaseOrderService.findAll());
                     break;
                 case 2:
                     System.out.print("Nhập mã: ");
@@ -81,7 +81,7 @@ public class PurchaseOrderMenu {
                     phieuCuaNCC(sc.nextLine().trim().toUpperCase());
                     break;
                 case 8:
-                    inBang(poDAO.tatCaPhieuNhap());
+                    inBang(purchaseOrderService.tatCaPhieuNhap());
                     break;
                 case 9:
                     chotPhieuNhap();
@@ -96,11 +96,11 @@ public class PurchaseOrderMenu {
 
     private void taoPhieuNhapMoi() {
         System.out.println("\n--- TẠO PHIẾU NHẬP HÀNG MỚI ---");
-        String poId = poDAO.sinhMaPNMoi();
+        String poId = purchaseOrderService.sinhMaPNMoi();
         System.out.println("Mã Phiếu Nhập tự sinh: " + poId);
 
         // 1. Chọn Nhà Cung Cấp
-        List<Supplier> dsNCC = supplierDAO.findAll();
+        List<Supplier> dsNCC = supplierService.findAll();
         if (dsNCC.isEmpty()) {
             System.out.println("❌ Chưa có NCC nào!");
             return;
@@ -125,7 +125,7 @@ public class PurchaseOrderMenu {
         }
 
         // 2. Chọn Nhân Viên Nhập Hàng
-        List<Employee> dsNV = employeeDAO.findAll();
+        List<Employee> dsNV = employeeService.findAll();
         if (dsNV.isEmpty()) {
             System.out.println("❌ Chưa có Nhân viên nào!");
             return;
@@ -151,13 +151,13 @@ public class PurchaseOrderMenu {
 
         // 3. Tạo Phiếu Nhập Gốc
         Timestamp now = new Timestamp(System.currentTimeMillis());
-        poDAO.insert(poId, supId, empId, now.toLocalDateTime(), BigDecimal.ZERO, "CHO_XU_LY", "Nhập hàng");
+        purchaseOrderService.insert(poId, supId, empId, now.toLocalDateTime(), BigDecimal.ZERO, "CHO_XU_LY", "Nhập hàng");
         System.out.println("✅ Đã tạo Phiếu Nhập gốc. Bắt đầu nhập hoa...");
 
         // 4. Vòng lặp nhập Hoa & Tự động sinh Lô Hoa
         BigDecimal tongTienPhieu = BigDecimal.ZERO;
         while (true) {
-            List<Flower> dsHoa = flowerDAO.findAll();
+            List<Flower> dsHoa = flowerService.findAll();
             System.out.println("\n--- CHỌN LOẠI HOA NHẬP ---");
             for (int i = 0; i < dsHoa.size(); i++) {
                 System.out.printf("  %d. %-20s (Mã: %s)\n", (i + 1), dsHoa.get(i).getName(),
@@ -179,7 +179,7 @@ public class PurchaseOrderMenu {
                 flowerId = themHoaMoiTuDong(supId);
                 if (flowerId == null)
                     continue;
-                hoaChon = flowerDAO.timTheoMa(flowerId);
+                hoaChon = flowerService.timTheoMa(flowerId);
             } else {
                 try {
                     int chon = Integer.parseInt(choiceHoa);
@@ -222,15 +222,15 @@ public class PurchaseOrderMenu {
             LocalDateTime importDate = LocalDateTime.now();
             LocalDate expiryDate = importDate.toLocalDate().plusDays(7);
 
-            String batchId = batchDAO.sinhMaLoMoi();
-            boolean luuLo = batchDAO.insert(batchId, poId, flowerId, imported, imported, cost, importDate, expiryDate,
+            String batchId = batchService.sinhMaLoMoi();
+            boolean luuLo = batchService.insert(batchId, poId, flowerId, imported, imported, cost, importDate, expiryDate,
                     "AVAILABLE", "Tự động sinh từ PN " + poId);
 
             if (luuLo) {
                 System.out.println("✅ Đã sinh Lô Hoa " + batchId + " (Hạn SD: " + expiryDate + ")");
 
                 // === ĐIỂM SỬA ĐỔI QUAN TRỌNG: CỘNG TỒN KHO VÀO BẢNG FLOWER ===
-                flowerDAO.congTonKho(flowerId, imported);
+                flowerService.congTonKho(flowerId, imported);
                 // =========================================================
 
                 tongTienPhieu = tongTienPhieu.add(cost.multiply(BigDecimal.valueOf(imported)));
@@ -241,18 +241,18 @@ public class PurchaseOrderMenu {
 
         // 5. Chưa nhập được lô nào -> phiếu rỗng, hủy luôn thay vì để HOAN_THANH 0 đồng
         if (tongTienPhieu.compareTo(BigDecimal.ZERO) <= 0) {
-            poDAO.delete(poId);
+            purchaseOrderService.delete(poId);
             System.out.println("\n⚠️ Chưa nhập loại hoa nào — phiếu nhập rỗng đã được hủy (không tạo phiếu 0 đồng).");
             return;
         }
 
         // 6. Cập nhật lại tổng tiền cho Phiếu Nhập
-        poDAO.update(poId, tongTienPhieu, "HOAN_THANH", "Nhập hàng thành công");
+        purchaseOrderService.update(poId, tongTienPhieu, "HOAN_THANH", "Nhập hàng thành công");
         System.out.println("\n🎉 TẠO PHIẾU NHẬP THÀNH CÔNG! Tổng tiền: " + tongTienPhieu + " VNĐ");
     }
 
     private String themHoaMoiTuDong(String supplierId) {
-        String newId = flowerDAO.sinhMaHoaMoi();
+        String newId = flowerService.sinhMaHoaMoi();
         System.out.println("\n--- THÊM LOẠI HOA MỚI ---");
         System.out.println("Mã hoa tự sinh: " + newId);
 
@@ -262,7 +262,7 @@ public class PurchaseOrderMenu {
         String color = NhapLieu.batBuoc(sc, "Màu sắc", "VD: Đỏ, Trắng");
 
         // Tồn kho ban đầu = 0
-        boolean ok = flowerDAO.insert(newId, name, category, price, 0, color, supplierId);
+        boolean ok = flowerService.insert(newId, name, category, price, 0, color, supplierId);
 
         if (ok) {
             System.out.println("✅ Đã thêm loại hoa mới vào hệ thống!");
@@ -276,7 +276,7 @@ public class PurchaseOrderMenu {
     private void suaPN() {
         System.out.print("Mã phiếu nhập cần sửa (VD: PN001): ");
         String id = sc.nextLine().trim().toUpperCase();
-        List<Object[]> cu = poDAO.findById(id);
+        List<Object[]> cu = purchaseOrderService.findById(id);
         if (cu.isEmpty()) {
             System.out.println("❌ Không tìm thấy!");
             return;
@@ -304,19 +304,19 @@ public class PurchaseOrderMenu {
         if (note.isEmpty())
             note = noteCu;
 
-        System.out.println(poDAO.update(id, total, status, note) ? "✅ Sửa thành công!" : "❌ Thất bại!");
+        System.out.println(purchaseOrderService.update(id, total, status, note) ? "✅ Sửa thành công!" : "❌ Thất bại!");
     }
 
     private void xoaPN() {
         System.out.print("Mã phiếu nhập cần xóa (VD: PN001): ");
         String id = sc.nextLine().trim().toUpperCase();
 
-        if (poDAO.findById(id).isEmpty()) {
+        if (purchaseOrderService.findById(id).isEmpty()) {
             System.out.println("❌ Không tìm thấy phiếu nhập " + id + "!");
             return;
         }
 
-        int soLo = poDAO.demLoCuaPhieu(id);
+        int soLo = purchaseOrderService.demLoCuaPhieu(id);
         if (soLo > 0) {
             System.out.println("❌ KHÔNG THỂ XÓA! Phiếu đã sinh " + soLo + " lô hoa (xóa sẽ mất dữ liệu nhập).");
             System.out.println("👉 Nếu phiếu bị dở dang, dùng [9] Chốt phiếu nhập dở dang.");
@@ -325,13 +325,13 @@ public class PurchaseOrderMenu {
 
         System.out.print("Xác nhận (y/n): ");
         if (sc.nextLine().equalsIgnoreCase("y")) {
-            System.out.println(poDAO.delete(id) ? "✅ Đã xóa!" : "❌ Thất bại!");
+            System.out.println(purchaseOrderService.delete(id) ? "✅ Đã xóa!" : "❌ Thất bại!");
         }
     }
 
     // Chốt các phiếu nhập bị treo ở CHO_XU_LY (nhập dở / app bị ngắt giữa chừng)
     private void chotPhieuNhap() {
-        List<Object[]> ds = poDAO.phieuChoXuLy();
+        List<Object[]> ds = purchaseOrderService.phieuChoXuLy();
         if (ds.isEmpty()) {
             System.out.println("✅ Không có phiếu nhập nào dở dang.");
             return;
@@ -363,7 +363,7 @@ public class PurchaseOrderMenu {
         }
 
         String poId = ds.get(chon - 1)[0].toString();
-        int soLo = poDAO.demLoCuaPhieu(poId);
+        int soLo = purchaseOrderService.demLoCuaPhieu(poId);
         if (soLo == 0) {
             System.out.println("❌ Phiếu " + poId + " chưa có lô nào — không có gì để chốt.");
             System.out.println("👉 Dùng [5] Xóa để bỏ phiếu rỗng này.");
@@ -373,7 +373,7 @@ public class PurchaseOrderMenu {
         System.out.println("Phiếu " + poId + " có " + soLo + " lô. Tổng tiền sẽ được tính lại từ các lô.");
         System.out.print("Xác nhận chốt phiếu " + poId + "? (y/n): ");
         if (sc.nextLine().equalsIgnoreCase("y")) {
-            System.out.println(poDAO.chotPhieu(poId)
+            System.out.println(purchaseOrderService.chotPhieu(poId)
                     ? "✅ Đã chốt phiếu nhập (trạng thái HOAN_THANH, tổng tiền tính theo lô)."
                     : "❌ Chốt thất bại!");
         }
@@ -395,19 +395,19 @@ public class PurchaseOrderMenu {
 
     
     private void timPhieuTheoMa(String maPN) {
-        List<PurchaseOrder> kq = poDAO.timPhieuTheoMaLambda(maPN);
+        List<PurchaseOrder> kq = purchaseOrderService.timPhieuTheoMaLambda(maPN);
         inDanhSachPhieu(kq);
     }
 
     
     private void phieuCuaNCC(String maNCC) {
-        List<PurchaseOrder> kq = poDAO.phieuCuaNCCLambda(maNCC);
+        List<PurchaseOrder> kq = purchaseOrderService.phieuCuaNCCLambda(maNCC);
         inDanhSachPhieu(kq);
     }
 
     
     private void tongNhapTheoNCC() {
-        Map<String, BigDecimal> tong = poDAO.tongNhapTheoNCCLambda();
+        Map<String, BigDecimal> tong = purchaseOrderService.tongNhapTheoNCCLambda();
 
         System.out.println("\n--- TỔNG TIỀN NHẬP THEO NHÀ CUNG CẤP ---");
         if (tong.isEmpty()) {

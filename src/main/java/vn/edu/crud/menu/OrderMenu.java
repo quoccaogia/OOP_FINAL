@@ -1,11 +1,6 @@
 package vn.edu.crud.menu;
 
-import vn.edu.crud.dao.CustomerDAO;
-import vn.edu.crud.dao.EmployeeDAO;
-import vn.edu.crud.dao.FlowerBatchDAO;
-import vn.edu.crud.dao.FlowerDAO;
-import vn.edu.crud.dao.OrderDAO;
-import vn.edu.crud.dao.PaymentDAO;
+import vn.edu.crud.service.*;
 import vn.edu.crud.model.Customer;
 import vn.edu.crud.model.Employee;
 import vn.edu.crud.model.Flower;
@@ -27,12 +22,12 @@ import java.util.Scanner;
 public class OrderMenu {
 
     private final Scanner sc = new Scanner(System.in);
-    private final OrderDAO orderDAO = new OrderDAO();
-    private final PaymentDAO paymentDAO = new PaymentDAO();
-    private final CustomerDAO customerDAO = new CustomerDAO();
-    private final EmployeeDAO employeeDAO = new EmployeeDAO();
-    private final FlowerDAO flowerDAO = new FlowerDAO();
-    private final FlowerBatchDAO batchDAO = new FlowerBatchDAO();
+    private final OrderService orderService = new OrderService();
+    private final PaymentService paymentService = new PaymentService();
+    private final CustomerService customerService = new CustomerService();
+    private final EmployeeService employeeService = new EmployeeService();
+    private final FlowerService flowerService = new FlowerService();
+    private final FlowerBatchService batchService = new FlowerBatchService();
 
     private static final DateTimeFormatter FMT = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
     private final NumberFormat VND = NumberFormat.getCurrencyInstance(new Locale("vi", "VN"));
@@ -82,18 +77,18 @@ public class OrderMenu {
                     case 5: xoaChiTiet(); break;
                     case 6: xoaDon(); break;
                     case 7: xemChiTietDon(); break;
-                    case 8: inBang(orderDAO.donHangGiaCao(new BigDecimal("500000"))); break;
+                    case 8: inBang(orderService.donHangGiaCao(new BigDecimal("500000"))); break;
                     // Lambda: lọc đơn chưa giao hôm nay
-                    case 9: inDsDon(orderDAO.donChuaGiaoHomNayLambda()); break;
-                    case 10: System.out.println("Doanh thu hôm nay: " + orderDAO.doanhThuHomNay() + " VND"); break;
+                    case 9: inDsDon(orderService.donChuaGiaoHomNayLambda()); break;
+                    case 10: System.out.println("Doanh thu hôm nay: " + orderService.doanhThuHomNay() + " VND"); break;
                     case 11: xemDonCuaKhach(); break;
-                    case 12: inBang(orderDAO.thongKeDonTheoTrangThai()); break;
-                    case 13: inBang(orderDAO.donCoNhieuLoaiHoa(3)); break;
-                    case 14: inBang(orderDAO.khachDaTungDatHang()); break;
-                    case 15: inBang(orderDAO.khachChuaTungDatHang()); break;
-                    case 16: inBang(orderDAO.khachNhieuDonNhat()); break;
-                    case 17: inBang(orderDAO.nhanVienNhieuDonNhat()); break;
-                    case 18: inBang(orderDAO.tongChiTieuTheoKhach()); break;
+                    case 12: inBang(orderService.thongKeDonTheoTrangThai()); break;
+                    case 13: inBang(orderService.donCoNhieuLoaiHoa(3)); break;
+                    case 14: inBang(orderService.khachDaTungDatHang()); break;
+                    case 15: inBang(orderService.khachChuaTungDatHang()); break;
+                    case 16: inBang(orderService.khachNhieuDonNhat()); break;
+                    case 17: inBang(orderService.nhanVienNhieuDonNhat()); break;
+                    case 18: inBang(orderService.tongChiTieuTheoKhach()); break;
                     case 19: suaThongTinDon(); break;
                     case 20: timKiemDonHangLambda(); break;
                     case 21: locDonTheoTrangThaiLambda(); break;
@@ -153,14 +148,14 @@ public class OrderMenu {
             System.out.println("\n--- TẠO ĐƠN HÀNG MỚI ---");
 
             Order o = new Order();
-            o.setOrderId(orderDAO.sinhMaDonMoi());
+            o.setOrderId(orderService.sinhMaDonMoi());
             System.out.println("Mã đơn tự sinh: " + o.getOrderId());
 
             System.out.println("(Bấm Enter nếu là khách mới, chưa có SĐT)");
             String sdt = NhapLieu.sdtKhach(sc, "SĐT khách hàng", false);
 
             if (!sdt.isEmpty()) {
-                List<Customer> dsKH = customerDAO.timTheoSdt(sdt);
+                List<Customer> dsKH = customerService.timTheoSdt(sdt);
                 if (dsKH.isEmpty()) {
                     System.out.println("❌ Không tìm thấy khách hàng nào dùng SĐT: " + sdt);
                     System.out.print("👉 Tạo khách hàng mới với SĐT này? (y/n): ");
@@ -184,7 +179,7 @@ public class OrderMenu {
                 return;
             }
 
-            List<Employee> dsNV = employeeDAO.findAll();
+            List<Employee> dsNV = employeeService.findAll();
             if (dsNV.isEmpty()) {
                 System.out.println("❌ Hệ thống chưa có nhân viên nào!");
                 return;
@@ -250,7 +245,7 @@ public class OrderMenu {
             o.setOrderStatus("DANG_CHUAN_BI");
 
             System.out.println("\n>>> Đang tạo đơn...");
-            if (orderDAO.taoDonHang(o)) {
+            if (orderService.taoDonHang(o)) {
                 System.out.println("✅ Tạo đơn thành công! Mã đơn: " + o.getOrderId());
                 System.out.println("👉 Hãy vào chức năng [2] để thêm hoa vào đơn.");
             } else {
@@ -268,7 +263,7 @@ public class OrderMenu {
         try {
             System.out.println("\n--- THÊM HOA VÀO ĐƠN ---");
 
-            List<Order> dsDon = orderDAO.findAll();
+            List<Order> dsDon = orderService.findAll();
 
             if (dsDon.isEmpty()) {
                 System.out.println("⚠️ Chưa có đơn hàng nào!");
@@ -322,9 +317,9 @@ public class OrderMenu {
 
             // Đã thu tiền (cọc/tạm ứng) thì khóa chi tiết đơn: thêm hoa sẽ làm
             // tiền cọc không còn đủ 20% và tổng tiền lệch với số đã thu.
-            if (paymentDAO.tinhDaTra(orderId).compareTo(BigDecimal.ZERO) > 0) {
+            if (paymentService.tinhDaTra(orderId).compareTo(BigDecimal.ZERO) > 0) {
                 System.out.println("\n❌ TỪ CHỐI THÊM HOA!");
-                System.out.println("👉 Đơn đã thu " + paymentDAO.tinhDaTra(orderId)
+                System.out.println("👉 Đơn đã thu " + paymentService.tinhDaTra(orderId)
                         + " VND nên không thể thêm/sửa hoa.");
                 System.out.println("👉 Nếu cần sửa: vào Thanh toán → [4] Hủy giao dịch để hoàn khoản đã thu trước.");
                 return;
@@ -336,7 +331,7 @@ public class OrderMenu {
             while (true) {
                 List<Flower> dsHoa = new ArrayList<>();
                 int soHoaChuaCoGia = 0;
-                for (Flower f : flowerDAO.findAll()) {
+                for (Flower f : flowerService.findAll()) {
                     if (f.getStockQuantity() <= 0) continue;
                     // Hoa chưa có giá bán (> 0) thì không bán được: đơn sẽ có tổng 0 đồng,
                     // mà đơn 0 đồng thì không thể thanh toán / không thể hoàn thành.
@@ -402,16 +397,16 @@ public class OrderMenu {
                 if (quantity <= 0) continue;
 
                 String flowerId = hoaChon.getFlowerId();
-                boolean ok = orderDAO.hoaDaCoTrongDon(orderId, flowerId)
-                        ? orderDAO.congThemSoLuong(orderId, flowerId, quantity)
-                        : orderDAO.themChiTiet(orderId, flowerId, quantity, hoaChon.getUnitPrice());
+                boolean ok = orderService.hoaDaCoTrongDon(orderId, flowerId)
+                        ? orderService.congThemSoLuong(orderId, flowerId, quantity)
+                        : orderService.themChiTiet(orderId, flowerId, quantity, hoaChon.getUnitPrice());
 
                 if (ok) {
                     // Trừ lô trước (FEFO: lô hạn gần nhất trừ trước), rồi trừ tồn kho.
-                    int daTruTheoLo = batchDAO.xuatKho(flowerId, quantity);
-                    orderDAO.truSoLuong(flowerId, quantity);
+                    int daTruTheoLo = batchService.xuatKho(flowerId, quantity);
+                    orderService.truSoLuong(flowerId, quantity);
                     System.out.println("✅ Đã thêm " + hoaChon.getName() + " x" + quantity + " vào đơn!");
-                    if (daTruTheoLo < quantity && batchDAO.coLo(flowerId)) {
+                    if (daTruTheoLo < quantity && batchService.coLo(flowerId)) {
                         System.out.println("⚠️ Tồn kho và lô đang lệch (chỉ trừ được " + daTruTheoLo + "/"
                                 + quantity + " bông từ lô). Vào Lô hoa → [6] Đồng bộ tồn kho để sửa.");
                     }
@@ -434,7 +429,7 @@ public class OrderMenu {
         try {
             System.out.println("\n--- THANH TOÁN ĐƠN HÀNG ---");
 
-            List<Object[]> dsChuaTT = paymentDAO.layDanhSachDonChuaThanhToan();
+            List<Object[]> dsChuaTT = paymentService.layDanhSachDonChuaThanhToan();
 
             if (dsChuaTT.isEmpty()) {
                 System.out.println("✅ Tuyệt vời! Hiện tại không có đơn hàng nào nợ tiền.");
@@ -464,10 +459,10 @@ public class OrderMenu {
 
             String orderId = dsChuaTT.get(chon - 1)[0].toString();
 
-            BigDecimal tongTien = paymentDAO.tinhTongTienDon(orderId);
-            BigDecimal daTra = paymentDAO.tinhDaTra(orderId);
+            BigDecimal tongTien = paymentService.tinhTongTienDon(orderId);
+            BigDecimal daTra = paymentService.tinhDaTra(orderId);
             BigDecimal conLai = tongTien.subtract(daTra);
-            BigDecimal tienCoc = paymentDAO.tinhTienCoc(orderId);
+            BigDecimal tienCoc = paymentService.tinhTienCoc(orderId);
 
             System.out.println("\n--- CHI TIẾT THANH TOÁN ĐƠN " + orderId + " ---");
             System.out.println("Tổng tiền đơn: " + tongTien + " VND");
@@ -537,14 +532,14 @@ public class OrderMenu {
             }
 
             Payment p = new Payment();
-            p.setPaymentId(paymentDAO.sinhMaThanhToan());
+            p.setPaymentId(paymentService.sinhMaThanhToan());
             p.setOrderId(orderId);
             p.setAmount(amount);
             p.setPaymentMethod(method);
             p.setPaymentDate(LocalDateTime.now());
             p.setPaymentStatus("THANH_TOAN_THANH_CONG");
 
-            if (paymentDAO.taoThanhToan(p)) {
+            if (paymentService.taoThanhToan(p)) {
                 BigDecimal daTraSau = daTra.add(amount);
                 System.out.println("✅ Thanh toán thành công! Mã GD: " + p.getPaymentId());
                 System.out.println("Đã trả: " + daTraSau + " / " + tongTien + " VND - "
@@ -591,13 +586,13 @@ public class OrderMenu {
         System.out.print("Nhập Mã đơn cần cập nhật (VD: ORD001): ");
         String orderId = sc.nextLine().toUpperCase();
 
-        if (!orderDAO.donTonTai(orderId)) {
+        if (!orderService.donTonTai(orderId)) {
             System.out.println("❌ Không tìm thấy đơn!");
             return;
         }
 
         inThongTinDon(orderId);
-        String hienTai = orderDAO.layTrangThaiDon(orderId);
+        String hienTai = orderService.layTrangThaiDon(orderId);
         System.out.println("  Trạng thái: " + dichTrangThai(hienTai));
 
         List<String> dsTiep = trangThaiTiepTheo(hienTai);
@@ -631,7 +626,7 @@ public class OrderMenu {
             }
 
             // Đơn phải có ít nhất 1 mặt hàng mới được chuyển sang giao hàng / hoàn thành.
-            if (orderDAO.demSoMatHang(orderId) == 0) {
+            if (orderService.demSoMatHang(orderId) == 0) {
                 System.out.println("❌ KHÔNG THỂ CHUYỂN TRẠNG THÁI: đơn hàng chưa có loại hoa nào.");
                 System.out.println("👉 Vào chức năng [2] Thêm hoa vào đơn rồi thử lại (hoặc hủy đơn).");
                 return;
@@ -639,8 +634,8 @@ public class OrderMenu {
 
             // Muốn giao hàng thì phải thu ít nhất tiền cọc (20%)
             if ("DANG_GIAO".equals(trangThaiMoi)) {
-                BigDecimal daTra = paymentDAO.tinhDaTra(orderId);
-                BigDecimal tienCoc = paymentDAO.tinhTienCoc(orderId);
+                BigDecimal daTra = paymentService.tinhDaTra(orderId);
+                BigDecimal tienCoc = paymentService.tinhTienCoc(orderId);
                 if (daTra.compareTo(tienCoc) < 0) {
                     System.out.println("❌ CHƯA THU ĐỦ TIỀN CỌC, KHÔNG THỂ GIAO HÀNG!");
                     System.out.println("👉 Cần cọc " + tienCoc + " VND (20% đơn), mới thu: " + daTra + " VND.");
@@ -650,10 +645,10 @@ public class OrderMenu {
             }
 
             if ("HOAN_THANH".equals(trangThaiMoi)) {
-                BigDecimal tongTien = paymentDAO.tinhTongTienDon(orderId);
-                BigDecimal daTra = paymentDAO.tinhDaTra(orderId);
+                BigDecimal tongTien = paymentService.tinhTongTienDon(orderId);
+                BigDecimal daTra = paymentService.tinhDaTra(orderId);
 
-                if (!orderDAO.donDaCoThanhToan(orderId)) {
+                if (!orderService.donDaCoThanhToan(orderId)) {
                     System.out.println("❌ KHÔNG THỂ HOÀN THÀNH ĐƠN HÀNG!");
                     System.out.println("👉 Đơn chưa có giao dịch thanh toán nào thành công.");
                     return;
@@ -667,7 +662,7 @@ public class OrderMenu {
                 }
             }
 
-            if (orderDAO.capNhatTrangThai(orderId, trangThaiMoi)) {
+            if (orderService.capNhatTrangThai(orderId, trangThaiMoi)) {
                 System.out.println("✅ Cập nhật thành công sang: " + dichTrangThai(trangThaiMoi));
             }
         } catch (Exception e) {
@@ -677,7 +672,7 @@ public class OrderMenu {
 
     // In nhanh thông tin đơn (khách, nhân viên, ngày giao, tiền) để tránh nhầm khi nhập mã
     private void inThongTinDon(String orderId) {
-        List<Object[]> tt = orderDAO.thongTinDayDuDonHang(orderId);
+        List<Object[]> tt = orderService.thongTinDayDuDonHang(orderId);
         if (tt.isEmpty()) return;
 
         Object[] o = tt.get(0);
@@ -687,8 +682,8 @@ public class OrderMenu {
         System.out.println("  Khách hàng: " + o[1] + " (SĐT: " + o[2] + ")");
         System.out.println("  Nhân viên : " + o[3]);
         System.out.println("  Ngày giao : " + ngayGiao);
-        System.out.println("  Tiền      : " + VND.format(paymentDAO.tinhTongTienDon(orderId))
-                + " / đã trả " + VND.format(paymentDAO.tinhDaTra(orderId)));
+        System.out.println("  Tiền      : " + VND.format(paymentService.tinhTongTienDon(orderId))
+                + " / đã trả " + VND.format(paymentService.tinhDaTra(orderId)));
     }
 
     private void huyDon(String orderId) {
@@ -700,8 +695,8 @@ public class OrderMenu {
     }
 
     private void huyDonImpl(String orderId) {
-        BigDecimal tongTien = paymentDAO.tinhTongTienDon(orderId);
-        BigDecimal daTra = paymentDAO.tinhDaTra(orderId);
+        BigDecimal tongTien = paymentService.tinhTongTienDon(orderId);
+        BigDecimal daTra = paymentService.tinhDaTra(orderId);
 
         // Đơn đã trả HẾT thì không cho hủy trực tiếp nữa.
         // Muốn hủy phải hoàn khoản đã thu trước (menu Thanh toán -> Hủy giao dịch),
@@ -723,8 +718,8 @@ public class OrderMenu {
         System.out.print("Xác nhận hủy đơn " + orderId + " (y/n): ");
         if (!sc.nextLine().equalsIgnoreCase("y")) return;
 
-        List<Object[]> dsHoa = orderDAO.layHoaTrongDon(orderId);
-        if (orderDAO.capNhatTrangThai(orderId, "DA_HUY")) {
+        List<Object[]> dsHoa = orderService.layHoaTrongDon(orderId);
+        if (orderService.capNhatTrangThai(orderId, "DA_HUY")) {
             for (Object[] dong : dsHoa) {
                 String maHoa = (String) dong[0];
                 int soLuong = (Integer) dong[1];
@@ -750,8 +745,8 @@ public class OrderMenu {
     }
 
     private void giaoThatBaiImpl(String orderId) {
-        BigDecimal daTra = paymentDAO.tinhDaTra(orderId);
-        List<Object[]> dsHoa = orderDAO.layHoaTrongDon(orderId);
+        BigDecimal daTra = paymentService.tinhDaTra(orderId);
+        List<Object[]> dsHoa = orderService.layHoaTrongDon(orderId);
 
         System.out.println("\n--- GIAO HÀNG THẤT BẠI ---");
         System.out.println("Sẽ trả " + dsHoa.size() + " loại hoa trong đơn về kho.");
@@ -791,7 +786,7 @@ public class OrderMenu {
         }
 
         // 1. Hoàn tiền (nếu chọn hoàn): đánh dấu giao dịch đã thu sang DA_HOAN_TIEN
-        if (hoanTien && !paymentDAO.hoanTienToanBo(orderId)) {
+        if (hoanTien && !paymentService.hoanTienToanBo(orderId)) {
             System.out.println("❌ Hoàn tiền thất bại — chưa thay đổi trạng thái đơn.");
             return;
         }
@@ -804,7 +799,7 @@ public class OrderMenu {
         }
 
         // 3. Chốt trạng thái
-        if (orderDAO.capNhatTrangThai(orderId, "GIAO_THAT_BAI")) {
+        if (orderService.capNhatTrangThai(orderId, "GIAO_THAT_BAI")) {
             System.out.println("✅ Đã ghi nhận GIAO THẤT BẠI cho đơn " + orderId + ".");
             if (hoanTien) {
                 System.out.println("💰 Đã hoàn " + daTra + " VND cho khách (giao dịch chuyển sang DA_HOAN_TIEN).");
@@ -833,12 +828,12 @@ public class OrderMenu {
         System.out.print("Nhập Mã đơn cần xem (VD: ORD001): ");
         String orderId = sc.nextLine().toUpperCase();
 
-        if (!orderDAO.donTonTai(orderId)) {
+        if (!orderService.donTonTai(orderId)) {
             System.out.println("❌ Không tìm thấy đơn hàng!");
             return;
         }
 
-        List<Object[]> thongTin = orderDAO.thongTinDayDuDonHang(orderId);
+        List<Object[]> thongTin = orderService.thongTinDayDuDonHang(orderId);
         if (!thongTin.isEmpty()) {
             Object[] o = thongTin.get(0);
             System.out.println("\n--- THÔNG TIN ĐƠN HÀNG " + orderId + " ---");
@@ -849,16 +844,16 @@ public class OrderMenu {
             System.out.println("Địa chỉ    : " + o[6]);
             System.out.println("Trạng thái : " + dichTrangThai(o[7].toString()));
 
-            BigDecimal tongTien = paymentDAO.tinhTongTienDon(orderId);
-            BigDecimal daTra = paymentDAO.tinhDaTra(orderId);
-            BigDecimal daHoan = paymentDAO.tinhDaHoanTien(orderId);
+            BigDecimal tongTien = paymentService.tinhTongTienDon(orderId);
+            BigDecimal daTra = paymentService.tinhDaTra(orderId);
+            BigDecimal daHoan = paymentService.tinhDaHoanTien(orderId);
             System.out.println("Thanh toán : " + daTra + " / " + tongTien + " VND - "
                     + dichTrangThaiThanhToan(tongTien, daTra)
                     + (daHoan.compareTo(BigDecimal.ZERO) > 0 ? " (đã hoàn " + daHoan + " VND)" : ""));
         }
 
         System.out.println("\n--- CHI TIẾT CÁC MẶT HÀNG ---");
-        List<Object[]> chiTiet = orderDAO.chiTietDonHang(orderId);
+        List<Object[]> chiTiet = orderService.chiTietDonHang(orderId);
         if (chiTiet.isEmpty()) {
             System.out.println("(Chưa có mặt hàng nào)");
         } else {
@@ -874,17 +869,17 @@ public class OrderMenu {
         try {
             System.out.print("Mã đơn (VD: ORD001): ");
             String orderId = sc.nextLine().trim();
-            if (!orderDAO.donTonTai(orderId)) {
+            if (!orderService.donTonTai(orderId)) {
                 System.out.println("❌ Đơn không tồn tại!");
                 return;
             }
             inThongTinDon(orderId);
-            if (orderDAO.donDaCoThanhToan(orderId)) {
+            if (orderService.donDaCoThanhToan(orderId)) {
                 System.out.println("❌ Đơn đã thanh toán, không thể xóa!");
                 return;
             }
 
-            String trangThai = orderDAO.layTrangThaiDon(orderId);
+            String trangThai = orderService.layTrangThaiDon(orderId);
             boolean chuaGiao = "DANG_CHUAN_BI".equals(trangThai)
                     || "CHO_XU_LY".equals(trangThai)
                     || "CHO_XAC_NHAN".equals(trangThai);
@@ -895,15 +890,15 @@ public class OrderMenu {
             }
             System.out.print("Mã hoa cần xóa (VD: FL01): ");
             String flowerId = sc.nextLine().trim();
-            if (!orderDAO.hoaDaCoTrongDon(orderId, flowerId)) {
+            if (!orderService.hoaDaCoTrongDon(orderId, flowerId)) {
                 System.out.println("⚠️ Hoa này không có trong đơn!");
                 return;
             }
 
             System.out.print("Xác nhận xóa (y/n): ");
             if (sc.nextLine().equalsIgnoreCase("y")) {
-                int soLuong = orderDAO.laySoLuongTrongDon(orderId, flowerId);
-                if (orderDAO.xoaChiTiet(orderId, flowerId)) {
+                int soLuong = orderService.laySoLuongTrongDon(orderId, flowerId);
+                if (orderService.xoaChiTiet(orderId, flowerId)) {
                     traHoaVeKho(flowerId, soLuong);
                     System.out.println("✅ Đã xóa chi tiết hoa khỏi đơn!");
                 } else {
@@ -927,24 +922,24 @@ public class OrderMenu {
         System.out.print("Nhập Mã đơn cần xóa (VD: ORD001): ");
         String orderId = sc.nextLine().toUpperCase();
 
-        if (!orderDAO.donTonTai(orderId)) {
+        if (!orderService.donTonTai(orderId)) {
             System.out.println("❌ Không tìm thấy đơn!");
             return;
         }
 
         inThongTinDon(orderId);
-        String trangThai = orderDAO.layTrangThaiDon(orderId);
+        String trangThai = orderService.layTrangThaiDon(orderId);
         boolean daHuy = "DA_HUY".equals(trangThai);
         boolean giaoThatBai = "GIAO_THAT_BAI".equals(trangThai);
         // Đơn đã đóng (hủy hoặc giao thất bại) thì hoa ĐÃ được trả về kho rồi.
         boolean daDong = daHuy || giaoThatBai;
-        boolean daThuTien = orderDAO.donDaCoThanhToan(orderId);
+        boolean daThuTien = orderService.donDaCoThanhToan(orderId);
 
         // Đơn còn hiệu lực mà đã thu được tiền -> không cho xóa, phải xử lý tiền trước.
         // Đơn ĐÃ ĐÓNG thì được xóa (kể cả còn khoản cọc giữ lại), nhưng phải cảnh báo.
         if (daThuTien && !daDong) {
             System.out.println("❌ KHÔNG THỂ XÓA! Đơn hàng này còn đang giữ "
-                    + paymentDAO.tinhDaTra(orderId) + " VND tiền khách đã trả.");
+                    + paymentService.tinhDaTra(orderId) + " VND tiền khách đã trả.");
             System.out.println("👉 Hãy hủy đơn nếu khách bỏ, hoặc vào Thanh toán → [4] Hủy giao dịch "
                     + "để hoàn HẾT số tiền đã thu trước khi xóa.");
             return;
@@ -955,15 +950,15 @@ public class OrderMenu {
                     + " trước đó — hoa đã được trả về kho, nên xóa đơn sẽ KHÔNG cộng kho lần nữa.");
         }
         if (daThuTien) {
-            System.out.println("⚠️ Đơn đã thu " + paymentDAO.tinhDaTra(orderId)
+            System.out.println("⚠️ Đơn đã thu " + paymentService.tinhDaTra(orderId)
                     + " VND. Xóa đơn sẽ xóa luôn chứng từ khoản này (không hoàn tiền).");
         }
 
         System.out.print("Bạn có chắc chắn muốn xóa đơn hàng này? (y/n): ");
         if (!sc.nextLine().equalsIgnoreCase("y")) return;
 
-        List<Object[]> dsHoa = orderDAO.layHoaTrongDon(orderId);
-        if (orderDAO.xoaDon(orderId)) {
+        List<Object[]> dsHoa = orderService.layHoaTrongDon(orderId);
+        if (orderService.xoaDon(orderId)) {
             if (daDong) {
                 // Kho đã được trả lúc hủy / giao thất bại -> không cộng lại lần 2.
                 System.out.println("✅ Đã xóa đơn (kho không thay đổi vì hoa đã về kho trước đó).");
@@ -995,7 +990,7 @@ public class OrderMenu {
         System.out.print("Nhập Mã đơn cần sửa: ");
         String orderId = sc.nextLine().toUpperCase();
 
-        Order don = orderDAO.timTheoMa(orderId);
+        Order don = orderService.timTheoMa(orderId);
         if (don == null) {
             System.out.println("❌ Không tìm thấy đơn!");
             return;
@@ -1046,7 +1041,7 @@ public class OrderMenu {
         String employeeId = don.getEmployeeId();
         System.out.print("Đổi nhân viên phụ trách? (y/n): ");
         if (sc.nextLine().equalsIgnoreCase("y")) {
-            List<Employee> dsNV = employeeDAO.findAll();
+            List<Employee> dsNV = employeeService.findAll();
             for (int i = 0; i < dsNV.size(); i++) {
                 System.out.printf("  %d. %-20s (Mã: %s)\n", (i + 1),
                         dsNV.get(i).getName(), dsNV.get(i).getEmployeeId());
@@ -1067,7 +1062,7 @@ public class OrderMenu {
             }
         }
 
-        if (orderDAO.capNhatThongTin(orderId, diaChi, ngayGiao, employeeId)) {
+        if (orderService.capNhatThongTin(orderId, diaChi, ngayGiao, employeeId)) {
             System.out.println("✅ Đã cập nhật thông tin đơn.");
         } else {
             System.out.println("❌ Cập nhật thất bại!");
@@ -1076,7 +1071,7 @@ public class OrderMenu {
 
     private String layTenNV(String employeeId) {
         try {
-            Employee e = employeeDAO.findById(employeeId);
+            Employee e = employeeService.findById(employeeId);
             if (e != null && e.getName() != null) return e.getName();
         } catch (Exception ignored) {
         }
@@ -1087,7 +1082,7 @@ public class OrderMenu {
     // CÁC HÀM HỖ TRỢ KHÁC
     // =====================================================
     private String taoKhachHangNhanh(String sdtDaNhap) {
-        String id = customerDAO.sinhMaKhachMoi();
+        String id = customerService.sinhMaKhachMoi();
         System.out.println("\n--- TẠO KHÁCH HÀNG MỚI (Mã: " + id + ") ---");
 
         String sdt = sdtDaNhap;
@@ -1100,7 +1095,7 @@ public class OrderMenu {
         String email = NhapLieu.email(sc, "Email", false);
 
         Customer khMoi = new Customer(id, ten, sdt, diaChi, email);
-        return customerDAO.insert(khMoi) ? id : null;
+        return customerService.insert(khMoi) ? id : null;
     }
 
     private void xemDonCuaKhach() {
@@ -1113,9 +1108,9 @@ public class OrderMenu {
 
     private void xemDonCuaKhachImpl() {
         System.out.print("Nhập SĐT khách hàng (VD: 0901234567): ");
-        String sdt = customerDAO.chuanHoaSdt(sc.nextLine());
+        String sdt = customerService.chuanHoaSdt(sc.nextLine());
 
-        List<Customer> dsKH = customerDAO.timTheoSdt(sdt);
+        List<Customer> dsKH = customerService.timTheoSdt(sdt);
         if (dsKH.isEmpty()) {
             System.out.println("❌ Không tìm thấy khách hàng!");
             return;
@@ -1124,12 +1119,12 @@ public class OrderMenu {
         Customer kh = dsKH.get(0);
         System.out.println("--- ĐƠN HÀNG CỦA: " + kh.getName() + " ---");
         // Lambda: lọc đơn theo mã khách hàng
-        inDsDon(orderDAO.donCuaKhachLambda(kh.getCustomerId()));
+        inDsDon(orderService.donCuaKhachLambda(kh.getCustomerId()));
     }
 
     private String layDiaChiKhach(String customerId) {
         try {
-            Customer c = customerDAO.findById(customerId);
+            Customer c = customerService.findById(customerId);
             if (c != null && c.getAddress() != null) return c.getAddress();
         } catch (Exception ignored) { }
         return "Chưa xác định";
@@ -1137,7 +1132,7 @@ public class OrderMenu {
 
     private String layTenKhach(String customerId) {
         try {
-            Customer c = customerDAO.findById(customerId);
+            Customer c = customerService.findById(customerId);
             if (c != null && c.getName() != null) return c.getName();
         } catch (Exception ignored) { }
         return customerId;
@@ -1146,13 +1141,13 @@ public class OrderMenu {
     // Trả hoa về kho: cộng lại tồn kho VÀ cộng lại vào lô (nếu còn lô AVAILABLE/SOLD_OUT)
     // để flower.stock_quantity và quantity_remaining không bị lệch.
     private void traHoaVeKho(String flowerId, int soLuong) {
-        orderDAO.congTonKho(flowerId, soLuong);
-        batchDAO.nhapLaiKho(flowerId, soLuong);
+        orderService.congTonKho(flowerId, soLuong);
+        batchService.nhapLaiKho(flowerId, soLuong);
     }
 
     private int demSoLoaiHoaTrongDon(String orderId) {
         try {
-            List<Object[]> ct = orderDAO.chiTietDonHang(orderId);
+            List<Object[]> ct = orderService.chiTietDonHang(orderId);
             return ct == null ? 0 : ct.size();
         } catch (Exception e) {
             return 0;
@@ -1174,7 +1169,7 @@ public class OrderMenu {
         System.out.print("Nhập trạng thái cần lọc (hoặc để trống để lấy tất cả): ");
         String status = sc.nextLine().trim();
 
-        List<Order> ketQua = orderDAO.locDonTheoTrangThaiLambda(status);
+        List<Order> ketQua = orderService.locDonTheoTrangThaiLambda(status);
         if (ketQua.isEmpty()) {
             System.out.println("❌ Không tìm thấy đơn hàng nào có trạng thái: \"" + status + "\"");
         } else {
@@ -1185,7 +1180,7 @@ public class OrderMenu {
 
     private void donHangMoiNhatLambda() {
         System.out.println("\n--- DANH SÁCH ĐƠN HÀNG MỚI NHẤT (SẮP XẾP BẰNG LAMBDA) ---");
-        List<Order> dsMoiNhat = orderDAO.donHangMoiNhatLambda();
+        List<Order> dsMoiNhat = orderService.donHangMoiNhatLambda();
         if (dsMoiNhat.isEmpty()) {
             System.out.println("Không có dữ liệu đơn hàng.");
         } else {
@@ -1201,8 +1196,8 @@ public class OrderMenu {
         System.out.print("Nhập từ khóa cần tìm (Mã đơn, Mã KH hoặc Mã NV): ");
         String tuKhoa = sc.nextLine();
 
-        // Gọi hàm searchOrdersByLambda đã viết trong OrderDAO
-        List<Order> ketQua = orderDAO.searchOrdersByLambda(tuKhoa);
+        // Gọi hàm searchOrdersByLambda đã viết trong OrderService
+        List<Order> ketQua = orderService.searchOrdersByLambda(tuKhoa);
 
         if (ketQua.isEmpty()) {
             System.out.println("❌ Không tìm thấy đơn hàng nào khớp với từ khóa: \"" + tuKhoa + "\"");

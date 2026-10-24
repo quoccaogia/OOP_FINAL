@@ -6,14 +6,14 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Scanner;
 
-import vn.edu.crud.dao.EmployeeDAO;
+import vn.edu.crud.service.EmployeeService;
 import vn.edu.crud.model.Employee;
 import vn.edu.crud.model.EmployeeRole;
 import vn.edu.crud.util.NhapLieu;
 
 public class EmployeeMenu {
     private final Scanner sc = new Scanner(System.in);
-    private final EmployeeDAO dao = new EmployeeDAO();
+    private final EmployeeService employeeService = new EmployeeService();
 
     // Định dạng tiền tệ VNĐ cho đẹp (VD: 5.500.000)
     private final NumberFormat VND = NumberFormat.getCurrencyInstance(new Locale("vi", "VN"));
@@ -42,14 +42,14 @@ public class EmployeeMenu {
             catch (NumberFormatException e) { chon = -1; }
 
             switch (chon) {
-                case 1 -> inDanhSach(dao.findAll());
+                case 1 -> inDanhSach(employeeService.findAll());
                 case 2 -> timKiemNhanVienLambda();
                 case 3 -> timTheoMa();
                 case 4 -> themNhanVien();
                 case 5 -> suaNhanVien();
                 case 6 -> xoaNhanVien();
-                case 7 -> inBang(dao.nhanVienCoDonHang());
-                case 8 -> inBang(dao.nhanVienNhieuDonNhat());
+                case 7 -> inBang(employeeService.nhanVienCoDonHang());
+                case 8 -> inBang(employeeService.nhanVienNhieuDonNhat());
                 case 9 -> tinhLuongNhanVien();
                 case 0 -> {
                 }
@@ -66,8 +66,8 @@ private void timKiemNhanVienLambda() {
     System.out.print("Nhập mã hoặc tên nhân viên cần tìm: ");
     String tuKhoa = sc.nextLine();
 
-    // Gọi hàm filter/search bằng Lambda đã viết trong EmployeeDAO
-    List<Employee> ketQua = dao.searchEmployeesByLambda(tuKhoa);
+    // Gọi hàm filter/search bằng Lambda đã viết trong EmployeeService
+    List<Employee> ketQua = employeeService.searchEmployeesByLambda(tuKhoa);
 
     if (ketQua.isEmpty()) {
         System.out.println("❌ Không tìm thấy nhân viên nào khớp với từ khóa: \"" + tuKhoa + "\"");
@@ -79,7 +79,7 @@ private void timKiemNhanVienLambda() {
 }
 
     private void themNhanVien() {
-        String id = dao.sinhMaNVMoi();
+        String id = employeeService.sinhMaNVMoi();
         System.out.println("Mã NV tự sinh: " + id);
 
         String ten = NhapLieu.batBuoc(sc, "Tên NV", "VD: Nguyễn Văn A");
@@ -129,7 +129,7 @@ private void timKiemNhanVienLambda() {
 
         // Lưu vào DB với role là tên Enum (VD: THU_NGAN)
         Employee nv = new Employee(id, ten, roleChon.name(), sdt, luong);
-        if (dao.insert(nv)) System.out.println("✅ Thêm nhân viên thành công!");
+        if (employeeService.insert(nv)) System.out.println("✅ Thêm nhân viên thành công!");
         else System.out.println("❌ Thêm thất bại!");
     }
 
@@ -137,14 +137,14 @@ private void timKiemNhanVienLambda() {
         System.out.print("Nhập Mã NV cần tính lương (VD: NV02): ");
         String id = sc.nextLine().trim().toUpperCase();
 
-        Employee nv = dao.findById(id);
+        Employee nv = employeeService.findById(id);
         if (nv == null) {
             System.out.println("❌ Không tìm thấy nhân viên có mã: " + id);
             return;
         }
 
         BigDecimal luongCung = nv.getSalary();
-        BigDecimal doanhThu = dao.tinhDoanhThuNhanVien(id);
+        BigDecimal doanhThu = employeeService.tinhDoanhThuNhanVien(id);
         BigDecimal tyLeHoaHong = new BigDecimal("0.02"); // 2% hoa hồng
         BigDecimal tienHoaHong = doanhThu.multiply(tyLeHoaHong);
         BigDecimal tongLinh = luongCung.add(tienHoaHong);
@@ -164,7 +164,7 @@ private void timKiemNhanVienLambda() {
     private void timTheoMa() {
         System.out.print("Nhập Mã NV cần tìm (VD: NV01): ");
         String id = sc.nextLine().trim().toUpperCase();
-        Employee nv = dao.findById(id);
+        Employee nv = employeeService.findById(id);
         if (nv == null) {
             System.out.println("❌ Không tìm thấy nhân viên có mã: " + id);
         } else {
@@ -181,7 +181,7 @@ private void timKiemNhanVienLambda() {
     private void suaNhanVien() {
         System.out.print("Nhập Mã NV cần sửa (VD: NV01): ");
         String id = sc.nextLine().trim().toUpperCase();
-        Employee nv = dao.findById(id);
+        Employee nv = employeeService.findById(id);
         if (nv == null) { System.out.println("❌ Không tìm thấy!"); return; }
 
         System.out.println("\n--- THÔNG TIN HIỆN TẠI ---");
@@ -227,27 +227,27 @@ private void timKiemNhanVienLambda() {
             }
         }
 
-        if (dao.update(nv)) System.out.println("✅ Sửa thành công!");
+        if (employeeService.update(nv)) System.out.println("✅ Sửa thành công!");
         else System.out.println("❌ Sửa thất bại!");
     }
 
     private void xoaNhanVien() {
         System.out.print("Nhập Mã NV cần xóa (VD: NV02): ");
         String id = sc.nextLine().trim().toUpperCase();
-        Employee nv = dao.findById(id);
+        Employee nv = employeeService.findById(id);
         if (nv == null) { System.out.println("❌ Không tìm thấy!"); return; }
 
         System.out.println("--- THÔNG TIN NHÂN VIÊN SẮP XÓA ---");
         System.out.println("Tên NV : " + nv.getName());
         System.out.println("Chức vụ: " + EmployeeRole.getLabelFromString(nv.getRole()));
 
-        if (dao.kiemTraNhanVienCoDon(id)) {
+        if (employeeService.kiemTraNhanVienCoDon(id)) {
             System.out.println("\n❌ KHÔNG THỂ XÓA! Nhân viên này đã phụ trách Đơn hàng.");
             return;
         }
         System.out.print("\nBạn có chắc chắn muốn xóa? (y/n): ");
         if (sc.nextLine().equalsIgnoreCase("y")) {
-            System.out.println(dao.delete(id) ? "✅ Đã xóa!" : "❌ Thất bại!");
+            System.out.println(employeeService.delete(id) ? "✅ Đã xóa!" : "❌ Thất bại!");
         }
     }
 

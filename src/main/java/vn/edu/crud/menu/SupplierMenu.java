@@ -3,15 +3,15 @@ package vn.edu.crud.menu;
 import java.util.List;
 import java.util.Scanner;
 
-import vn.edu.crud.dao.PurchaseOrderDAO;
-import vn.edu.crud.dao.SupplierDAO;
+import vn.edu.crud.service.PurchaseOrderService;
+import vn.edu.crud.service.SupplierService;
 import vn.edu.crud.model.Supplier;
 import vn.edu.crud.util.NhapLieu;
 
 public class SupplierMenu {
     private final Scanner sc = new Scanner(System.in);
-    private final SupplierDAO dao = new SupplierDAO();
-    private final PurchaseOrderDAO poDAO = new PurchaseOrderDAO();
+    private final SupplierService supplierService = new SupplierService();
+    private final PurchaseOrderService poService = new PurchaseOrderService();
 
     public void hienThi() {
         int chon;
@@ -36,14 +36,14 @@ public class SupplierMenu {
             catch (NumberFormatException e) { chon = -1; }
 
             switch (chon) {
-                case 1 -> inDanhSach(dao.findAll());
+                case 1 -> inDanhSach(supplierService.findAll());
                 case 2 -> tiepNhanNhaCungCap();
                 case 3 -> timKiemNhaCungCapLambda();
                 case 4 -> xoaNhaCungCap();
-                case 6 -> inBang(dao.tongNhapTheoNCC());
-                case 7 -> inBang(dao.nccDangCungCapHoa());
-                case 8 -> inBang(dao.nccNhieuLoaiHoaNhat());
-                case 9 -> inBang(dao.thongKeLoaiHoaTheoNCC());
+                case 6 -> inBang(supplierService.tongNhapTheoNCC());
+                case 7 -> inBang(supplierService.nccDangCungCapHoa());
+                case 8 -> inBang(supplierService.nccNhieuLoaiHoaNhat());
+                case 9 -> inBang(supplierService.thongKeLoaiHoaTheoNCC());
                 case 0 -> {
                 }
                 default -> System.out.println("Chọn sai!");
@@ -58,8 +58,8 @@ private void timKiemNhaCungCapLambda() {
     System.out.print("Nhập tên nhà cung cấp cần tìm: ");
     String tuKhoa = sc.nextLine();
 
-    // Gọi hàm tìm kiếm bằng Lambda đã viết trong SupplierDAO
-    List<Supplier> ketQua = dao.searchSuppliersByLambda(tuKhoa);
+    // Gọi hàm tìm kiếm bằng Lambda đã viết trong SupplierService
+    List<Supplier> ketQua = supplierService.searchSuppliersByLambda(tuKhoa);
 
     if (ketQua.isEmpty()) {
         System.out.println("❌ Không tìm thấy nhà cung cấp nào có tên khớp với: \"" + tuKhoa + "\"");
@@ -75,9 +75,9 @@ private void timKiemNhaCungCapLambda() {
     private void tiepNhanNhaCungCap() {
         System.out.println("\n--- TIẾP NHẬN NHÀ CUNG CẤP ---");
         System.out.print("Nhập SĐT nhà cung cấp (VD: 0263388899, có thể nhập một phần): ");
-        String sdt = dao.chuanHoaSdt(sc.nextLine());
+        String sdt = supplierService.chuanHoaSdt(sc.nextLine());
 
-        List<Supplier> ketQua = dao.timTheoSdt(sdt);
+        List<Supplier> ketQua = supplierService.timTheoSdt(sdt);
 
         if (ketQua.isEmpty()) {
             System.out.println("❌ Không tìm thấy NCC nào dùng SĐT này.");
@@ -106,7 +106,7 @@ private void timKiemNhaCungCapLambda() {
         System.out.print("Nhập Mã NCC cần xóa (VD: NCC01): ");
         String id = sc.nextLine().trim().toUpperCase();
 
-        Supplier ncc = dao.findById(id);
+        Supplier ncc = supplierService.findById(id);
         if (ncc == null) {
             System.out.println("❌ Không tìm thấy NCC có mã: " + id);
             return;
@@ -117,12 +117,12 @@ private void timKiemNhaCungCapLambda() {
         System.out.println("SĐT     : " + ncc.getPhone());
 
         // Kiểm tra xem NCC này đã có phiếu nhập hàng nào chưa
-        if (!poDAO.phieuNhapCuaNCC(id).isEmpty()) {
+        if (!poService.phieuNhapCuaNCC(id).isEmpty()) {
             System.out.println("\n❌ KHÔNG THỂ XÓA! NCC này đã có Phiếu Nhập Hàng trong hệ thống.");
             return;
         }
         // Còn loại hoa nào đang dùng NCC này không (báo cáo quy định RESTRICT)
-        if (dao.coHoa(id)) {
+        if (supplierService.coHoa(id)) {
             System.out.println("\n❌ KHÔNG THỂ XÓA! NCC này đang cung cấp loại hoa trong danh mục.");
             System.out.println("👉 Chuyển các loại hoa đó sang NCC khác (menu Hoa → [4] Sửa) rồi hãy xóa.");
             return;
@@ -130,7 +130,7 @@ private void timKiemNhaCungCapLambda() {
 
         System.out.print("\nBạn có chắc chắn muốn xóa NCC này? (y/n): ");
         if (sc.nextLine().equalsIgnoreCase("y")) {
-            System.out.println(dao.delete(id) ? "✅ Đã xóa!" : "❌ Thất bại!");
+            System.out.println(supplierService.delete(id) ? "✅ Đã xóa!" : "❌ Thất bại!");
         } else {
             System.out.println("Đã hủy thao tác.");
         }
@@ -140,7 +140,7 @@ private void timKiemNhaCungCapLambda() {
     // CÁC HÀM HỖ TRỢ
     // =====================================================
     private void themNhaCungCapMoi(String sdtDaNhap) {
-        String id = dao.sinhMaNCCMoi();
+        String id = supplierService.sinhMaNCCMoi();
         System.out.println("Mã NCC tự sinh: " + id);
 
         String sdt = (sdtDaNhap == null || sdtDaNhap.isEmpty() || !NhapLieu.laSdtNhaCungCap(sdtDaNhap))
@@ -151,7 +151,7 @@ private void timKiemNhaCungCapLambda() {
         String daiDien = NhapLieu.tuyChon(sc, "Người đại diện", "VD: Ông Bảy");
 
         Supplier ncc = new Supplier(id, ten, sdt, diaChi, daiDien);
-        if (dao.insert(ncc)) System.out.println("✅ Thêm nhà cung cấp thành công!");
+        if (supplierService.insert(ncc)) System.out.println("✅ Thêm nhà cung cấp thành công!");
     }
 
     private void suaNhaCungCap(Supplier ncc) {
@@ -168,7 +168,7 @@ private void timKiemNhaCungCapLambda() {
         String daiDien = sc.nextLine().trim();
         if (!daiDien.isEmpty()) ncc.setRepresentative(daiDien);
 
-        if (dao.update(ncc)) System.out.println("✅ Sửa thành công!");
+        if (supplierService.update(ncc)) System.out.println("✅ Sửa thành công!");
     }
 
     // =====================================================

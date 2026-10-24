@@ -2,9 +2,9 @@ package vn.edu.crud.menu;
 
 
 import java.util.ArrayList;
-import vn.edu.crud.dao.FlowerBatchDAO;
-import vn.edu.crud.dao.FlowerDAO;
-import vn.edu.crud.dao.SupplierDAO;
+import vn.edu.crud.service.FlowerBatchService;
+import vn.edu.crud.service.FlowerService;
+import vn.edu.crud.service.SupplierService;
 import vn.edu.crud.model.Flower;
 import vn.edu.crud.util.AnToan;
 import vn.edu.crud.util.NhapLieu;
@@ -15,9 +15,9 @@ import java.util.Scanner;
 
 public class FlowerMenu {
     private final Scanner sc = new Scanner(System.in);
-    private final FlowerDAO dao = new FlowerDAO();
-    private final FlowerBatchDAO batchDAO = new FlowerBatchDAO();
-    private final SupplierDAO supplierDAO = new SupplierDAO();
+    private final FlowerService flowerService = new FlowerService();
+    private final FlowerBatchService batchService = new FlowerBatchService();
+    private final SupplierService supplierService = new SupplierService();
 
     public void hienThi() {
         int chon;
@@ -60,17 +60,17 @@ public class FlowerMenu {
     private void xulyChon(int chon) {
         switch (chon) {
             case 1:
-                List<Flower> tatCa = dao.findAll();
+                List<Flower> tatCa = flowerService.findAll();
                 inDsHoa(tatCa);
-                // Sử dụng hàm Lambda từ FlowerDAO để tính tổng tồn kho
-                int tongTon = dao.tinhTongTonKhoLambda(tatCa);
+                // Sử dụng hàm Lambda từ FlowerService để tính tổng tồn kho
+                int tongTon = flowerService.tinhTongTonKhoLambda(tatCa);
                 System.out.println("👉 Tổng cộng: " + tatCa.size()
                         + " loài hoa trong hệ thống — tổng tồn kho: " + tongTon + " bông.");
                 break;
             case 2:
                 System.out.print("Mã hoa (VD: FL01): ");
                 String maHoa = sc.nextLine().trim().toUpperCase();
-                Flower f = dao.timTheoMa(maHoa);
+                Flower f = flowerService.timTheoMa(maHoa);
 
                 if (f != null) {
                     System.out.println("✅ Thông tin hoa:");
@@ -93,12 +93,12 @@ public class FlowerMenu {
             case 6:
                 // Lambda lọc hoa tồn kho < 10
 
-                inDsHoa(dao.hoaSapHetLambda(10));
+                inDsHoa(flowerService.hoaSapHetLambda(10));
                 break;
             case 7:
                 System.out.print("Từ khóa tìm kiếm (Tên hoặc Danh mục): ");
                 // Lambda tìm kiếm hoa theo tên hoặc danh mục
-                inDsHoa(dao.searchFlowersByLambda(sc.nextLine()));
+                inDsHoa(flowerService.searchFlowersByLambda(sc.nextLine()));
                 break;
             case 8:
                 BigDecimal min = NhapLieu.tien(sc, "Giá min", "VD: 5000", true);
@@ -111,31 +111,31 @@ public class FlowerMenu {
                 }
                 // Lambda lọc hoa theo khoảng giá
 
-                inDsHoa(dao.timTheoKhoangGiaLambda(min, max));
+                inDsHoa(flowerService.timTheoKhoangGiaLambda(min, max));
                 break;
             case 9:
                 System.out.print("Màu (VD: Đỏ): ");
-                inDsHoa(dao.timTheoMau(sc.nextLine()));
+                inDsHoa(flowerService.timTheoMau(sc.nextLine()));
                 break;
             case 10:
-                inBang(dao.hoaBanChay());
+                inBang(flowerService.hoaBanChay());
                 break;
             case 11:
-                inBang(dao.hoaBanCham());
+                inBang(flowerService.hoaBanCham());
                 break;
             case 12:
                 // Lambda sắp xếp hoa giá giảm dần
 
-                inDsHoa(dao.hoaGiaGiamDanLambda());
+                inDsHoa(flowerService.hoaGiaGiamDanLambda());
                 break;
             case 13:
-                inBang(dao.tongBanTheoHoa());
+                inBang(flowerService.tongBanTheoHoa());
                 break;
             case 14:
-                inDsHoa(dao.hoaChuaBanDuoc());
+                inDsHoa(flowerService.hoaChuaBanDuoc());
                 break;
             case 15:
-                inBang(dao.loHoaTonLau(7));
+                inBang(flowerService.loHoaTonLau(7));
                 break;
             case 0:
                 break;
@@ -146,7 +146,7 @@ public class FlowerMenu {
 
     private void themHoa() {
         try {
-            String id = dao.sinhMaHoaMoi();
+            String id = flowerService.sinhMaHoaMoi();
             System.out.println("Mã tự sinh: " + id);
             String name = NhapLieu.batBuoc(sc, "Tên hoa", "VD: Hồng Đỏ Đà Lạt");
             String cat = NhapLieu.batBuoc(sc, "Danh mục", "VD: Hồng");
@@ -154,7 +154,7 @@ public class FlowerMenu {
             int stock = NhapLieu.soNguyen(sc, "Tồn kho ban đầu", "VD: 100", 0, 1_000_000);
             String color = NhapLieu.batBuoc(sc, "Màu sắc", "VD: Đỏ");
             String supId = nhapMaNCC(null);
-            System.out.println(dao.insert(id, name, cat, price, stock, color, supId)
+            System.out.println(flowerService.insert(id, name, cat, price, stock, color, supId)
                     ? "✅ Thêm thành công!"
                     : "❌ Thêm thất bại (có thể trùng mã hoa hoặc mã NCC không hợp lệ).");
         } catch (Exception e) {
@@ -166,12 +166,12 @@ public class FlowerMenu {
         try {
             System.out.print("Mã hoa cần sửa (VD: FL01): ");
             String id = sc.nextLine().trim().toUpperCase();
-            Flower cu = dao.timTheoMa(id);
+            Flower cu = flowerService.timTheoMa(id);
             if (cu == null) {
                 System.out.println("❌ Không tìm thấy hoa mã " + id + "!");
                 return;
             }
-            if (batchDAO.coLo(id)) {
+            if (batchService.coLo(id)) {
                 System.out.println("⚠️ Hoa này đang có lô — tồn kho được tính theo số còn trong lô.");
                 System.out.println("   Sửa 'Tồn kho' ở đây sẽ làm lệch với lô (nên sửa qua nhập hàng / thanh lý lô).");
             }
@@ -181,7 +181,7 @@ public class FlowerMenu {
             int stock = NhapLieu.soNguyen(sc, "Tồn kho mới", "VD: 100", 0, 1_000_000);
             String color = NhapLieu.batBuoc(sc, "Màu mới", "VD: Đỏ");
             String supId = nhapMaNCC(cu.getSupplierId());
-            System.out.println(dao.update(id, name, cat, price, stock, color, supId)
+            System.out.println(flowerService.update(id, name, cat, price, stock, color, supId)
                     ? "✅ Sửa thành công!"
                     : "❌ Sửa thất bại (mã hoa không tồn tại hoặc dữ liệu không hợp lệ).");
         } catch (Exception e) {
@@ -198,7 +198,7 @@ public class FlowerMenu {
             System.out.print("Mã NCC (" + goiY + "): ");
             String ma = sc.nextLine().trim().toUpperCase();
             if (ma.isEmpty()) return hienTai;
-            if (supplierDAO.findById(ma) != null) return ma;
+            if (supplierService.findById(ma) != null) return ma;
             System.out.println("⚠️ Không có NCC mã " + ma + ". Xem danh sách ở menu Nhà cung cấp.");
         }
     }
@@ -208,14 +208,14 @@ public class FlowerMenu {
             System.out.print("Mã hoa cần xóa (VD: FL01): ");
             String id = sc.nextLine().trim().toUpperCase();
 
-            if (dao.timTheoMa(id) == null) {
+            if (flowerService.timTheoMa(id) == null) {
                 System.out.println("❌ Không tìm thấy hoa mã " + id + "!");
                 return;
             }
 
             System.out.print("Xác nhận xóa " + id + "? (y/n): ");
             if (sc.nextLine().equalsIgnoreCase("y")) {
-                System.out.println(dao.delete(id)
+                System.out.println(flowerService.delete(id)
                         ? "✅ Đã xóa!"
                         : "❌ Không xóa được: hoa đã có đơn hàng / lô hoa / lịch chăm sóc.");
             }
