@@ -46,14 +46,15 @@ public class FlowerBatchService {
      */
     public List<FlowerBatch> loNhapQua7NgayLambda() {
         return flowerBatchDAO.layDanhSachLo().stream()
-                .filter(b -> b.getImportDate() != null
+                .filter(b -> "AVAILABLE".equals(b.getStatus())
+                          && b.getImportDate() != null
                           && b.getQuantityRemaining() > 0
                           && ChronoUnit.DAYS.between(b.getImportDate().toLocalDate(), LocalDate.now()) > 7)
                 .collect(Collectors.toList());
     }
 
     /**
-     * Lọc danh sách lô hoa sắp hết hạn trong số ngày chỉ định, sắp xếp tăng dần hạn sử dụng bằng Lambda.
+     * Lọc danh sách lô hoa sắp hết hạn trong số ngày chỉ định (hoặc đã hết hạn), sắp xếp tăng dần hạn sử dụng bằng Lambda.
      */
     public List<FlowerBatch> loSapHetHanLambda(int soNgay) {
         LocalDate homNay = LocalDate.now();
@@ -61,7 +62,6 @@ public class FlowerBatchService {
                 .filter(b -> "AVAILABLE".equals(b.getStatus())
                           && b.getQuantityRemaining() > 0
                           && b.getExpiryDate() != null
-                          && ChronoUnit.DAYS.between(homNay, b.getExpiryDate()) >= 0
                           && ChronoUnit.DAYS.between(homNay, b.getExpiryDate()) <= soNgay)
                 .sorted(Comparator.comparing(FlowerBatch::getExpiryDate))
                 .collect(Collectors.toList());

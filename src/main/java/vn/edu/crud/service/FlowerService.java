@@ -117,8 +117,16 @@ public class FlowerService {
         return flowerDAO.dongBoTonKhoTuLo();
     }
 
+    // Lọc hoa theo màu sắc chủ đạo bằng Lambda & Stream API (khớp Câu 08 trong Báo cáo)
     public List<Flower> timTheoMau(String mau) {
-        return flowerDAO.timTheoMau(mau);
+        List<Flower> allFlowers = flowerDAO.findAll();
+        if (mau == null || mau.trim().isEmpty()) {
+            return allFlowers;
+        }
+        String mauCanTim = mau.trim();
+        return allFlowers.stream()
+                .filter(f -> f.getColor() != null && f.getColor().equalsIgnoreCase(mauCanTim))
+                .collect(Collectors.toList());
     }
 
     public List<Object[]> hoaBanChay() {
