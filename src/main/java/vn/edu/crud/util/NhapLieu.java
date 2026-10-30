@@ -127,20 +127,30 @@ public class NhapLieu {
         }
     }
 
-    /** Số tiền > 0, hoặc >= 0 nếu choPhep0. */
+    public static final BigDecimal GIA_TOI_THIEU = new BigDecimal("500");
+
+    /** Số tiền tối thiểu 500 VNĐ (nếu không cho phép 0) hoặc >= 0 (nếu choPhep0). */
     public static BigDecimal tien(Scanner sc, String nhac, String goiY, boolean choPhep0) {
+        return tien(sc, nhac, goiY, choPhep0 ? BigDecimal.ZERO : GIA_TOI_THIEU);
+    }
+
+    /** Số tiền tối thiểu từ mức sàn min trở lên. */
+    public static BigDecimal tien(Scanner sc, String nhac, String goiY, BigDecimal min) {
         while (true) {
             System.out.print(nhac + " (" + goiY + "): ");
             try {
                 BigDecimal v = new BigDecimal(sc.nextLine().trim());
-                if (v.compareTo(BigDecimal.ZERO) < 0
-                        || (!choPhep0 && v.compareTo(BigDecimal.ZERO) == 0)) {
-                    System.out.println("⚠️ Số tiền phải " + (choPhep0 ? ">= 0" : "> 0") + ".");
+                if (min != null && v.compareTo(min) < 0) {
+                    if (min.compareTo(BigDecimal.ZERO) == 0) {
+                        System.out.println("⚠️ Số tiền phải >= 0.");
+                    } else {
+                        System.out.println("⚠️ Số tiền không hợp lý! Phải từ " + min + " VNĐ trở lên.");
+                    }
                     continue;
                 }
                 return v;
             } catch (NumberFormatException e) {
-                System.out.println("⚠️ Phải nhập số. VD: 5000");
+                System.out.println("⚠️ Phải nhập số. " + (goiY == null || goiY.isBlank() ? "VD: 5000" : goiY));
             }
         }
     }

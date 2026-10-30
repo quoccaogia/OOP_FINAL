@@ -210,15 +210,17 @@ public class PurchaseOrderMenu {
                 continue;
             }
 
-            System.out.print("Đơn giá nhập (VD: 3000): ");
-            BigDecimal cost = BigDecimal.ZERO;
-            try {
-                cost = new BigDecimal(sc.nextLine());
-                if (cost.compareTo(BigDecimal.ZERO) <= 0)
-                    throw new Exception();
-            } catch (Exception e) {
-                System.out.println("⚠️ Giá phải > 0!");
-                continue;
+            BigDecimal cost = NhapLieu.tien(sc, "Đơn giá nhập", "tối thiểu 500đ, VD: 3000", false);
+
+            // Cảnh báo nếu giá nhập >= giá bán niêm yết
+            if (hoaChon.getUnitPrice() != null && cost.compareTo(hoaChon.getUnitPrice()) >= 0) {
+                System.out.println("⚠️ CẢNH BÁO: Giá nhập (" + cost + " VNĐ) cao hơn hoặc bằng giá bán niêm yết (" + hoaChon.getUnitPrice() + " VNĐ)!");
+                System.out.print("👉 Bạn có chắc chắn muốn nhập giá này không? (y/n): ");
+                String xacNhan = sc.nextLine().trim().toLowerCase();
+                if (!xacNhan.equals("y")) {
+                    System.out.println("Đã hủy nhập giá này, vui lòng nhập lại.");
+                    continue;
+                }
             }
 
             LocalDateTime importDate = LocalDateTime.now();
